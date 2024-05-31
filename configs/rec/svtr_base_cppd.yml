@@ -1,0 +1,117 @@
+Global:
+  use_gpu: True
+  epoch_num: 60
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/svtr_base666_cppd_torch_amp/
+  save_epoch_step: 1
+  # evaluation is run every 2000 iterations
+  eval_batch_step: [0, 500]
+  eval_epoch_step: [0, 1]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  infer_img: ../../PaddleOCR/CUTE80/test_image
+  # for data or label process
+  character_dict_path:
+  character_type: en
+  max_text_length: 25
+  use_space_char: False
+  save_res_path: ./output/rec/predicts_bgpd_nopc_detach_bertmask_dis.txt
+  use_amp: True
+
+Optimizer:
+  name: AdamW
+  beta1: 0.9
+  beta2: 0.99
+  epsilon: 1.0e-8
+  weight_decay: 0.05
+  no_weight_decay_name: norm pos_embed char_node_embed pos_node_embed char_pos_embed vis_pos_embed
+  one_dim_param_no_weight_decay: true
+  lr:
+    name: Cosine
+    learning_rate: 0.0005 #4gpus 128bs
+    warmup_epoch: 2
+
+Architecture:
+  model_type: rec
+  algorithm: BGPD
+  in_channels: 3
+  Transform:
+  Encoder:
+    name: SVTRNet
+    img_size: [32, 100]
+    out_char_num: 25
+    out_channels: 256
+    patch_merging: 'Conv'
+    embed_dim: [128, 256, 384]
+    depth: [6, 6, 4]
+    num_heads: [4, 8, 12]
+    mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
+    local_mixer: [[5, 5], [5, 5], [5, 5]]
+    last_stage: False
+    prenorm: True
+  Decoder:
+    name: CPPDDecoder
+    dim: 384
+    vis_seq: 50
+    num_layer: 3
+    
+
+Loss:
+  name: CPPDLoss
+  ignore_index: 100
+  smoothing: True
+  pos_len: False
+  sideloss_weight: 1.0
+
+PostProcess:
+  name: CPPDLabelDecode
+#   pos_len: True
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: STRLMDBDataSet
+    data_dir: ./
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+    #   - SVTRAug:
+      - CPPDLabelEncode: # Class handling label
+          pos_len: False
+      - SVTRResize:
+          image_shape: [3, 32, 100]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'label_node', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation/
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CPPDLabelEncode: # Class handling label
+          pos_len: False
+      - SVTRResize:
+          image_shape: [3, 32, 100]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'label_node', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 4
