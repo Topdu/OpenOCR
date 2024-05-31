@@ -1,8 +1,0 @@
-gradio<=4.21.0
-imgaug
-lmdb
-numpy
-opencv-python<=4.6.0.66
-pyyaml
-rapidfuzz
-tqdm
