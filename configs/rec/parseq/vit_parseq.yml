@@ -1,0 +1,104 @@
+Global:
+  device: gpu
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/vit_parseq/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img: doc/imgs_words_en/word_10.png
+  # for data or label process
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
+  max_text_length: &max_text_length 25
+  use_space_char: &use_space_char False
+  use_amp: True
+  save_res_path: ./output/rec/predicts_parseq.txt
+  grad_clip_val: 20
+
+
+Optimizer:
+  name: AdamW
+  lr: 0.001485 # 2gpus 384bs/gpu
+  weight_decay: 0.
+  # filter_bias_and_bn: True
+
+LRScheduler:
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: CPPD
+  Transform:
+  Encoder:
+    name: ViT
+  Decoder:
+    name: PARSeqDecoder
+    decode_ar: False
+    refine_iters: 1
+
+Loss:
+  name: PARSeqLoss
+
+PostProcess:
+  name: ARLabelDecode
+  character_dict_path: *character_dict_path
+  use_space_char: *use_space_char
+
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../Union14M-LMDB-L
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - PARSeqAug:
+      - ARLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - SVTRResize:
+          image_shape: [3, 32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 384
+    drop_last: True
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation/
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - ARLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - SVTRResize:
+          image_shape: [3, 32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 2

@@ -1,0 +1,141 @@
+Global:
+  device: gpu
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/resnet45_3en_ctc2d/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img: doc/imgs_words_en/word_10.png
+  # for data or label process
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
+  max_text_length: &max_text_length 25
+  use_space_char: &use_space_char False
+  save_res_path: ./output/rec/predicts_svtr_tiny.txt
+  use_amp: True
+
+
+Optimizer:
+  name: Adam
+  lr: 0.001
+  weight_decay: 0.0
+  filter_bias_and_bn: False
+
+LRScheduler:
+  name: OneCycleLR
+  # warmup_epoch: 2
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR
+  Transform:
+  Encoder:
+    name: ResNet45
+    in_channels: 3
+    strides: [2, 1, 2, 1, 1]
+    last_stage: False
+    # out_channels: 256
+    trans_layer: 3
+  Decoder:
+    name: CTCDecoder2D
+
+Loss:
+  name: CTCLoss
+  zero_infinity: True
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+Train:
+  dataset:
+    name: RatioDataSet
+    ds_width: True
+    padding: False
+    data_dir_list: ['../Union14M-LMDB-L-wh/train_challenging',
+    '../Union14M-LMDB-L-wh/train_hard',
+    '../Union14M-LMDB-L-wh/train_medium',
+    '../Union14M-LMDB-L-wh/train_normal',
+    '../Union14M-LMDB-L-wh/train_easy',
+    ]
+    # name: LMDBDataSet
+    # data_dir: ../evaluation/
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - PARSeqAug:
+      - CTCLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      # - SVTRResize:
+      #     image_shape: [3, 32, 128]
+      #     padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length']
+          # keep_keys: ['image', 'label', 'length', 'gen_ratio', 'real_ratio']
+  sampler:
+    name: RatioSampler
+    scales: [[128, 32]] # w, h
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    first_bs: &bs 128
+    fix_bs: false
+    divided_factor: [4, 16] # w, h
+    is_training: True
+  loader:
+    shuffle: True
+    batch_size_per_card: *bs
+    drop_last: True
+    max_ratio: 4
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: RatioDataSet
+    ds_width: True
+    padding: False
+    data_dir_list: ['../evaluation_6/CUTE80',
+    '../evaluation_6/IC13_857',
+    '../evaluation_6/IC15_1811',
+    '../evaluation_6/IIIT5k',
+    '../evaluation_6/SVT',
+    '../evaluation_6/SVTP',
+    ]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CTCLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      # - SVTRResize:
+      #     image_shape: [3, 32, 128]
+      #     padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length']
+  sampler:
+    name: RatioSampler
+    scales: [[128, 32]] # w, h
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    first_bs: 256
+    fix_bs: false
+    divided_factor: [4, 16] # w, h
+    is_training: False
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: *bs
+    max_ratio: 4
+    num_workers: 4

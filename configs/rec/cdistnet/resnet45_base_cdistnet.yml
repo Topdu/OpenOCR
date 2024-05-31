@@ -1,0 +1,91 @@
+Global:
+  device: gpu
+  epoch_num: 15
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/resnet45_base_cdistnet/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img: doc/imgs_words_en/word_10.png
+  # for data or label process
+  character_dict_path:
+  character_type: en
+  max_text_length: 25
+  use_space_char: False
+  save_res_path: ./output/rec/predicts_resnet45_base_cdistnet.txt
+  grad_clip_val: 5
+
+Optimizer:
+  name: AdamW
+  lr: &lr 0.0442
+
+LRScheduler:
+  name: CdistNetLR
+  lr: *lr
+  step2_epoch: 7
+  n_warmup_steps: 10000
+
+Architecture:
+  model_type: rec
+  algorithm: CDistNet
+  Transform:
+  Encoder:
+    name: ResNet45
+    in_channels: 3
+    strides: [2, 1, 2, 1, 1]
+  Decoder:
+    name: CDistNetDecoder
+    add_conv: True
+
+Loss:
+  name: CDistNetLoss
+
+PostProcess:
+  name: NRTRLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ./
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - ABINetAug:
+      - NRTRLabelEncode: # Class handling label
+      - CDistNetResize:
+          image_shape: [3, 32, 128]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 450
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ./
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - NRTRLabelEncode: # Class handling label
+      - CDistNetResize:
+          image_shape: [3, 32, 128]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 200
+    num_workers: 2
