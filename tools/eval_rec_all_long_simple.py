@@ -55,9 +55,9 @@ def main():
             #     './Union14M-LMDB-LongTest/general/',
             # './Union14M-LMDB-LongTest/multi_words/',
             # './Union14M-LMDB-LongTest/salient/',
-            '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_26_35_list.txt',
-            '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_36_55_list.txt',
-            '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_56_list.txt',
+            '../ultra_long/ultra_long_26_35_list.txt',
+            '../ultra_long/ultra_long_36_55_list.txt',
+            '../ultra_long/ultra_long_56_list.txt',
             # './long_val/ctw_1500_crop_long',
             # './long_val/u14m_train'
         ],
@@ -125,7 +125,7 @@ def main():
         for datadir in data_dirs:
             config_each = cfg.copy()
             config_each['Eval']['dataset']['label_file_list'] = [datadir]
-            # config_each['Eval']['dataset']['label_file_list']= [datadir] #['/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_25_list.txt']
+            # config_each['Eval']['dataset']['label_file_list']= [datadir] #['../ultra_long/ultra_long_25_list.txt']
             # if "LongTest" in datadir : #or "test" in datadir:
 
             #     # print(config_each['Eval']['dataset'])

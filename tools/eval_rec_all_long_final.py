@@ -55,10 +55,10 @@ def main():
             #     './Union14M-LMDB-LongTest/general/',
             # './Union14M-LMDB-LongTest/multi_words/',
             # './Union14M-LMDB-LongTest/salient/',
-            '/data/duyongkun/OpenOCR_igtr/ultra_long/long_lmdb'
-            # '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_26_35_list.txt',
-            # '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_36_55_list.txt',
-            # '/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_56_list.txt',
+            '../ultra_long/long_lmdb'
+            # '../ultra_long/ultra_long_26_35_list.txt',
+            # '../ultra_long/ultra_long_36_55_list.txt',
+            # '../ultra_long/ultra_long_56_list.txt',
             # './long_val/ctw_1500_crop_long',
             # './long_val/u14m_train'
         ],

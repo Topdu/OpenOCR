@@ -10,7 +10,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: doc/imgs_words_en/word_10.png
+  infer_img:
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
@@ -116,7 +116,7 @@ Eval:
     data_dir_list: ['../evaluation/CUTE80',
     '../evaluation/IC13_857',
     '../evaluation/IC15_1811',
-    '../evaluation/IIIT5k_3000',
+    '../evaluation/IIIT5k',
     '../evaluation/SVT',
     '../evaluation/SVTP']
     transforms:

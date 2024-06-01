@@ -12,7 +12,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: /data/duyongkun/OpenOCR_igtr/long_val/img
+  infer_img: ../long_val/img
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
@@ -112,14 +112,8 @@ Train:
 Eval:
   dataset:
     name: SimpleDataSet
-    data_dir: /data/duyongkun/OpenOCR_igtr/ultra_long/
-    label_file_list: ['/data/duyongkun/OpenOCR_igtr/ultra_long/ultra_long_70_list.txt']
-    # '../evaluation_6/IC13_857',
-    # '../evaluation_6/IC15_1811',
-    # '../evaluation_6/IIIT5k',
-    # '../evaluation_6/SVT',
-    # '../evaluation_6/SVTP',
-    # ]
+    data_dir: ../ultra_long/
+    label_file_list: ['../ultra_long/ultra_long_70_list.txt']
     transforms:
       - DecodeImage: # load image
           img_mode: BGR
