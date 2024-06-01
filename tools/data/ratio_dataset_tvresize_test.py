@@ -34,10 +34,10 @@ class CharsetAdapter:
         return label
 
 
-class RatioDataSetTestTVResize(Dataset):
+class RatioDataSetTVResizeTest(Dataset):
 
     def __init__(self, config, mode, logger, seed=None, epoch=1):
-        super(RatioDataSetTestTVResize, self).__init__()
+        super(RatioDataSetTVResizeTest, self).__init__()
         self.ds_width = config[mode]['dataset'].get('ds_width', True)
         global_config = config['Global']
         dataset_config = config[mode]['dataset']

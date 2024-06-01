@@ -13,7 +13,7 @@ from tools.data.lmdb_dataset_test import LMDBDataSetTest
 from tools.data.multi_scale_sampler import MultiScaleSampler
 from tools.data.ratio_dataset import RatioDataSet
 from tools.data.ratio_dataset_test import RatioDataSetTest
-from tools.data.ratio_dataset_test_tvresize import RatioDataSetTestTVResize
+from tools.data.ratio_dataset_tvresize_test import RatioDataSetTVResizeTest
 from tools.data.ratio_dataset_tvresize import RatioDataSetTVResize
 from tools.data.ratio_sampler import RatioSampler
 from tools.data.simple_dataset import MultiScaleDataSet, SimpleDataSet
@@ -32,7 +32,7 @@ def build_dataloader(config, mode, logger, seed=None, epoch=3):
     support_dict = [
         'SimpleDataSet', 'LMDBDataSet', 'MultiScaleDataSet', 'STRLMDBDataSet',
         'LMDBDataSetTest', 'RatioDataSet', 'RatioDataSetTest',
-        'RatioDataSetTVResize', 'RatioDataSetTestTVResize'
+        'RatioDataSetTVResize', 'RatioDataSetTVResizeTest'
     ]
     module_name = config[mode]['dataset']['name']
     assert module_name in support_dict, Exception(

@@ -10,7 +10,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: doc/imgs_words_en/word_10.png
+  infer_img:
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
@@ -105,12 +105,12 @@ Eval:
     name: RatioDataSet
     ds_width: True
     padding: False
-    data_dir_list: ['../evaluation_6/CUTE80',
-    '../evaluation_6/IC13_857',
-    '../evaluation_6/IC15_1811',
-    '../evaluation_6/IIIT5k',
-    '../evaluation_6/SVT',
-    '../evaluation_6/SVTP',
+    data_dir_list: ['../evaluation/CUTE80',
+    '../evaluation/IC13_857',
+    '../evaluation/IC15_1811',
+    '../evaluation/IIIT5k',
+    '../evaluation/SVT',
+    '../evaluation/SVTP',
     ]
     transforms:
       - DecodeImage: # load image

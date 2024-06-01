@@ -9,10 +9,10 @@ Global:
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
   cal_metric_during_train: True
-  pretrained_model: ./output/rec/svtrv2_lnconv_smtr_gtc_nodetach_tvresize_ctcloss025/best.pth
+  pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: /data/duyongkun/OpenOCR_igtr/long_val/img
+  infer_img:
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
@@ -128,14 +128,8 @@ Train:
 Eval:
   dataset:
     name: SimpleDataSet
-    data_dir: ../OpenOCR_svtrv2_paper/ultra_long/
-    label_file_list: ['../OpenOCR_svtrv2_paper/ultra_long/ultra_long_70_list.txt']
-    # '../evaluation_6/IC13_857',
-    # '../evaluation_6/IC15_1811',
-    # '../evaluation_6/IIIT5k',
-    # '../evaluation_6/SVT',
-    # '../evaluation_6/SVTP',
-    # ]
+    data_dir: ../ultra_long/
+    label_file_list: ['../ultra_long/ultra_long_70_list.txt']
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
