@@ -20,31 +20,38 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 Reproduction schedule:
 
-- \[✅\] SVTR训练、评估、测试
-- \[✅\] CPPD训练，评估，测试
-- \[✅\] CRNN
-- \[✅\] ViT-CTC
-- \[✅\] ResNet+En+CTC
-- \[✅\] NRTR
-- \[✅\] ABINet
-- \[✅\] PARSeq
-- \[✅\] STN
-- \[✅\] SAR
-- \[✅\] ASTER
-- \[✅\] RobustScanner
-- \[✅\] SRN
-- \[✅\] VisionLAN
-- \[✅\] LPV
-- \[✅\] CDistNet
-- \[✅\] SVTRv2
-- \[✅\] IGTR
-- \[✅\] FocalSVTR
-- \[✅\] SMTR
-- \[✅\] LISTER
-- \[\] MATRN
-- \[\] MGP-STR
-- \[\] MAERec
+| Method             | Venue     | Training | Evaluation | Contributor |
+|--------------------|-----------|----------|------------|-------------|
+| CRNN               | TPAMI2016 |    ✅    |     ✅     |             |
+| [ASTER](./configs/rec/aster/)              |           |          |            | [pretto0](https://github.com/pretto0) |
+| [NRTR](./configs/rec/nrtr/)               | [ICDAR2019](https://arxiv.org/abs/1806.00926) |    ✅    |     ✅     |             |
+| [SAR](./configs/rec/sar/)                |           |          |            | [pretto0](https://github.com/pretto0) |
+| [RobustScanner](./configs/rec/robustscanner/)      |           |          |            | [pretto0](https://github.com/pretto0) |
+| [SRN](./configs/rec/srn/)                |   |          |            | [pretto0](https://github.com/pretto0) |
+| [ABINet](./configs/rec/abinet/)             |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [VisionLAN](./configs/rec/visionlan/)          |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [SVTR](./configs/rec/svtr/)               | [IJCAI2022](https://www.ijcai.org/proceedings/2022/124) |    ✅    |     ✅     |             |
+| [PARSeq](./configs/rec/parseq/)             | ECCV2022  |    ✅    |     ✅     |             |
+| MATRN              |           |          |            |             |
+| MGP-STR            |           |          |            |             |
+| [CPPD](./configs/rec/cppd/)               | 2023      |    ✅    |     ✅     |             |
+| [LPV](./configs/rec/lpv/)                | IJCAI2023 |    ✅    |     ✅     |             |
+| MAERec(Union14m)   | ICCV2023  |          |            |             |
+| [LISTER](./configs/rec/lister/)             | ICCV2023  |          |            |             |
+| [CDistNet](./configs/rec/cdistnet/)           |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [IGTR](./configs/rec/igtr/)               | 2024      |    ✅    |     ✅     |             |
+| [SMTR](./configs/rec/smtr/)               | 2024      |    ✅    |     ✅     |             |
+| [FocalSVTR-CTC](./configs/rec/focalsvtr/)      | 2024      |    ✅    |     ✅     |             |
+| [SVTRv2](./configs/rec/svtrv2/)             | 2024      |    ✅    |     ✅     |             |
+| [ResNet+En-CTC](./configs/rec/svtr/)      |           |    ✅    |     ✅     |             |
+| [ViT-CTC](./configs/rec/svtr/)            |           |    ✅    |     ✅     |             |
 
+### Contributors
+---
+
+Yiming Lei ([pretto0](https://github.com/pretto0)) and Xingsong Ye ([YesianRohn](https://github.com/YesianRohn)) from the FVL, Fudan University, under the guidance of Professor Zhineng Chen, completed the majority of the algorithm reproduction work. Grateful for their outstanding contributions.
+
+---
 ### 训练准备
 
 - 修改数据集路径
