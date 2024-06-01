@@ -1,6 +1,6 @@
 # OpenOCR
 
-OpenOCR aims to establish a unified training and evaluation benchmark for scene text detection and recognition algorithms, at the same time, serves as the official code repository for the OCR team from the [FVL](https://fvl.fudan.edu.cn), Fudan University.
+OpenOCR aims to establish a unified training and evaluation benchmark for scene text detection and recognition algorithms, at the same time, serves as the official code repository for the OCR team from the [FVL](https://fvl.fudan.edu.cn) Laboratory, Fudan University.
 
 We are actively developing and refining it and expect to release the first version in July 2024.
 
@@ -38,7 +38,7 @@ Reproduction schedule:
 | [LPV](./configs/rec/lpv/)                | IJCAI2023 |    ✅    |     ✅     |             |
 | MAERec(Union14m)   | ICCV2023  |          |            |             |
 | [LISTER](./configs/rec/lister/)             | ICCV2023  |          |            |             |
-| [CDistNet](./configs/rec/cdistnet/)           | [IJCV2023](https://link.springer.com/article/10.1007/s11263-023-01880-0)  |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [CDistNet](./configs/rec/cdistnet/)           | [IJCV2024](https://link.springer.com/article/10.1007/s11263-023-01880-0)  |          |            | [YesianRohn](https://github.com/YesianRohn) |
 | [IGTR](./configs/rec/igtr/)               | 2024      |    ✅    |     ✅     |             |
 | [SMTR](./configs/rec/smtr/)               | 2024      |    ✅    |     ✅     |             |
 | [FocalSVTR-CTC](./configs/rec/focalsvtr/)      | 2024      |    ✅    |     ✅     |             |
@@ -49,7 +49,7 @@ Reproduction schedule:
 ### Contributors
 ---
 
-Yiming Lei ([pretto0](https://github.com/pretto0)) and Xingsong Ye ([YesianRohn](https://github.com/YesianRohn)) from the FVL, Fudan University, under the guidance of Professor Zhineng Chen, completed the majority of the algorithm reproduction work. Grateful for their outstanding contributions.
+Yiming Lei ([pretto0](https://github.com/pretto0)) and Xingsong Ye ([YesianRohn](https://github.com/YesianRohn)) from the [FVL](https://fvl.fudan.edu.cn) Laboratory, Fudan University, under the guidance of Professor Zhineng Chen, completed the majority of the algorithm reproduction work. Grateful for their outstanding contributions.
 
 ---
 ### 训练准备
