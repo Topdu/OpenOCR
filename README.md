@@ -23,11 +23,11 @@ Reproduction schedule:
 | Method             | Venue     | Training | Evaluation | Contributor |
 |--------------------|-----------|----------|------------|-------------|
 | CRNN               | TPAMI2016 |    ✅    |     ✅     |             |
-| [ASTER](./configs/rec/aster/)              |           |          |            | [pretto0](https://github.com/pretto0) |
+| [ASTER](./configs/rec/aster/)              |[TPAMI2018](https://ieeexplore.ieee.org/document/8395027)           |     ✅     |      ✅      | [pretto0](https://github.com/pretto0) |
 | [NRTR](./configs/rec/nrtr/)               | [ICDAR2019](https://arxiv.org/abs/1806.00926) |    ✅    |     ✅     |             |
-| [SAR](./configs/rec/sar/)                |           |          |            | [pretto0](https://github.com/pretto0) |
-| [RobustScanner](./configs/rec/robustscanner/)      |           |          |            | [pretto0](https://github.com/pretto0) |
-| [SRN](./configs/rec/srn/)                |   |          |            | [pretto0](https://github.com/pretto0) |
+| [SAR](./configs/rec/sar/)                |     [AAAI2019](https://aaai.org/papers/08610-show-attend-and-read-a-simple-and-strong-baseline-for-irregular-text-recognition/)      |     ✅     |      ✅      | [pretto0](https://github.com/pretto0) |
+| [RobustScanner](./configs/rec/robustscanner/)      |      [ECCV2020](https://www.ecva.net/papers/eccv_2020/papers_ECCV/html/3160_ECCV_2020_paper.php)     |     ✅     |      ✅      | [pretto0](https://github.com/pretto0) |
+| [SRN](./configs/rec/srn/)                |  [CVPR2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Yu_Towards_Accurate_Scene_Text_Recognition_With_Semantic_Reasoning_Networks_CVPR_2020_paper.html) |     ✅     |       ✅     | [pretto0](https://github.com/pretto0) |
 | [ABINet](./configs/rec/abinet/)             | [CVPR2021](https://openaccess.thecvf.com//content/CVPR2021/html/Fang_Read_Like_Humans_Autonomous_Bidirectional_and_Iterative_Language_Modeling_for_CVPR_2021_paper.html)   |          |            | [YesianRohn](https://github.com/YesianRohn) |
 | [VisionLAN](./configs/rec/visionlan/)          | [ICCV2021](https://openaccess.thecvf.com/content/ICCV2021/html/Wang_From_Two_to_One_A_New_Scene_Text_Recognizer_With_ICCV_2021_paper.html)  |          |            | [YesianRohn](https://github.com/YesianRohn) |
 | [SVTR](./configs/rec/svtr/)               | [IJCAI2022](https://www.ijcai.org/proceedings/2022/124) |    ✅    |     ✅     |             |
