@@ -28,8 +28,8 @@ Reproduction schedule:
 | [SAR](./configs/rec/sar/)                |           |          |            | [pretto0](https://github.com/pretto0) |
 | [RobustScanner](./configs/rec/robustscanner/)      |           |          |            | [pretto0](https://github.com/pretto0) |
 | [SRN](./configs/rec/srn/)                |   |          |            | [pretto0](https://github.com/pretto0) |
-| [ABINet](./configs/rec/abinet/)             |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
-| [VisionLAN](./configs/rec/visionlan/)          |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [ABINet](./configs/rec/abinet/)             | [CVPR2021](https://openaccess.thecvf.com//content/CVPR2021/html/Fang_Read_Like_Humans_Autonomous_Bidirectional_and_Iterative_Language_Modeling_for_CVPR_2021_paper.html)   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [VisionLAN](./configs/rec/visionlan/)          | [ICCV2021](https://openaccess.thecvf.com/content/ICCV2021/html/Wang_From_Two_to_One_A_New_Scene_Text_Recognizer_With_ICCV_2021_paper.html)  |          |            | [YesianRohn](https://github.com/YesianRohn) |
 | [SVTR](./configs/rec/svtr/)               | [IJCAI2022](https://www.ijcai.org/proceedings/2022/124) |    ✅    |     ✅     |             |
 | [PARSeq](./configs/rec/parseq/)             | ECCV2022  |    ✅    |     ✅     |             |
 | MATRN              |           |          |            |             |
@@ -38,7 +38,7 @@ Reproduction schedule:
 | [LPV](./configs/rec/lpv/)                | IJCAI2023 |    ✅    |     ✅     |             |
 | MAERec(Union14m)   | ICCV2023  |          |            |             |
 | [LISTER](./configs/rec/lister/)             | ICCV2023  |          |            |             |
-| [CDistNet](./configs/rec/cdistnet/)           |   |          |            | [YesianRohn](https://github.com/YesianRohn) |
+| [CDistNet](./configs/rec/cdistnet/)           | [IJCV2023](https://link.springer.com/article/10.1007/s11263-023-01880-0)  |          |            | [YesianRohn](https://github.com/YesianRohn) |
 | [IGTR](./configs/rec/igtr/)               | 2024      |    ✅    |     ✅     |             |
 | [SMTR](./configs/rec/smtr/)               | 2024      |    ✅    |     ✅     |             |
 | [FocalSVTR-CTC](./configs/rec/focalsvtr/)      | 2024      |    ✅    |     ✅     |             |
