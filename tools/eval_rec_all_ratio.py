@@ -41,7 +41,7 @@ def main():
         '../test/IC13_857/', '../test/SVT/', '../test/IIIT5k/',
         '../test/IC15_1811/', '../test/SVTP/', '../test/CUTE80/'
     ],
-    ['../test/IC13_1015', '../test/IC15_2077']
+    ['../test/IC13_1015', '../test/IC15_2077'],
     [
         '../u14m/curve/', '../u14m/multi_oriented/',
         '../u14m/artistic/', '../u14m/contextless/',
