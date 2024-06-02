@@ -97,7 +97,17 @@ pip install -r requirements.txt
 
 The expected filesystem structure is as follows:
 ```
-OpenOCR
+benchmark_bctr
+├── benchmark_bctr_test
+│   ├── document_test
+│   ├── handwriting_test
+│   ├── scene_test
+│   └── web_test
+└── benchmark_bctr_train
+    ├── document_train
+    ├── handwriting_train
+    ├── scene_train
+    └── web_train
 evaluation
 ├── CUTE80
 ├── IC13_857
@@ -105,6 +115,7 @@ evaluation
 ├── IIIT5k
 ├── SVT
 └── SVTP
+OpenOCR
 synth
 ├── MJ
 │   ├── test
