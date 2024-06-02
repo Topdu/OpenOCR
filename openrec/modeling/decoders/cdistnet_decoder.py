@@ -198,6 +198,7 @@ class CDistNetDecoder(nn.Module):
                  out_channels,
                  n_head=None,
                  num_encoder_blocks=3,
+                 num_decoder_blocks=3,
                  beam_size=0,
                  max_len=25,
                  residual_dropout_rate=0.1,
@@ -222,17 +223,19 @@ class CDistNetDecoder(nn.Module):
                 kernel_size=(1, 3),
                 stride=(1, 2),
             )
-        self.positional_encoding = PositionalEncoding(
-            dropout=0.1,
-            dim=d_model,
-        )
-
-        self.trans_encoder = Transformer_Encoder(
-            n_layers=num_encoder_blocks,
-            n_head=n_head,
-            d_model=d_model,
-            d_inner=dim_feedforward,
-        )
+        if num_encoder_blocks > 0:
+            self.positional_encoding = PositionalEncoding(
+                dropout=0.1,
+                dim=d_model,
+            )
+            self.trans_encoder = Transformer_Encoder(
+                n_layers=num_encoder_blocks,
+                n_head=n_head,
+                d_model=d_model,
+                d_inner=dim_feedforward,
+            )
+        else:
+            self.trans_encoder = None
         self.semantic_branch = SEM_Pre(
             d_model=d_model,
             dst_vocab_size=dst_vocab_size,
@@ -241,7 +244,7 @@ class CDistNetDecoder(nn.Module):
         self.positional_branch = POS_Pre(d_model=d_model)
 
         self.mdcdp = MDCDP(d_model, n_head, dim_feedforward // 2,
-                           num_encoder_blocks)
+                           num_decoder_blocks)
         self._reset_parameters()
 
         self.tgt_word_prj = nn.Linear(
@@ -254,22 +257,23 @@ class CDistNetDecoder(nn.Module):
             x = self.convbnrelu(x)
             # x = rearrange(x, "b c h w -> b (w h) c")
         x = x.flatten(2).transpose(1, 2)
-
+        if self.trans_encoder is not None:
+            x = self.positional_encoding(x)
+            vis_feat = self.trans_encoder(x, src_mask=None)
+        else:
+            vis_feat = x
         if self.training:
             max_len = data[1].max()
             tgt = data[0][:, :1 + max_len]
-            res = self.forward_train(x, tgt)
+            res = self.forward_train(vis_feat, tgt)
         else:
             if self.beam_size > 0:
-                res = self.forward_beam(x)
+                res = self.forward_beam(vis_feat)
             else:
-                res = self.forward_test(x)
+                res = self.forward_test(vis_feat)
         return res
 
-    def forward_train(self, x, tgt):
-        x = self.positional_encoding(x)
-
-        vis_feat = self.trans_encoder(x, src_mask=None)
+    def forward_train(self, vis_feat, tgt):
         sem_feat, sem_mask = self.semantic_branch(tgt)
         pos_feat = self.positional_branch(sem_feat)
         output = self.mdcdp(
@@ -283,17 +287,14 @@ class CDistNetDecoder(nn.Module):
         logit = self.tgt_word_prj(output)
         return logit
 
-    def forward_test(self, x):
-        bs = x.size(0)
-
-        x = self.positional_encoding(x)
-        vis_feat = self.trans_encoder(x, src_mask=None)
+    def forward_test(self, vis_feat):
+        bs = vis_feat.size(0)
 
         dec_seq = torch.full(
             (bs, self.max_len + 1),
             self.ignore_index,
             dtype=torch.int64,
-            device=x.device,
+            device=vis_feat.device,
         )
         dec_seq[:, 0] = self.bos
         logits = []
