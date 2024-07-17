@@ -1,4 +1,3 @@
-gradio<=4.21.0
 imgaug
 lmdb
 numpy
