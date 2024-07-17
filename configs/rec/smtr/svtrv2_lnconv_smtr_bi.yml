@@ -12,7 +12,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: ../long_val/img
+  infer_img: ../ltb/img
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
@@ -120,8 +120,8 @@ Train:
 Eval:
   dataset:
     name: SimpleDataSet
-    data_dir: ../ultra_long/
-    label_file_list: ['../ultra_long/ultra_long_70_list.txt']
+    data_dir: ../ltb/
+    label_file_list: ['../ltb/ultra_long_70_list.txt']
     # '../evaluation/IC13_857',
     # '../evaluation/IC15_1811',
     # '../evaluation/IIIT5k',

@@ -36,7 +36,7 @@ def build_dataloader(config, mode, logger, seed=None, epoch=3):
     ]
     module_name = config[mode]['dataset']['name']
     assert module_name in support_dict, Exception(
-        'DataSet only support {}'.format(support_dict))
+        'DataSet only support {}/{}'.format(support_dict, module_name))
     assert mode in ['Train', 'Eval',
                     'Test'], 'Mode should be Train, Eval or Test.'
 

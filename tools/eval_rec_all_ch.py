@@ -48,7 +48,7 @@ def main():
         cfg['Global']['output_dir'] + '/' +
         cfg['Global']['output_dir'].split('/')[3] + '_test_ch_all.csv', 'w')
     csv_w = csv.writer(file_csv)
-    cfg['Eval']['dataset']['name'] = 'LMDBDataSet'
+    # cfg['Eval']['dataset']['name'] = 'LMDBDataSet'
     for data_dirs in data_dirs_list:
 
         acc_each = []

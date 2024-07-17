@@ -3,7 +3,7 @@ Global:
   epoch_num: 60
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtrv2_lnconv_smtr_gtc_nodetach_tvresize_ctcloss025_stream
+  output_dir: ./output/rec/svtrv2_lnconv_smtr_gtc_stream
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
@@ -128,8 +128,8 @@ Train:
 Eval:
   dataset:
     name: SimpleDataSet
-    data_dir: ../ultra_long/
-    label_file_list: ['../ultra_long/ultra_long_70_list.txt']
+    data_dir: ../ltb/
+    label_file_list: ['../ltb/ultra_long_70_list.txt']
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB

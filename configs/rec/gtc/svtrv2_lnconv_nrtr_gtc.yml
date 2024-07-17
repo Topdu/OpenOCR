@@ -12,7 +12,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: ../long_val/img
+  infer_img: ../ltb/img
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
@@ -53,7 +53,7 @@ Architecture:
   Decoder:
     name: GTCDecoder
     infer_gtc: True
-    detach: True
+    detach: False
     gtc_decoder:
       name: NRTRDecoder
       num_encoder_layers: -1

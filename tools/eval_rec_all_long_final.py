@@ -43,24 +43,8 @@ def main():
         trainer.logger.info('{}:{}'.format(k, v))
 
     data_dirs_list = [
-        #         ['../test/IC13_857/',
-        # '../test/SVT/',
-        # '../test/IIIT5k/',
-        # '../test/IC15_1811/',
-        # '../test/SVTP/',
-        # '../test/CUTE80/'],
-        # [
-        #     # '../test/IC13_857/',
         [
-            #     './Union14M-LMDB-LongTest/general/',
-            # './Union14M-LMDB-LongTest/multi_words/',
-            # './Union14M-LMDB-LongTest/salient/',
-            '../ultra_long/long_lmdb'
-            # '../ultra_long/ultra_long_26_35_list.txt',
-            # '../ultra_long/ultra_long_36_55_list.txt',
-            # '../ultra_long/ultra_long_56_list.txt',
-            # './long_val/ctw_1500_crop_long',
-            # './long_val/u14m_train'
+            '../ltb/long_lmdb'
         ],
     ]
 

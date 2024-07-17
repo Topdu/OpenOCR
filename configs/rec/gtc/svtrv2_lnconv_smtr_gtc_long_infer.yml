@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtrv2_lnconv_smtr_gtc_nodetach_tvresize_ctcloss025_maxratio12
+  output_dir: ./output/rec/svtrv2_lnconv_smtr_gtc_long_infer
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 1000]
@@ -12,7 +12,7 @@ Global:
   pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: ../long_val/img
+  infer_img: ../ltb/img
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
