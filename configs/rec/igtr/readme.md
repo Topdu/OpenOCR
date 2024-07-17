@@ -162,8 +162,6 @@ Training:
 # The configuration file is available from the link provided in the table above.
 # Multi GPU training
 CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 tools/train_rec.py --c PATH/svtr_base_igtr_XXX.yml
-# For RTX 4090
-NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 tools/train_rec.py --c PATH/svtr_base_igtr_XXX.yml
 ```
 
 Evaluation:

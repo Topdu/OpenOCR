@@ -1,7 +1,7 @@
 import io
 import math
 import random
-
+import os
 import cv2
 import lmdb
 import numpy as np
@@ -21,7 +21,14 @@ class RatioDataSet(Dataset):
         loader_config = config[mode]['loader']
         max_ratio = loader_config.get('max_ratio', 10)
         min_ratio = loader_config.get('min_ratio', 1)
-        data_dir_list = dataset_config['data_dir_list']
+        syn = dataset_config.get('syn', False)
+        if syn:
+            data_dir_list = []
+            data_dir = "../training_aug_lmdb_noerror/ep" + str(epoch)
+            for dir_syn in os.listdir(data_dir):
+                data_dir_list.append(data_dir+'/'+dir_syn)
+        else:
+            data_dir_list = dataset_config['data_dir_list']
         self.padding = dataset_config.get('padding', True)
         self.padding_rand = dataset_config.get('padding_rand', False)
         self.padding_doub = dataset_config.get('padding_doub', False)
