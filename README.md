@@ -41,7 +41,7 @@ Reproduction schedule:
 | [CDistNet](./configs/rec/cdistnet/)           | [IJCV2024](https://link.springer.com/article/10.1007/s11263-023-01880-0)  |    ✅    |     ✅     | [YesianRohn](https://github.com/YesianRohn) |
 | [IGTR](./configs/rec/igtr/)               | [2024](https://arxiv.org/abs/2401.17851)      |    ✅    |     ✅     |             |
 | [SMTR](./configs/rec/smtr/)               | [2024](https://arxiv.org/abs/2407.12317)      |    ✅    |     ✅     |             |
-| [FocalSVTR-CTC](./configs/rec/focalsvtr/)      | 2024      |    ✅    |     ✅     |             |
+| [FocalSVTR-CTC](./configs/rec/focalsvtr/)      | [2024](https://arxiv.org/abs/2407.12317)      |    ✅    |     ✅     |             |
 | [SVTRv2](./configs/rec/svtrv2/)             | 2024      |    ✅    |     ✅     |             |
 | [ResNet+En-CTC](./configs/rec/svtr/)      |           |    ✅    |     ✅     |             |
 | [ViT-CTC](./configs/rec/svtr/)            |           |    ✅    |     ✅     |             |
