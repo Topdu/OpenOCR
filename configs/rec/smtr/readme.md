@@ -70,7 +70,7 @@ Download all Configs, Models, and Logs from [Google Drive](https://drive.google.
 git clone -b develop https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 # A100 Ubuntu 20.04 Cuda 11.8
-conda create -n openocr python==3.9
+conda create -n openocr python==3.8
 conda activate openocr
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
 pip install -r requirements.txt
