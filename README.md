@@ -103,4 +103,4 @@ pre-commit install
 
 # Acknowledgement
 
-This codebase is built based on the [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) and [PytorchOCR](https://github.com/WenmuZhou/PytorchOCR). Thanks!
+This codebase is built based on the [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR), [PytorchOCR](https://github.com/WenmuZhou/PytorchOCR), and [MMOCR](https://github.com/open-mmlab/mmocr). Thanks for their awesome work!
