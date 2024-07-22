@@ -75,7 +75,8 @@ class SARDecoder(nn.Module):
         self.num_classes = out_channels
         self.start_idx = out_channels - 2
         self.padding_idx = out_channels - 1
-        self.max_seq_len = max_seq_len
+        self.end_idx = 0
+        self.max_seq_len = max_seq_len + 1
         self.pred_concat = pred_concat
 
         d = in_channels
@@ -158,7 +159,8 @@ class SARDecoder(nn.Module):
 
     def forward_train(self, feat, holistic_feat, data):
 
-        label = data[0]
+        max_len = data[-1].max()
+        label = data[0][:, :1 + max_len]  # label
         label_embedding = self.embedding(label)
         holistic_feat = holistic_feat.unsqueeze(1)
         tokens = torch.cat((holistic_feat, label_embedding), dim=1)
@@ -213,14 +215,15 @@ class SARDecoder(nn.Module):
             char_embedding = self.embedding(max_idx)
             if (i < seq_len):
                 tokens[:, i + 1, :] = char_embedding
-
+                if (tokens == self.end_idx).any(dim=-1).all():
+                    break
         outputs = torch.stack(outputs, 1)
 
         return outputs
 
     def forward(self, feat, data=None):
         '''
-        data: [label, valid_ratio]
+        data: [label, valid_ratio, length]
         '''
 
         holistic_feat = self.encoder(feat)  # bsz c
