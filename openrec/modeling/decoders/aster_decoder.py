@@ -73,7 +73,7 @@ class ASTERDecoder(nn.Module):
 
         self.attndim = attndim
         self.hiddendim = hiddendim
-        self.max_seq_len = max_seq_len
+        self.max_seq_len = max_seq_len + 1
 
         self.featdim = in_channels
 
@@ -81,7 +81,7 @@ class ASTERDecoder(nn.Module):
             featdim=self.featdim,
             hiddendim=hiddendim,
             embedding_dim=embedding_dim,
-            out_channels=out_channels,
+            out_channels=out_channels-2,
             attndim=attndim,
         )
 
@@ -95,16 +95,18 @@ class ASTERDecoder(nn.Module):
             label = data[0]
             label_embedding = self.word_embedding(label)  # [B,25,256]
             tokens = label_embedding[:, 0, :]
+            max_len = data[1].max() + 1
         else:
             tokens = torch.full([b, 1],
                                 self.bos_eos_idx,
                                 device=feat.device,
                                 dtype=torch.long)
             tokens = self.word_embedding(tokens.squeeze(1))
+            max_len = self.max_seq_len
         pred, h_state = self.attn_rnn_block(feat, h_state, tokens)
         outputs.append(pred)
 
-        for i in range(1, self.max_seq_len):
+        for i in range(1, max_len):
             if not self.training:
                 pred = F.softmax(pred, -1)
                 max_idx = torch.argmax(pred, dim=-1)
