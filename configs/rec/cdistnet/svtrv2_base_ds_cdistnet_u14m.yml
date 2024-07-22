@@ -54,7 +54,7 @@ Architecture:
     num_encoder_blocks: 0
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode

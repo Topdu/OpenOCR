@@ -59,7 +59,7 @@ Architecture:
 
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode
