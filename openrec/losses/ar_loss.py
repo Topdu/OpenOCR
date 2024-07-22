@@ -2,10 +2,10 @@ import torch.nn.functional as F
 from torch import nn
 
 
-class NRTRLoss(nn.Module):
+class ARLoss(nn.Module):
 
     def __init__(self, label_smoothing=0.1, ignore_index=0, **kwargs):
-        super(NRTRLoss, self).__init__()
+        super(ARLoss, self).__init__()
         self.label_smoothing = label_smoothing
 
     def forward(self, pred, batch):

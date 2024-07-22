@@ -15,18 +15,19 @@ class RobustScannerDecoder(nn.Module):
             hybrid_dec_rnn_layers=2,
             hybrid_dec_dropout=0,
             position_dec_rnn_layers=2,
-            start_idx=0,
             max_text_length=40,
             mask=True,
-            padding_idx=None,
             encode_value=False,
             **kwargs):
         super(RobustScannerDecoder, self).__init__()
 
+        start_idx = out_channels -2
+        padding_idx = out_channels - 1
+        end_idx = 0
         # encoder module
         self.encoder = ChannelReductionEncoder(in_channels=in_channels,
                                                out_channels=enc_outchannles)
-
+        self.max_text_length = max_text_length + 1
         # decoder module
         self.decoder = Decoder(
             num_classes=out_channels,
@@ -35,28 +36,30 @@ class RobustScannerDecoder(nn.Module):
             hybrid_decoder_rnn_layers=hybrid_dec_rnn_layers,
             hybrid_decoder_dropout=hybrid_dec_dropout,
             position_decoder_rnn_layers=position_dec_rnn_layers,
-            max_seq_len=max_text_length,
+            max_seq_len=max_text_length+1,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
+            end_idx=end_idx,
             encode_value=encode_value)
 
     def forward(self, inputs, data=None):
         '''
-        data: [label, valid_ratio, word_positions]
+        data: [label, valid_ratio, 'length']
         '''
         out_enc = self.encoder(inputs)
-
+        bs = out_enc.shape[0]
         valid_ratios = None
-        word_positions = data[-1]
+        word_positions = torch.arange(0, self.max_text_length, device=inputs.device).unsqueeze(0).tile([bs, 1])
 
         if len(data) > 1:
             valid_ratios = data[-2]
 
         if self.training:
-            label = data[0]  # label
+            max_len = data[-1].max()
+            label = data[0][:, :1 + max_len]  # label
             final_out = self.decoder(inputs, out_enc, label, valid_ratios,
-                                     word_positions)
+                                     word_positions[:, :1 + max_len])
         if not self.training:
             final_out = self.decoder(inputs,
                                      out_enc,
@@ -298,20 +301,19 @@ class SequenceAttentionDecoder(BaseDecoder):
             Tensor: The output logit sequence tensor of shape
             :math:`(N, T, C-1)`.
         """
-        seq_len = self.max_seq_len
         batch_size = feat.shape[0]
 
         decode_sequence = (torch.ones(
-            (batch_size, seq_len), dtype=torch.int64, device=feat.device) *
+            (batch_size, self.max_seq_len), dtype=torch.int64, device=feat.device) *
                            self.start_idx)
 
         outputs = []
-        for i in range(seq_len):
+        for i in range(self.max_seq_len):
             step_out = self.forward_test_step(feat, out_enc, decode_sequence,
                                               i, valid_ratios)
             outputs.append(step_out)
             max_idx = torch.argmax(step_out, dim=1, keepdim=False)
-            if i < seq_len - 1:
+            if i < self.max_seq_len - 1:
                 decode_sequence[:, i + 1] = max_idx
 
         outputs = torch.stack(outputs, 1)
@@ -627,6 +629,7 @@ class Decoder(BaseDecoder):
                  start_idx=0,
                  mask=True,
                  padding_idx=None,
+                 end_idx=0,
                  encode_value=False):
         super().__init__()
         self.num_classes = num_classes
@@ -636,6 +639,7 @@ class Decoder(BaseDecoder):
         self.encode_value = encode_value
         self.start_idx = start_idx
         self.padding_idx = padding_idx
+        self.end_idx = end_idx
         self.mask = mask
 
         # init hybrid decoder
@@ -734,7 +738,8 @@ class Decoder(BaseDecoder):
             max_idx = torch.argmax(char_out, dim=1, keepdim=False)
             if i < seq_len - 1:
                 decode_sequence[:, i + 1] = max_idx
-
+                if (decode_sequence == self.end_idx).any(dim=-1).all():
+                    break
         outputs = torch.stack(outputs, 1)
 
         return outputs

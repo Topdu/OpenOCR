@@ -54,7 +54,7 @@ Architecture:
     max_len: *max_text_length
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode

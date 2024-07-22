@@ -67,7 +67,7 @@ Architecture:
 Loss:
   name: GTCLoss
   gtc_loss:
-    name: NRTRLoss
+    name: ARLoss
 
 PostProcess:
   name: GTCLabelDecode

@@ -10,7 +10,7 @@ from .ctc_loss import CTCLoss
 from .igtr_loss import IGTRLoss
 from .lister_loss import LISTERLoss
 from .lpv_loss import LPVLoss
-from .nrtr_loss import NRTRLoss
+from .ar_loss import ARLoss
 from .parseq_loss import PARSeqLoss
 from .robustscanner_loss import RobustScannerLoss
 from .smtr_loss import SMTRLoss
@@ -18,7 +18,7 @@ from .srn_loss import SRNLoss
 from .visionlan_loss import VisionLANLoss
 
 support_dict = [
-    'CTCLoss', 'NRTRLoss', 'CELoss', 'CPPDLoss', 'ABINetLoss', 'CDistNetLoss',
+    'CTCLoss', 'ARLoss', 'CELoss', 'CPPDLoss', 'ABINetLoss', 'CDistNetLoss',
     'VisionLANLoss', 'PARSeqLoss', 'IGTRLoss', 'SMTRLoss', 'LPVLoss',
     'RobustScannerLoss', 'SRNLoss', 'LISTERLoss', 'GTCLoss'
 ]
