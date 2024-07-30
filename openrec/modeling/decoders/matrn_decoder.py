@@ -222,8 +222,9 @@ class MATRNDecoder(nn.Module):
             a_s_res = a_res['s_logits']
             # {'logits': a_res['s_logits'], 'pt_lengths': a_res['pt_s_lengths'], 'loss_weight': a_res['loss_weight'],
             #               'name': 'alignment'}
+            align_logits = a_res['logits']
             all_a_res.append(a_s_res)
-            all_a_res.append(a_res['logits'])
+            all_a_res.append(align_logits)
             align_lengths = a_res['pt_lengths']
         if self.training:
             return {
