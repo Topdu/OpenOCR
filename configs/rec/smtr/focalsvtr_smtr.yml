@@ -3,13 +3,13 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/focalsvtr_smtr_syn
+  output_dir: ./output/rec/focalsvtr_smtr
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
   cal_metric_during_train: True
-  pretrained_model: ./output/focalnet_subs_nocmff_20ep_u14m_k8_max_ratio12_h8_rand1_h2_padrand_doub_2bug_96_syn_36_fixpadbug/best.pth
+  pretrained_model:
   checkpoints:
   use_tensorboard: false
   infer_img: ../ltb/img
