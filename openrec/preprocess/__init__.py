@@ -12,6 +12,7 @@ from .cppd_label_encode import CPPDLabelEncode
 from .ctc_label_encode import CTCLabelEncode
 from .ep_label_encode import EPLabelEncode
 from .igtr_label_encode import IGTRLabelEncode
+from .mgp_label_encode import MGPLabelEncode
 from .rec_aug import ABINetAug
 from .rec_aug import BaseDataAugmentation as BDA
 from .rec_aug import PARSeqAug, PARSeqAugPIL, SVTRAug

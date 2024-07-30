@@ -5,8 +5,9 @@ __all__ = ['build_metric']
 from .rec_metric import RecMetric
 from .rec_metric_gtc import RecGTCMetric
 from .rec_metric_long import RecMetricLong
+from .rec_metric_mgp import RecMPGMetric
 
-support_dict = ['RecMetric', 'RecMetricLong', 'RecGTCMetric']
+support_dict = ['RecMetric', 'RecMetricLong', 'RecGTCMetric', 'RecMPGMetric']
 
 
 def build_metric(config):
