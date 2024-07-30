@@ -3,6 +3,7 @@ import copy
 from torch import nn
 
 from .abinet_loss import ABINetLoss
+from .ar_loss import ARLoss
 from .cdistnet_loss import CDistNetLoss
 from .ce_loss import CELoss
 from .cppd_loss import CPPDLoss
@@ -10,7 +11,7 @@ from .ctc_loss import CTCLoss
 from .igtr_loss import IGTRLoss
 from .lister_loss import LISTERLoss
 from .lpv_loss import LPVLoss
-from .ar_loss import ARLoss
+from .mgp_loss import MGPLoss
 from .parseq_loss import PARSeqLoss
 from .robustscanner_loss import RobustScannerLoss
 from .smtr_loss import SMTRLoss
@@ -20,7 +21,7 @@ from .visionlan_loss import VisionLANLoss
 support_dict = [
     'CTCLoss', 'ARLoss', 'CELoss', 'CPPDLoss', 'ABINetLoss', 'CDistNetLoss',
     'VisionLANLoss', 'PARSeqLoss', 'IGTRLoss', 'SMTRLoss', 'LPVLoss',
-    'RobustScannerLoss', 'SRNLoss', 'LISTERLoss', 'GTCLoss'
+    'RobustScannerLoss', 'SRNLoss', 'LISTERLoss', 'GTCLoss', 'MGPLoss'
 ]
 
 

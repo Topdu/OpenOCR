@@ -46,7 +46,7 @@ class VisionLANLabelEncode(BaseRecLabelEncode):
             return None
         text = [i + 1 for i in text]
         data['length'] = np.array(len(text))
-        text = text + [0] * (self.max_text_len - len(text))
+        text = text + [0] * (self.max_text_len + 1 - len(text))
         data['label'] = np.array(text)
         label_res = self.encode(label_res)
         label_sub = self.encode(label_sub)
