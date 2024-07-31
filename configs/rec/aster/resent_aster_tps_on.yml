@@ -2,10 +2,10 @@ Global:
   device: gpu
   epoch_num: 20
   log_smooth_window: 20
-  print_batch_step: 100
-  output_dir: ./output/rec/aster_tps_on
+  print_batch_step: 10
+  output_dir: ./output/rec/resnet_aster_tps_on
   eval_epoch_step: [0, 1]
-  eval_batch_step: [0, 2000]
+  eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
   checkpoints:
@@ -15,13 +15,13 @@ Global:
   character_dict_path: ./tools/utils/EN_symbol_dict.txt
   max_text_length: 25
   use_space_char: False
-  save_res_path: ./output/rec/predicts_aster_96_tps.txt
+  save_res_path: ./output/rec/predicts_aster_tps.txt
   use_amp: True
   grad_clip_val: 1.0
 
 Optimizer:
   name: AdamW
-  lr: 0.00065 # for 1gpus bs1024/gpu
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
   filter_bias_and_bn: False
 
@@ -41,21 +41,20 @@ Architecture:
     name: ASTERDecoder
 
 Loss:
-  name: ARLoss
-
-PostProcess:
-  name: ARLabelDecode
+  name: NRTRLoss
 
 Metric:
   name: RecMetric
   main_indicator: acc
   is_filter: True
 
+PostProcess:
+  name: ARLabelDecode
 
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
       - DecodeImage: # load image
           img_mode: BGR
@@ -76,7 +75,7 @@ Train:
 Eval:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../evaluation
     transforms:
       - DecodeImage: # load image
           img_mode: BGR

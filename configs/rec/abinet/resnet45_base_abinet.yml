@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/resnet_45_abinet_lang/
+  output_dir: ./output/rec/resnet45_abinet/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -19,16 +19,15 @@ Global:
   save_res_path: ./output/rec/predicts_abinet.txt
   grad_clip_val: 20
 
-
 Optimizer:
   name: Adam
-  lr: 0.000267 # 4gpus 256bs/gpu
+  lr: 0.000267
   weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
   name: MultiStepLR
-  milestones: [12, 18]
+  milestones: [12]
   gamma: 0.1
 
 Architecture:
@@ -57,34 +56,34 @@ Metric:
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - ABINetAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - ABINetLabelEncode:
-      - ABINetResize:
-          image_shape: [3, 32, 128]
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
     batch_size_per_card: 256
     drop_last: True
-    num_workers: 8
+    num_workers: 4
 
 Eval:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../evaluation
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - ABINetLabelEncode:
-      - ABINetResize:
-          image_shape: [3, 32, 128]
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
