@@ -12,7 +12,7 @@ def build_decoder(config):
     from .ctc2d_decoder import CTCDecoder2D
     from .ctc_decoder import CTCDecoder
     from .igtr_decoder import IGTRDecoder
-    from .lister_decoder_new import LISTERDecoder
+    from .lister_decoder import LISTERDecoder
     from .lpv_decoder import LPVDecoder
     from .mgp_decoder import MGPDecoder
     from .nrtr_decoder import NRTRDecoder

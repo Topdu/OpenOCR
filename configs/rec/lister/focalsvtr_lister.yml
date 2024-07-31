@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/focalsvtr_lister_u14m_669_maxratio4/
+  output_dir: ./output/rec/focalsvtr_lister/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -17,13 +17,14 @@ Global:
   use_space_char: &use_space_char False
   save_res_path: ./output/rec/predicts_svtr_tiny.txt
   use_amp: True
-
+  grad_clip_val: 20
 
 Optimizer:
   name: AdamW
-  lr: 0.00065
+  lr: 0.002 #
   weight_decay: 0.05
-  filter_bias_and_bn: True
+  filter_bias_and_bn: false
+  eps: 1.0e-8
 
 LRScheduler:
   name: OneCycleLR
@@ -48,7 +49,12 @@ Architecture:
     name: LISTERDecoder
     detach_grad: False
     attn_scaling: True
-    use_fem: False
+    use_fem: True
+    nhead: 8
+    window_size: 11
+    iters: 2
+    num_sa_layers: 1
+    num_mg_layers: 1
 
 Loss:
   name: LISTERLoss
@@ -63,32 +69,26 @@ Metric:
 
 Train:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
-    padding: False
-    data_dir_list: ['../Union14M-LMDB-L-wh/train_challenging',
-    '../Union14M-LMDB-L-wh/train_hard',
-    '../Union14M-LMDB-L-wh/train_medium',
-    '../Union14M-LMDB-L-wh/train_normal',
-    '../Union14M-LMDB-L-wh/train_easy',
+    padding: True
+    base_shape: [[32, 32], [64, 32], [96, 32], [128, 32]]
+    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
+    '../Union14M-L-LMDB-Filtered/filter_train_hard',
+    '../Union14M-L-LMDB-Filtered/filter_train_medium',
+    '../Union14M-L-LMDB-Filtered/filter_train_normal',
+    '../Union14M-L-LMDB-Filtered/filter_train_easy',
     ]
-    # name: LMDBDataSet
-    # data_dir: ../evaluation/
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - EPLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      # - SVTRResize:
-      #     image_shape: [3, 32, 128]
-      #     padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
-          # keep_keys: ['image', 'label', 'length', 'gen_ratio', 'real_ratio']
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -101,14 +101,15 @@ Train:
     shuffle: True
     batch_size_per_card: *bs
     drop_last: True
-    max_ratio: 4
+    max_ratio: 12
     num_workers: 4
 
 Eval:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
-    padding: False
+    padding: True
+    base_shape: [[32, 32], [64, 32], [96, 32], [128, 32]]
     data_dir_list: ['../evaluation/CUTE80',
     '../evaluation/IC13_857',
     '../evaluation/IC15_1811',
@@ -117,19 +118,14 @@ Eval:
     '../evaluation/SVTP',
     ]
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - EPLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      # - SVTRResize:
-      #     image_shape: [3, 32, 128]
-      #     padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
-          # keep_keys: ['image', 'label', 'length', 'gen_ratio', 'real_ratio'] # dataloader will return list in this order
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -142,5 +138,5 @@ Eval:
     shuffle: False
     drop_last: False
     batch_size_per_card: *bs
-    max_ratio: 4
+    max_ratio: 12
     num_workers: 4

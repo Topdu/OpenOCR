@@ -48,6 +48,7 @@ Architecture:
     name: LISTERDecoder
     detach_grad: False
     attn_scaling: True
+    use_fem: False
 
 Loss:
   name: LISTERLoss
