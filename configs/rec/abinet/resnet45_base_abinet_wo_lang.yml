@@ -3,12 +3,11 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/resnet_45_abinet_lang/
+  output_dir: ./output/rec/resnet_45_abinet_wo_lang/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
-  # ./openocr_nolang_abinet_lang.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
@@ -41,7 +40,7 @@ Architecture:
     strides: [2, 1, 2, 1, 1]
   Decoder:
     name: ABINetDecoder
-    iter_size: 3
+    iter_size: 0
 
 Loss:
   name: ABINetLoss

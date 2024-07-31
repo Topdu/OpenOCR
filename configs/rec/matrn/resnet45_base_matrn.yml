@@ -8,6 +8,7 @@ Global:
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
+  # ./openocr_nolang_abinet_lang.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
@@ -20,15 +21,15 @@ Global:
   use_amp: True
 
 Optimizer:
-  name: AdamW
-  lr: 0.000325 # for 4gpus bs128/gpu
-  weight_decay: 0.05
+  name: Adam
+  lr: 0.000133 # 4gpus 128bs/gpu
+  weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
-  name: OneCycleLR
-  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
-  cycle_momentum: False
+  name: MultiStepLR
+  milestones: [12, 18]
+  gamma: 0.1
 
 Architecture:
   model_type: rec
