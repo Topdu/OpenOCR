@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtr_base369_lpv/
+  output_dir: ./output/rec/svtr_base666_lpv_u14m_wo_glrm/
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
@@ -24,14 +24,14 @@ Global:
 
 Optimizer:
   name: Adam
-  lr: 0.0001 # for 4gpus bs256/gpu
+  lr: 0.0001 # for 4gpus bs128/gpu
   weight_decay: 0.0
   filter_bias_and_bn: False
   betas: [0.9, 0.99]
 
 LRScheduler:
   name: MultiStepLR
-  milestones: [6]
+  milestones: [12]
   gamma: 0.1
 
 Architecture:
@@ -41,15 +41,15 @@ Architecture:
   Transform:
   Encoder:
     name: SVTRNet
-    img_size: [48, 160]
+    img_size: [32, 128]
     out_char_num: 25
     out_channels: 256
     patch_merging: 'Conv'
     embed_dim: [128, 256, 384]
-    depth: [3, 6, 9]
+    depth: [6, 6, 6]
     num_heads: [4, 8, 12]
-    mixer: ['Local','Local','Local','Local','Local','Local', 'Local','Local','Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
-    local_mixer: [[7, 11], [7, 11], [7, 11]]
+    mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
+    local_mixer: [[5, 5], [5, 5], [5, 5]]
     sub_k: [[1, 1], [1, 1]]
     feature2d: True
     last_stage: False
@@ -58,7 +58,7 @@ Architecture:
     name: LPVDecoder
     num_layer: 3
     max_len: *max_text_length
-    use_mask: true
+    use_mask: False
     dim_feedforward: 1536
     nhead: 12
     dropout: 0.1
@@ -80,24 +80,23 @@ Metric:
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ../Union14M-LMDB-L-wh
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - ARLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 48, 160]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 96
+    batch_size_per_card: 128
     drop_last: True
     num_workers: 4
 
@@ -106,20 +105,19 @@ Eval:
     name: LMDBDataSet
     data_dir: ../evaluation/
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - ARLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 48, 160]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 64
+    batch_size_per_card: 128
     num_workers: 4

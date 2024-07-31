@@ -1,11 +1,11 @@
 Global:
   device: gpu
-  epoch_num: 5
+  epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/robustscanner
+  output_dir: ./output/rec/resnet31_robustscanner
   eval_epoch_step: [0, 1]
-  eval_batch_step: [0, 2000]
+  eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
   checkpoints:
@@ -20,16 +20,14 @@ Global:
 
 Optimizer:
   name: Adam
-  lr: 0.001 # for 1gpus bs256/gpu
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.0
   filter_bias_and_bn: False
-  betas: [0.9, 0.99]
-
 
 LRScheduler:
-  name: MultiStepLR
-  milestones: [3, 4]
-  gamma: 0.1
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
 
 Architecture:
   model_type: rec
@@ -50,7 +48,7 @@ Architecture:
     max_text_length: *max_text_length
 
 Loss:
-  name: ARLoss
+  name: NRTRLoss
 
 PostProcess:
   name: ARLabelDecode
@@ -63,15 +61,17 @@ Metric:
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
       - DecodeImage: # load image
           img_mode: BGR
           channel_first: False
+      - PARSeqAug:
       - ARLabelEncode: # Class handling label
       - RobustScannerRecResizeImg:
           image_shape: [3, 48, 48, 160]
           width_downsample_ratio: 0.25
+          max_text_length: *max_text_length
       - KeepKeys:
           keep_keys: ['image', 'label', 'valid_ratio', 'length'] # dataloader will return list in this order
   loader:
@@ -83,15 +83,16 @@ Train:
 Eval:
   dataset:
     name: LMDBDataSet
-    data_dir: ./
+    data_dir: ../evaluation
     transforms:
       - DecodeImage: # load image
           img_mode: BGR
           channel_first: False
-      - RobustScannerLabelEncode: # Class handling label
+      - ARLabelEncode: # Class handling label
       - RobustScannerRecResizeImg:
           image_shape: [3, 48, 48, 160]
           width_downsample_ratio: 0.25
+          max_text_length: *max_text_length
       - KeepKeys:
           keep_keys: ['image', 'label', 'valid_ratio', 'length'] # dataloader will return list in this order
   loader:
