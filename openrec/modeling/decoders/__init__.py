@@ -11,6 +11,7 @@ def build_decoder(config):
     from .cppd_decoder import CPPDDecoder
     from .ctc2d_decoder import CTCDecoder2D
     from .ctc_decoder import CTCDecoder
+    from .dan_decoder import DANDecoder
     from .igtr_decoder import IGTRDecoder
     from .lister_decoder import LISTERDecoder
     from .lpv_decoder import LPVDecoder
@@ -29,7 +30,7 @@ def build_decoder(config):
         'CDistNetDecoder', 'VisionLANDecoder', 'PARSeqDecoder', 'IGTRDecoder',
         'SMTRDecoder', 'LPVDecoder', 'SARDecoder', 'RobustScannerDecoder',
         'SRNDecoder', 'ASTERDecoder', 'CTCDecoder2D', 'LISTERDecoder',
-        'GTCDecoder', 'SMTRDecoderNumAttn', 'MGPDecoder'
+        'GTCDecoder', 'SMTRDecoderNumAttn', 'MGPDecoder', 'DANDecoder'
     ]
 
     module_name = config.pop('name')
