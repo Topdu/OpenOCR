@@ -1,5 +1,4 @@
 """This code is refer from:
-
 https://github.com/AlibabaResearch/AdvancedLiterateMachinery/blob/main/OCR/LISTER
 """
 
