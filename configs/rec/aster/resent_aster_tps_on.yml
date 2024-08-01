@@ -21,7 +21,7 @@ Global:
 
 Optimizer:
   name: AdamW
-  lr: 0.00065 # for 4gpus bs256/gpu
+  lr: 0.00065 # for 1gpus bs1024/gpu
   weight_decay: 0.05
   filter_bias_and_bn: False
 
@@ -35,6 +35,8 @@ Architecture:
   algorithm: aster
   Transform:
     name: Aster_TPS
+    tps_inputsize: [32, 64]
+    tps_outputsize: [32, 128]
   Encoder:
     name: ResNet_ASTER
   Decoder:
@@ -56,13 +58,12 @@ Train:
     name: LMDBDataSet
     data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - ARLabelEncode: # Class handling label
-      - SVTRResize:
-          image_shape: [3, 32, 100]
+      - RecTVResize:
+          image_shape: [64, 256]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
@@ -77,12 +78,11 @@ Eval:
     name: LMDBDataSet
     data_dir: ../evaluation
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - ARLabelEncode: # Class handling label
-      - SVTRResize:
-          image_shape: [3, 32, 100]
+      - RecTVResize:
+          image_shape: [64, 256]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
