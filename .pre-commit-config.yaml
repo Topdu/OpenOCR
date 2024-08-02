@@ -5,11 +5,6 @@ repos:
     hooks:
       - id: flake8
         args: ["--max-line-length=150", "--ignore=E303,E731,W191,W504,E402,E722,E501,E203,E741,E265,E262,E126", "--exclude=__init__.py"]
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: ["--line-length=150"]
   - repo: https://github.com/pre-commit/mirrors-yapf
     rev: v0.32.0
     hooks:

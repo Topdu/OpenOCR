@@ -21,9 +21,9 @@ Global:
   grad_clip_val: 10
 
 Optimizer:
-  name: AdamW
-  lr: 0.000325 # for 4gpus bs128/gpu
-  weight_decay: 0.05
+  name: Adam
+  lr: 0.002 # for 4gpus bs128/gpu
+  weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
@@ -62,13 +62,14 @@ Train:
     name: LMDBDataSet
     data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
+      - DecodeImagePIL: # load image
+          img_mode: RGB
           channel_first: False
-      - PARSeqAug:
+      - PARSeqAugPIL:
       - SRNLabelEncode: # Class handling label
-      - SRNRecResizeImg:
-          image_shape: [1, 64, 256] # h:48 w:[48,160]
+      - RecTVResize:
+          image_shape: [64, 256] # h:48 w:[48,160]
+          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label'] # dataloader will return list in this order
   loader:
@@ -82,13 +83,13 @@ Eval:
     name: LMDBDataSet
     data_dir: ../evaluation
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
+      - DecodeImagePIL: # load image
+          img_mode: RGB
           channel_first: False
       - SRNLabelEncode: # Class handling label
-      - SRNRecResizeImg:
-          image_shape: [1, 64, 256]
-          width_downsample_ratio: 0.25
+      - RecTVResize:
+          image_shape: [64, 256] # h:48 w:[48,160]
+          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label'] # dataloader will return list in this order
   loader:

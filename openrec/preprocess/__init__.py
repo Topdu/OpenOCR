@@ -19,7 +19,6 @@ from .rec_aug import PARSeqAug, PARSeqAugPIL, SVTRAug
 from .resize import (ABINetResize, CDistNetResize, LongResize, RecTVResize,
                      RobustScannerRecResizeImg, SliceResize, SliceTVResize,
                      SRNRecResizeImg, SVTRResize, VisionLANResize)
-from .robustscanner_label_encode import RobustScannerLabelEncode
 from .smtr_label_encode import SMTRLabelEncode
 from .srn_label_encode import SRNLabelEncode
 from .visionlan_label_encode import VisionLANLabelEncode

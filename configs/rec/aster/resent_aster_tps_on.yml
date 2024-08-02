@@ -20,9 +20,9 @@ Global:
   grad_clip_val: 1.0
 
 Optimizer:
-  name: AdamW
-  lr: 0.00065 # for 1gpus bs1024/gpu
-  weight_decay: 0.05
+  name: Adam
+  lr: 0.002 # for 1gpus bs1024/gpu
+  weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
