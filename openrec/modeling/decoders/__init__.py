@@ -24,13 +24,15 @@ def build_decoder(config):
     from .smtr_decoder_nattn import SMTRDecoderNumAttn
     from .srn_decoder import SRNDecoder
     from .visionlan_decoder import VisionLANDecoder
+    from .cam_decoder import CAMDecoder
 
     support_dict = [
         'CTCDecoder', 'NRTRDecoder', 'CPPDDecoder', 'ABINetDecoder',
         'CDistNetDecoder', 'VisionLANDecoder', 'PARSeqDecoder', 'IGTRDecoder',
         'SMTRDecoder', 'LPVDecoder', 'SARDecoder', 'RobustScannerDecoder',
         'SRNDecoder', 'ASTERDecoder', 'CTCDecoder2D', 'LISTERDecoder',
-        'GTCDecoder', 'SMTRDecoderNumAttn', 'MGPDecoder', 'DANDecoder'
+        'GTCDecoder', 'SMTRDecoderNumAttn', 'MGPDecoder', 'DANDecoder',
+        'CAMDecoder'
     ]
 
     module_name = config.pop('name')
