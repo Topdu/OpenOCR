@@ -1,6 +1,6 @@
 Global:
   device: gpu
-  epoch_num: 60
+  epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
   output_dir: ./output/rec/svtr_base666_nrtr_u14m/
@@ -23,13 +23,14 @@ Global:
 
 Optimizer:
   name: AdamW
-  lr: 0.0005 # for 4gpus bs256/gpu
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
   filter_bias_and_bn: True
 
 LRScheduler:
-  name: CosineAnnealingLR
-  warmup_epoch: 6
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
 
 Architecture:
   model_type: rec
@@ -38,7 +39,7 @@ Architecture:
   Transform:
   Encoder:
     name: SVTRNet
-    img_size: [32, 100]
+    img_size: [32, 128]
     out_char_num: 25
     out_channels: 256
     patch_merging: 'Conv'
@@ -53,13 +54,13 @@ Architecture:
     name: NRTRDecoder
     num_encoder_layers: -1
     beam_size: 0
-    num_decoder_layers: 6
+    num_decoder_layers: 2
     nhead: 12
     max_len: *max_text_length
 
 
 Loss:
-  name: ARLoss
+  name: NRTRLoss
 
 PostProcess:
   name: ARLabelDecode
@@ -74,18 +75,17 @@ Metric:
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ../Union14M-LMDB-L-wh
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - ARLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 32, 100]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
@@ -100,15 +100,14 @@ Eval:
     name: LMDBDataSet
     data_dir: ../evaluation/
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - ARLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 32, 100]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
@@ -116,4 +115,4 @@ Eval:
     shuffle: False
     drop_last: False
     batch_size_per_card: 256
-    num_workers: 4
+    num_workers: 2

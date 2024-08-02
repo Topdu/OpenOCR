@@ -1,0 +1,114 @@
+Global:
+  device: gpu
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/convnext_cam_tps_on
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: False
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img:
+  # for data or label process
+  character_dict_path: ./tools/utils/EN_symbol_dict.txt
+  max_text_length: &max_text_length 25
+  use_space_char: False
+  save_res_path: ./output/rec/predicts_cam_tps.txt
+  use_amp: True
+
+Optimizer:
+  name: AdamW
+  lr: 0.0008 # for 4gpus bs128/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: False
+  eps: 1.e-8
+
+LRScheduler:
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 :  1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: CAM
+  Transform:
+    name: Aster_TPS
+    tps_inputsize: [32, 64]
+    tps_outputsize: &img_shape [32, 128]
+  Encoder:
+    name: CAMEncoder
+    depths: [2, 2, 8, 2]
+    dims: [80, 160, 320, 640]
+    nb_classes: 97
+    drop_path_rate: 0.2
+    strides: [[4,4], [2,1], [2,1], [1,1]]
+    deform_stride: 2
+    stage_idx: 2
+    use_depthwise_unet: True
+    use_more_unet: False
+    binary_loss_type: BanlanceMultiClassCrossEntropyLoss
+    mid_size: True
+    d_embedding: 384
+  Decoder:
+    name: CAMDecoder
+    num_encoder_layers: -1
+    beam_size: 0
+    num_decoder_layers: 2
+    nhead: 8
+    max_len: *max_text_length
+
+Loss:
+  name: CAMLoss
+  loss_weight_binary: 1.5
+  label_smoothing: 0.
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+PostProcess:
+  name: ARLabelDecode
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../Union14M-L-LMDB-Filtered
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
+      - CAMLabelEncode: # Class handling label
+          font_path: ./arial.ttf
+          image_shape: *img_shape
+      - RecTVResize:
+          image_shape: [64, 256]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length', 'binary_mask'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - ARLabelEncode: # Class handling label
+      - RecTVResize:
+          image_shape: [64, 256]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 2
