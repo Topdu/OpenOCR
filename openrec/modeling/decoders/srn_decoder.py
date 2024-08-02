@@ -32,7 +32,7 @@ class PVAM(nn.Module):
     def feat_pos_mix(self, conv_features, encoder_word_pos, dropout_rate):
         #b h*w c
         pos_emb = self.emb(encoder_word_pos)
-        pos_emb = pos_emb.detach()
+        # pos_emb = pos_emb.detach()
         enc_input = conv_features + pos_emb
 
         if dropout_rate:
@@ -97,6 +97,7 @@ class GSRM(nn.Module):
         self.num_heads = num_heads
 
         self.cls_op = nn.Linear(in_channel, self.char_num)
+        self.cls_final = nn.Linear(in_channel, self.char_num)
 
         self.word_emb = Embeddings(d_model=hidden_dims, vocab=char_num)
         self.pos_emb = nn.Embedding(char_num, hidden_dims)
@@ -134,7 +135,7 @@ class GSRM(nn.Module):
         """
         word_emb_seq = self.word_emb(word_seq)
         pos_emb_seq = self.pos_emb(pos)
-        pos_emb_seq = pos_emb_seq.detach()
+        # pos_emb_seq = pos_emb_seq.detach()
 
         input_mix = word_emb_seq + pos_emb_seq
         if dropoutrate > 0:
@@ -202,8 +203,9 @@ class GSRM(nn.Module):
 
         gsrm_features = word_front_mix + word_backward_mix
 
-        gsrm_out = torch.matmul(gsrm_features,
-                                self.word_emb.embedding.weight.permute(1, 0))
+        gsrm_out = self.cls_final(gsrm_features)
+        # torch.matmul(gsrm_features,
+        #                         self.word_emb.embedding.weight.permute(1, 0))
 
         b, t, c = gsrm_out.size()
         #b,25,n_class
