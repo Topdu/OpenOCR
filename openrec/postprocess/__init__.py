@@ -12,7 +12,6 @@ from .igtr_postprocess import IGTRLabelDecode
 from .lister_postprocess import LISTERLabelDecode
 from .mgp_postprocess import MPGLabelDecode
 from .nrtr_postprocess import NRTRLabelDecode
-from .robustscanner_postprocess import RobustScannerLabelDecode
 from .smtr_postprocess import SMTRLabelDecode
 from .srn_postprocess import SRNLabelDecode
 from .visionlan_postprocess import VisionLANLabelDecode
@@ -20,8 +19,8 @@ from .visionlan_postprocess import VisionLANLabelDecode
 support_dict = [
     'CTCLabelDecode', 'CharLabelDecode', 'CELabelDecode', 'CPPDLabelDecode',
     'NRTRLabelDecode', 'ABINetLabelDecode', 'ARLabelDecode', 'IGTRLabelDecode',
-    'VisionLANLabelDecode', 'SMTRLabelDecode', 'RobustScannerLabelDecode',
-    'SRNLabelDecode', 'LISTERLabelDecode', 'GTCLabelDecode', 'MPGLabelDecode'
+    'VisionLANLabelDecode', 'SMTRLabelDecode', 'SRNLabelDecode',
+    'LISTERLabelDecode', 'GTCLabelDecode', 'MPGLabelDecode'
 ]
 
 
