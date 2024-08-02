@@ -23,6 +23,7 @@ def crop_safe(arr, rect, bbs=[], pad=0):
 
 
 try:
+    # pygame==2.5.2
     import pygame
     from pygame import freetype
 except:
@@ -47,8 +48,6 @@ class CAMLabelEncode(ARLabelEncode):
         self.image_shape = image_shape
 
         if font_path is not None:
-            # pygame==2.5.2
-
             freetype.init()
             # init font
             self.font = freetype.Font(font_path)
