@@ -25,6 +25,7 @@ def build_decoder(config):
     from .srn_decoder import SRNDecoder
     from .visionlan_decoder import VisionLANDecoder
     from .cam_decoder import CAMDecoder
+    from .ote_decoder import OTEDecoder
 
     support_dict = [
         'CTCDecoder', 'NRTRDecoder', 'CPPDDecoder', 'ABINetDecoder',
@@ -32,7 +33,7 @@ def build_decoder(config):
         'SMTRDecoder', 'LPVDecoder', 'SARDecoder', 'RobustScannerDecoder',
         'SRNDecoder', 'ASTERDecoder', 'CTCDecoder2D', 'LISTERDecoder',
         'GTCDecoder', 'SMTRDecoderNumAttn', 'MGPDecoder', 'DANDecoder',
-        'CAMDecoder'
+        'CAMDecoder', 'OTEDecoder'
     ]
 
     module_name = config.pop('name')
