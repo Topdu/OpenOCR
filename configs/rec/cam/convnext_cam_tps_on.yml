@@ -81,7 +81,7 @@ Train:
           img_mode: RGB
       - PARSeqAugPIL:
       - CAMLabelEncode: # Class handling label
-          font_path: ./arial.ttf
+          font_path: ./arial.ttf # download: https://github.com/MelosY/CAM/blob/main/dataset/arial.ttf
           image_shape: *img_shape
       - RecTVResize:
           image_shape: [64, 256]
