@@ -69,6 +69,7 @@ class ResNet45(nn.Module):
         trans_layer=0,
         out_dim=384,
         feat2d=True,
+        return_list=False,
     ):
         super(ResNet45, self).__init__()
         self.inplanes = 32
@@ -97,6 +98,7 @@ class ResNet45(nn.Module):
                                        stride=strides[4])
         self.out_channels = 512
         self.feat2d = feat2d
+        self.return_list = return_list
         if trans_layer > 0:
             dpr = np.linspace(0, 0.1, trans_layer)
             blocks = [nn.Linear(512, out_dim)] + [
@@ -158,11 +160,14 @@ class ResNet45(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        x = self.layer5(x)
+        x2 = self.layer2(x)
+        x3 = self.layer3(x2)
+        x4 = self.layer4(x3)
+        x5 = self.layer5(x4)
 
+        if self.return_list:
+            return [x2, x3, x4, x5]
+        x = x5
         if self.trans_blocks is not None:
             B, C, H, W = x.shape
             x = self.trans_blocks(x.flatten(2, 3).transpose(1, 2))

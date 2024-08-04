@@ -22,7 +22,7 @@ Global:
 
 Optimizer:
   name: Adam
-  lr: 0.00065 # for 4gpus bs128/gpu
+  lr: 0.002 # for 4gpus bs128/gpu
   weight_decay: 0.0
   filter_bias_and_bn: False
 

@@ -1,14 +1,13 @@
-'''
-This code is refer from:
-https://github.com/Wang-Tianwei/Decoupled-attention-network
-'''
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class CAM(nn.Module):
+    '''
+    Convolutional Alignment Module
+    '''
+
     # Current version only supports input whose size is a power of 2, such as 32, 64, 128 etc.
     # You can adapt it to any input size by changing the padding or stride.
     def __init__(self,
@@ -84,6 +83,7 @@ class CAM(nn.Module):
     def forward(self, input):
         x = input[0]
         for i in range(0, len(self.fpn)):
+            # print(self.fpn[i](x).shape, input[i+1].shape)
             x = self.fpn[i](x) + input[i + 1]
         conv_feats = []
         for i in range(0, len(self.convs)):
@@ -96,11 +96,27 @@ class CAM(nn.Module):
         return x
 
 
+class CAMSimp(nn.Module):
+
+    def __init__(self, maxT=25, num_channels=128):
+        super(CAMSimp, self).__init__()
+        self.conv = nn.Sequential(nn.Conv2d(num_channels, maxT, 1, 1, 0),
+                                  nn.Sigmoid())
+
+    def forward(self, x):
+        x = self.conv(x)
+        return x
+
+
 class DANDecoder(nn.Module):
+    '''
+    Decoupled Text Decoder
+    '''
 
     def __init__(self,
                  out_channels,
                  in_channels,
+                 use_cam=True,
                  max_len=25,
                  channels_list=[64, 128, 256, 512],
                  strides_list=[[2, 2], [1, 1], [1, 1]],
@@ -113,12 +129,16 @@ class DANDecoder(nn.Module):
         self.bos = out_channels - 2
         nchannel = in_channels
         self.nchannel = in_channels
-        self.cam = CAM(channels_list=channels_list,
-                       strides_list=strides_list,
-                       in_shape=in_shape,
-                       maxT=max_len + 1,
-                       depth=depth,
-                       num_channels=nchannel)
+        self.use_cam = use_cam
+        if use_cam:
+            self.cam = CAM(channels_list=channels_list,
+                           strides_list=strides_list,
+                           in_shape=in_shape,
+                           maxT=max_len + 1,
+                           depth=depth,
+                           num_channels=nchannel)
+        else:
+            self.cam = CAMSimp(maxT=max_len + 1, num_channels=nchannel)
         self.pre_lstm = nn.LSTM(nchannel,
                                 int(nchannel / 2),
                                 bidirectional=True)
@@ -131,7 +151,10 @@ class DANDecoder(nn.Module):
 
     def forward(self, inputs, data=None):
         A = self.cam(inputs)
-        feature = inputs[-1]
+        if isinstance(inputs, list):
+            feature = inputs[-1]
+        else:
+            feature = inputs
         nB, nC, nH, nW = feature.shape
         nT = A.shape[1]
         # Normalize
