@@ -32,7 +32,7 @@ Reproduction schedule:
 | [SRN](./configs/rec/srn/)                     | [CVPR2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Yu_Towards_Accurate_Scene_Text_Recognition_With_Semantic_Reasoning_Networks_CVPR_2020_paper.html) | ✅       | ✅         | [pretto0](https://github.com/pretto0)       |
 | [ABINet](./configs/rec/abinet/)               | [CVPR2021](https://openaccess.thecvf.com//content/CVPR2021/html/Fang_Read_Like_Humans_Autonomous_Bidirectional_and_Iterative_Language_Modeling_for_CVPR_2021_paper.html) | ✅       | ✅         | [YesianRohn](https://github.com/YesianRohn) |
 | [VisionLAN](./configs/rec/visionlan/)         | [ICCV2021](https://openaccess.thecvf.com/content/ICCV2021/html/Wang_From_Two_to_One_A_New_Scene_Text_Recognizer_With_ICCV_2021_paper.html) | ✅       | ✅         | [YesianRohn](https://github.com/YesianRohn) |
-| [SVTR](./configs/rec/svtr/)                   | [IJCAI2022](https://www.ijcai.org/proceedings/2022/124)                                        | ✅       | ✅         |                                             |
+| [SVTR](./configs/rec/svtrs/)                  | [IJCAI2022](https://www.ijcai.org/proceedings/2022/124)                                        | ✅       | ✅         |                                             |
 | [PARSeq](./configs/rec/parseq/)               | [ECCV2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880177.pdf)             | ✅       | ✅         |                                             |
 | [MATRN](./configs/rec/matrn/)                 | [ECCV2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880442.pdf)             | ✅       | ✅         |                                             |
 | [MGP-STR](./configs/rec/mgpstr/)              | [ECCV2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880336.pdf)             | ✅       | ✅         |                                             |
@@ -48,10 +48,10 @@ Reproduction schedule:
 | CACE                                          | [IJCAI2024](https://arxiv.org/abs/2407.05562)                                                  |          |            | TODO                                        |
 | [IGTR](./configs/rec/igtr/)                   | [2024](https://arxiv.org/abs/2401.17851)                                                       | ✅       | ✅         |                                             |
 | [SMTR](./configs/rec/smtr/)                   | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
-| [FocalSVTR-CTC](./configs/rec/focalsvtr/)     | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
+| [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
 | [SVTRv2](./configs/rec/svtrv2/)               | 2024                                                                                           | ✅       | ✅         |                                             |
-| [ResNet+En-CTC](./configs/rec/svtr/)          |                                                                                                | ✅       | ✅         |                                             |
-| [ViT-CTC](./configs/rec/svtr/)                |                                                                                                | ✅       | ✅         |                                             |
+| [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |
+| [ViT-CTC](./configs/rec/svtrs/)               |                                                                                                | ✅       | ✅         |                                             |
 
 ### Contributors
 
