@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtr_base_igtr_u14m
+  output_dir: ./output/rec/u14m_filter/svtr_base_igtr
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
@@ -19,7 +19,7 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_igtr_u14m.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtr_base_igtr.txt
   use_amp: True
 
 Optimizer:
@@ -35,7 +35,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: BGPD
+  algorithm: IGTR
   in_channels: 3
   Transform:
   Encoder:
@@ -83,11 +83,11 @@ Train:
     name: RatioDataSet
     ds_width: True
     padding: &padding False
-    data_dir_list: ['../Union14M-LMDB-L-wh/train_challenging',
-    '../Union14M-LMDB-L-wh/train_hard',
-    '../Union14M-LMDB-L-wh/train_medium',
-    '../Union14M-LMDB-L-wh/train_normal',
-    '../Union14M-LMDB-L-wh/train_easy',
+    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
+    '../Union14M-L-LMDB-Filtered/filter_train_hard',
+    '../Union14M-L-LMDB-Filtered/filter_train_medium',
+    '../Union14M-L-LMDB-Filtered/filter_train_normal',
+    '../Union14M-L-LMDB-Filtered/filter_train_easy',
     ]
     transforms:
       - DecodeImage: # load image

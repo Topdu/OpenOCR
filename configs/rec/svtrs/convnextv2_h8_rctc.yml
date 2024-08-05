@@ -3,22 +3,19 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/svtr_base_nrtr/
-  save_epoch_step: 1
-  # evaluation is run every 2000 iterations
-  eval_batch_step: [0, 500]
+  output_dir: ./output/rec/u14m_filter/convnextv2_h8_rctc/
   eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
   checkpoints:
   use_tensorboard: false
   infer_img:
   # for data or label process
-  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
-  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/u14m_filter/predicts_svtr_base_nrtr.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_convnextv2_h8_rctc.txt
   use_amp: True
 
 Optimizer:
@@ -34,36 +31,26 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: NRTR
-  in_channels: 3
+  algorithm: SVTR
   Transform:
   Encoder:
-    name: SVTRNet
-    img_size: [32, 128]
-    out_char_num: 25
+    name: ConvNeXtV2
     out_channels: 256
-    patch_merging: 'Conv'
-    embed_dim: [128, 256, 384]
-    depth: [6, 6, 6]
-    num_heads: [4, 8, 12]
-    mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
-    local_mixer: [[5, 5], [5, 5], [5, 5]]
-    last_stage: False
-    prenorm: True
+    depths: [2, 2, 8, 2]
+    dims: [80, 160, 320, 640]
+    drop_path_rate: 0.1
+    strides: [[4,4], [1,1], [2,1], [1,1]]
+    last_stage: false
+    feat2d: True
   Decoder:
-    name: NRTRDecoder
-    num_encoder_layers: -1
-    beam_size: 0
-    num_decoder_layers: 2
-    nhead: 12
-    max_len: *max_text_length
-
+    name: RCTCDecoder
 
 Loss:
-  name: ARLoss
+  name: CTCLoss
+  zero_infinity: True
 
 PostProcess:
-  name: ARLabelDecode
+  name: CTCLabelDecode
   character_dict_path: *character_dict_path
   use_space_char: *use_space_char
 
@@ -71,6 +58,7 @@ Metric:
   name: RecMetric
   main_indicator: acc
   is_filter: True
+
 
 Train:
   dataset:
@@ -80,7 +68,7 @@ Train:
       - DecodeImagePIL: # load image
           img_mode: RGB
       - PARSeqAugPIL:
-      - ARLabelEncode: # Class handling label
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
@@ -102,7 +90,7 @@ Eval:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - ARLabelEncode: # Class handling label
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length

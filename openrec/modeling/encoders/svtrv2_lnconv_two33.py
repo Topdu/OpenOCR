@@ -381,7 +381,7 @@ class POPatchEmbed(nn.Module):
 
 class LastStage(nn.Module):
 
-    def __init__(self, in_channels, out_channels, last_drop, out_char_num):
+    def __init__(self, in_channels, out_channels, last_drop, out_char_num=0):
         super().__init__()
         self.last_conv = nn.Linear(in_channels, out_channels, bias=False)
         self.hardswish = nn.Hardswish()
@@ -404,43 +404,7 @@ class Feat2D(nn.Module):
     def forward(self, x, sz):
         C = x.shape[-1]
         x = x.transpose(1, 2).reshape(-1, C, sz[0], sz[1])
-        # x = nn.functional.avg_pool2d(x, [sz[0], 2])
         return x, sz
-
-
-# class LastStage(nn.Module):
-#     def __init__(self, in_channels, out_channels, last_drop, out_char_num):
-#         super().__init__()
-#         self.avg_pool = nn.AdaptiveAvgPool2d([1, out_char_num])
-#         self.last_conv = nn.Conv2d(
-#                 in_channels=in_channels,
-#                 out_channels=out_channels,
-#                 kernel_size=1,
-#                 stride=1,
-#                 padding=0,
-#                 bias=False,
-#             )
-#         self.hardswish = nn.Hardswish()
-#         self.dropout = nn.Dropout(p=last_drop)
-#     def forward(self, x, sz):
-#         # x = x.reshape(-1, sz[0], sz[1], x.shape[-1])
-#         C = x.shape[-1]
-#         x = self.avg_pool(x.transpose(1, 2).reshape(-1, C, sz[0], sz[1]))
-#         x = self.last_conv(x)
-#         sz = x.shape[2:]
-#         x = self.hardswish(x)
-#         x = self.dropout(x)
-#         x = x.flatten(2).transpose(1, 2)
-#         return x, sz
-
-# class OutPool(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-#     def forward(self, x, sz):
-#         C = x.shape[-1]
-#         x = x.transpose(0, 1).reshape(-1, C, sz[0], sz[1])
-#         x = nn.functional.avg_pool2d(x, [sz[0], 2])
-#         return x, [1, sz[1]//2]
 
 
 class SVTRv2LNConvTwo33(nn.Module):
@@ -449,7 +413,6 @@ class SVTRv2LNConvTwo33(nn.Module):
                  max_sz=[32, 128],
                  in_channels=3,
                  out_channels=192,
-                 out_char_num=25,
                  depths=[3, 6, 3],
                  dims=[64, 128, 256],
                  mixer=[['Conv'] * 3, ['Conv'] * 3 + ['Global'] * 3,
@@ -514,8 +477,7 @@ class SVTRv2LNConvTwo33(nn.Module):
         if last_stage:
             self.out_channels = out_channels
             self.stages.append(
-                LastStage(self.num_features, out_channels, last_drop,
-                          out_char_num))
+                LastStage(self.num_features, out_channels, last_drop))
         if feat2d:
             self.stages.append(Feat2D())
         self.apply(self._init_weights)

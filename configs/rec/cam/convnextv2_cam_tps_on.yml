@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/convnext_cam_tps_on
+  output_dir: ./output/rec/u14m_filter/convnextv2_cam_tps_on
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: False
@@ -15,7 +15,7 @@ Global:
   character_dict_path: ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: False
-  save_res_path: ./output/rec/u14m_filter/predicts_convnext_cam_tps_on.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_convnextv2_cam_tps_on.txt
   use_amp: True
 
 Optimizer:

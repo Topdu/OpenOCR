@@ -3,7 +3,9 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtrv2_base666_ds_conv_local/
+  output_dir: ./output/rec/u14m_filter/svtrv2_ctc/
+  save_epoch_step: 1
+  # evaluation is run every 2000 iterations
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -12,23 +14,20 @@ Global:
   use_tensorboard: false
   infer_img:
   # for data or label process
-  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
-  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_svtrv2.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_ctc.txt
   use_amp: True
-
 
 Optimizer:
   name: AdamW
-  lr: 0.00065 #4gpus bs256/gpu
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
   filter_bias_and_bn: True
 
 LRScheduler:
   name: OneCycleLR
-  # warmup_epoch: 2
   warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
   cycle_momentum: False
 
@@ -37,17 +36,17 @@ Architecture:
   algorithm: SVTR
   Transform:
   Encoder:
-    name: SVTRv2
-    max_sz: [64, 640]
+    name: SVTRv2LNConvTwo33
     use_pos_embed: False
     out_channels: 256
     dims: [128, 256, 384]
     depths: [6, 6, 6]
     num_heads: [4, 8, 12]
-    mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','Local','Local','Local','Local'],['Local','Local','Local','Local','Local','Local']]
-    local_k: [[5, 5], [33, 29], [33, 29]]
+    mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','FGlobal','Global','Global','Global'],['Global','Global','Global','Global','Global','Global']]
+    local_k: [[5, 5], [5, 5], [-1, -1]]
     sub_k: [[1, 1], [2, 1], [-1, -1]]
     last_stage: True
+    feat2d: False
   Decoder:
     name: CTCDecoder
 
@@ -57,40 +56,33 @@ Loss:
 
 PostProcess:
   name: CTCLabelDecode
-  character_dict_path: *character_dict_path
-  use_space_char: *use_space_char
 
 Metric:
   name: RecMetric
   main_indicator: acc
+  is_filter: True
 
 Train:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
-    max_ratio: &max_ratio 4
-    min_ratio: 1
-    base_shape: &base_shape [[64, 64], [96, 48], [112, 40], [128, 32]]
-    base_h: &base_h 32
-    padding: &padding False
-    data_dir_list: ['../Union14M-LMDB-L-wh/train_challenging',
-    '../Union14M-LMDB-L-wh/train_hard',
-    '../Union14M-LMDB-L-wh/train_medium',
-    '../Union14M-LMDB-L-wh/train_normal',
-    '../Union14M-LMDB-L-wh/train_easy',
+    padding: False
+    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
+    '../Union14M-L-LMDB-Filtered/filter_train_hard',
+    '../Union14M-L-LMDB-Filtered/filter_train_medium',
+    '../Union14M-L-LMDB-Filtered/filter_train_normal',
+    '../Union14M-L-LMDB-Filtered/filter_train_easy',
     ]
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - CTCLabelEncode: # Class handling label
-          k: 8
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length']
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -103,32 +95,31 @@ Train:
     shuffle: True
     batch_size_per_card: *bs
     drop_last: True
+    max_ratio: 4
     num_workers: 4
 
 Eval:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
-    max_ratio: *max_ratio
-    base_shape: *base_shape
-    base_h: *base_h
-    padding: *padding
-    data_dir_list: ['../evaluation/CUTE80',
-    '../evaluation/IC13_857',
-    '../evaluation/IC15_1811',
-    '../evaluation/IIIT5k',
-    '../evaluation/SVT',
-    '../evaluation/SVTP']
+    padding: False
+    data_dir_list: [
+      '../evaluation/CUTE80',
+      '../evaluation/IC13_857',
+      '../evaluation/IC15_1811',
+      '../evaluation/IIIT5k',
+      '../evaluation/SVT',
+      '../evaluation/SVTP',
+      ]
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length']
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -140,5 +131,6 @@ Eval:
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 256
+    batch_size_per_card: *bs
+    max_ratio: 4
     num_workers: 4

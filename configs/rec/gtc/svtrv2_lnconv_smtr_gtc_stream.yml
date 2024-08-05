@@ -64,7 +64,7 @@ Architecture:
       sub_str_len: &subsl 5
       infer_aug: False
     ctc_decoder:
-      name: CTCDecoder2D
+      name: RCTCDecoder
 
 Loss:
   name: GTCLoss
@@ -92,11 +92,11 @@ Train:
     name: RatioDataSetTVResize
     ds_width: True
     padding: false
-    data_dir_list: ['../Union14M-LMDB-L-wh/train_challenging',
-    '../Union14M-LMDB-L-wh/train_hard',
-    '../Union14M-LMDB-L-wh/train_medium',
-    '../Union14M-LMDB-L-wh/train_normal',
-    '../Union14M-LMDB-L-wh/train_easy',
+    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
+    '../Union14M-L-LMDB-Filtered/filter_train_hard',
+    '../Union14M-L-LMDB-Filtered/filter_train_medium',
+    '../Union14M-L-LMDB-Filtered/filter_train_normal',
+    '../Union14M-L-LMDB-Filtered/filter_train_easy',
     ]
     transforms:
       - DecodeImagePIL: # load image
