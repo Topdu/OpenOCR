@@ -32,7 +32,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: MGPSRT
+  algorithm: MGPSTR
   Transform:
   Encoder:
     name: ViT

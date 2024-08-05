@@ -32,7 +32,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: aster
+  algorithm: MORAN
   Transform:
     name: MORN
     target_shape: [32, 128]

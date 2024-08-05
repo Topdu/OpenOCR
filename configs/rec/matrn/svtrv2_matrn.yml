@@ -33,7 +33,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: ABINet
+  algorithm: MATRN
   Transform:
   Encoder:
     name: SVTRv2LNConvTwo33
