@@ -27,6 +27,8 @@ def main():
     cfg.merge_dict(opt)
 
     cfg.cfg['Global']['use_amp'] = False
+    if cfg.cfg['Global']['output_dir'][-1] == '/':
+        cfg.cfg['Global']['output_dir'] = cfg.cfg['Global']['output_dir'][:-1]
     if cfg.cfg['Global']['pretrained_model'] is None:
         cfg.cfg['Global'][
             'pretrained_model'] = cfg.cfg['Global']['output_dir'] + '/best.pth'
@@ -51,7 +53,7 @@ def main():
     cfg = cfg.cfg
     file_csv = open(
         cfg['Global']['output_dir'] + '/' +
-        cfg['Global']['output_dir'].split('/')[3] + '_test_all.csv', 'w')
+        cfg['Global']['output_dir'].split('/')[-1] + '_test_all.csv', 'w')
     csv_w = csv.writer(file_csv)
     cfg['Eval']['dataset']['name'] = 'LMDBDataSetTest'
     for data_dirs in data_dirs_list:

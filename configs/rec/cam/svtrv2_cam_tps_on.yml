@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/convnext_cam_tps_on
+  output_dir: ./output/rec/u14m_filter/svtrv2_cam_tps_on
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: False
@@ -15,15 +15,14 @@ Global:
   character_dict_path: ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: False
-  save_res_path: ./output/rec/u14m_filter/predicts_convnext_cam_tps_on.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_cam_tps_on.txt
   use_amp: True
 
 Optimizer:
   name: AdamW
-  lr: 0.0008 # for 4gpus bs256/gpu
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
-  filter_bias_and_bn: False
-  eps: 1.e-8
+  filter_bias_and_bn: True
 
 LRScheduler:
   name: OneCycleLR
@@ -40,14 +39,20 @@ Architecture:
   Encoder:
     name: CAMEncoder
     encoder_config:
-      name: ConvNeXtV2
-      depths: [2, 2, 8, 2]
-      dims: [80, 160, 320, 640]
-      strides: [[4,4], [2,1], [2,1], [1,1]]
-      drop_path_rate: 0.2
+      name: SVTRv2LNConvTwo33
+      use_pos_embed: False
+      dims: [128, 256, 384]
+      depths: [6, 6, 6]
+      num_heads: [4, 8, 12]
+      mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','FGlobal','Global','Global','Global'],['Global','Global','Global','Global','Global','Global']]
+      local_k: [[5, 5], [5, 5], [-1, -1]]
+      sub_k: [[1, 1], [2, 1], [-1, -1]]
+      last_stage: false
       feat2d: True
     nb_classes: 97
-    strides: [[4,4], [2,1], [2,1], [1,1]]
+    strides: [[4, 4], [1, 1], [2, 1], [1, 1]]
+    k_size: [[2, 2], [1, 1], [2, 1], [1, 1]]
+    q_size: [4, 32]
     deform_stride: 2
     stage_idx: 2
     use_depthwise_unet: True
@@ -94,7 +99,7 @@ Train:
           keep_keys: ['image', 'label', 'length', 'binary_mask'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 128
+    batch_size_per_card: 256
     drop_last: True
     num_workers: 4
 

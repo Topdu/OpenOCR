@@ -76,6 +76,7 @@ class Trainer(object):
 
         self.grad_clip_val = self.cfg['Global'].get('grad_clip_val', 0)
         self.all_ema = self.cfg['Global'].get('all_ema', True)
+        self.use_ema = self.cfg['Global'].get('use_ema', True)
 
         self.set_random_seed(self.cfg['Global'].get('seed', 48))
 
@@ -279,8 +280,8 @@ class Trainer(object):
 
                 self.lr_scheduler.step()
 
-                if self.local_rank == 0 and epoch > (epoch_num -
-                                                     epoch_num // 10):
+                if self.local_rank == 0 and self.use_ema and epoch > (
+                        epoch_num - epoch_num // 10):
                     with torch.no_grad():
                         loss_currn = loss['loss'].detach().cpu().numpy().mean()
                         loss_avg = ((loss_avg *
@@ -353,7 +354,7 @@ class Trainer(object):
                         self.writer.add_scalar(f'TRAIN/{k}', v, global_step)
 
                 if self.local_rank == 0 and (
-                    (global_step > 0 and global_step % print_batch_step == 0) \
+                    (global_step > 0 and global_step % print_batch_step == 0)
                         or (idx >= len(self.train_dataloader) - 1)):
                     logs = train_stats.log()
 
@@ -490,7 +491,7 @@ class Trainer(object):
                               best_metric,
                               is_best=False,
                               prefix='epoch_' + str(epoch))
-                if epoch > (epoch_num - epoch_num // 10):
+                if self.use_ema and epoch > (epoch_num - epoch_num // 10):
                     # if global_step > start_eval_step and (global_step - start_eval_step) % eval_batch_step == 0:
                     ema_cur_metric = self.eval_ema()
                     ema_cur_metric_str = f"cur ema metric, {', '.join(['{}: {}'.format(k, v) for k, v in ema_cur_metric.items()])}"
