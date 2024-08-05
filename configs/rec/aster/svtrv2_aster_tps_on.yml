@@ -20,7 +20,7 @@ Global:
 
 Optimizer:
   name: AdamW
-  lr: 0.00065
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
   filter_bias_and_bn: True
 
