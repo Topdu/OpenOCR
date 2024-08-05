@@ -59,16 +59,14 @@ class SARDecoder(nn.Module):
                  in_channels,
                  out_channels,
                  max_seq_len=25,
-                 enc_dim=512,
                  enc_bi_rnn=False,
                  enc_drop_rnn=0.1,
-                 embedding_dim=512,
-                 dec_dim=512,
                  dec_bi_rnn=False,
                  dec_drop_rnn=0.0,
-                 d=512,
                  pred_dropout=0.1,
                  pred_concat=True,
+                 mask=True,
+                 use_lstm=True,
                  **kwargs):
         super(SARDecoder, self).__init__()
 
@@ -78,15 +76,18 @@ class SARDecoder(nn.Module):
         self.end_idx = 0
         self.max_seq_len = max_seq_len + 1
         self.pred_concat = pred_concat
-
+        self.mask = mask
+        enc_dim = in_channels
         d = in_channels
         embedding_dim = in_channels
-
-        # encoder module
-        self.encoder = SAREncoder(enc_bi_rnn=enc_bi_rnn,
-                                  enc_drop_rnn=enc_drop_rnn,
-                                  in_channels=in_channels,
-                                  d_enc=enc_dim)
+        dec_dim = in_channels
+        self.use_lstm = use_lstm
+        if use_lstm:
+            # encoder module
+            self.encoder = SAREncoder(enc_bi_rnn=enc_bi_rnn,
+                                    enc_drop_rnn=enc_drop_rnn,
+                                    in_channels=in_channels,
+                                    d_enc=enc_dim)
 
         # decoder module
 
@@ -136,7 +137,7 @@ class SARDecoder(nn.Module):
 
         _, T, h, w, c = attn_weight.size()
 
-        if training:
+        if self.mask:
             valid_ratios = data[1]
             # cal mask of attention weight
             attn_mask = torch.zeros_like(attn_weight)
@@ -183,7 +184,7 @@ class SARDecoder(nn.Module):
         preds = self.pred_dropout(preds)
         return preds[:, 1:, :]
 
-    def forward_test(self, feat, holistic_feat):
+    def forward_test(self, feat, holistic_feat, data=None):
         bsz = feat.shape[0]
         seq_len = self.max_seq_len
         holistic_feat = holistic_feat.unsqueeze(1)
@@ -198,7 +199,7 @@ class SARDecoder(nn.Module):
         for i in range(1, seq_len + 1):
             Hidden_state, attn_feat = self._2d_attation(feat,
                                                         tokens,
-                                                        data=None,
+                                                        data=data,
                                                         training=self.training)
             if self.pred_concat:
                 f_c = holistic_feat.size(-1)
@@ -223,14 +224,16 @@ class SARDecoder(nn.Module):
 
     def forward(self, feat, data=None):
         '''
-        data: [label, valid_ratio, length]
+        data: [label, valid_ratio]
         '''
-
-        holistic_feat = self.encoder(feat)  # bsz c
+        if self.use_lstm:
+            holistic_feat = self.encoder(feat)  # bsz c
+        else:
+            holistic_feat = F.adaptive_avg_pool2d(feat, (1, 1)).squeeze()
 
         if self.training:
             preds = self.forward_train(feat, holistic_feat, data=data)
         else:
-            preds = self.forward_test(feat, holistic_feat)
+            preds = self.forward_test(feat, holistic_feat, data=data)
             # (bsz, seq_len, num_classes)
         return preds
