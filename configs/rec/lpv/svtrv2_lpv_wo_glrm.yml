@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/svtr_base_lpv_wo_glrm/
+  output_dir: ./output/rec/u14m_filter/svtrv2_lpv_wo_glrm/
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
@@ -18,21 +18,20 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/u14m_filter/predicts_svtr_base_lpv_wo_glrm.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_lpv_wo_glrm.txt
   use_amp: True
   grad_clip_val: 20
 
 Optimizer:
-  name: Adam
-  lr: 0.0001 # for 4gpus bs128/gpu
-  weight_decay: 0.0
-  filter_bias_and_bn: False
-  betas: [0.9, 0.99]
+  name: AdamW
+  lr: 0.000325 # for 4gpus bs128/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: True
 
 LRScheduler:
-  name: MultiStepLR
-  milestones: [12]
-  gamma: 0.1
+  name: OneCycleLR
+  warmup_epoch: 1 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
 
 Architecture:
   model_type: rec
@@ -40,20 +39,16 @@ Architecture:
   in_channels: 3
   Transform:
   Encoder:
-    name: SVTRNet
-    img_size: [32, 128]
-    out_char_num: 25
-    out_channels: 256
-    patch_merging: 'Conv'
-    embed_dim: [128, 256, 384]
-    depth: [6, 6, 6]
+    name: SVTRv2LNConvTwo33
+    use_pos_embed: False
+    dims: [128, 256, 384]
+    depths: [6, 6, 6]
     num_heads: [4, 8, 12]
-    mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
-    local_mixer: [[5, 5], [5, 5], [5, 5]]
-    sub_k: [[1, 1], [1, 1]]
-    feature2d: True
-    last_stage: False
-    prenorm: True
+    mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','FGlobal','Global','Global','Global'],['Global','Global','Global','Global','Global','Global']]
+    local_k: [[5, 5], [5, 5], [-1, -1]]
+    sub_k: [[1, 1], [2, 1], [-1, -1]]
+    last_stage: false
+    feat2d: True
   Decoder:
     name: LPVDecoder
     num_layer: 3
@@ -79,8 +74,15 @@ Metric:
 
 Train:
   dataset:
-    name: LMDBDataSet
-    data_dir: ../Union14M-L-LMDB-Filtered
+    name: RatioDataSetTVResize
+    ds_width: True
+    padding: false
+    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
+    '../Union14M-L-LMDB-Filtered/filter_train_hard',
+    '../Union14M-L-LMDB-Filtered/filter_train_medium',
+    '../Union14M-L-LMDB-Filtered/filter_train_normal',
+    '../Union14M-L-LMDB-Filtered/filter_train_easy',
+    ]
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
@@ -89,21 +91,36 @@ Train:
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - RecTVResize:
-          image_shape: [32, 128]
-          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  sampler:
+    name: RatioSampler
+    scales: [[128, 32]] # w, h
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    first_bs: &bs 128
+    fix_bs: false
+    divided_factor: [4, 16] # w, h
+    is_training: True
   loader:
     shuffle: True
-    batch_size_per_card: 128
+    batch_size_per_card: *bs
     drop_last: True
+    max_ratio: &max_ratio 4
     num_workers: 4
 
 Eval:
   dataset:
-    name: LMDBDataSet
-    data_dir: ../evaluation/
+    name: RatioDataSetTVResize
+    ds_width: True
+    padding: False
+    data_dir_list: [
+      '../evaluation/CUTE80',
+      '../evaluation/IC13_857',
+      '../evaluation/IC15_1811',
+      '../evaluation/IIIT5k',
+      '../evaluation/SVT',
+      '../evaluation/SVTP',
+      ]
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
@@ -111,13 +128,19 @@ Eval:
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - RecTVResize:
-          image_shape: [32, 128]
-          padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  sampler:
+    name: RatioSampler
+    scales: [[128, 32]] # w, h
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    first_bs: *bs
+    fix_bs: false
+    divided_factor: [4, 16] # w, h
+    is_training: False
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 128
+    batch_size_per_card: *bs
+    max_ratio: *max_ratio
     num_workers: 4

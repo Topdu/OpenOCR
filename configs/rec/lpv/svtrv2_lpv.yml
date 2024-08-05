@@ -3,22 +3,25 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/svtrv2_srn
-  eval_epoch_step: [0, 1]
+  output_dir: ./output/rec/u14m_filter/svtrv2_lpv/
+  save_epoch_step: 1
+  # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
+  eval_epoch_step: [0, 1]
   cal_metric_during_train: True
   pretrained_model:
+  # ./output/rec/u14m_filter/svtrv2_lpv_wo_glrm/best.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
   # for data or label process
-  character_dict_path: ./tools/utils/EN_symbol_dict.txt
-  max_text_length: 25
-  use_space_char: False
-  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_srn.txt
-  # find_unused_parameters: True
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
+  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  max_text_length: &max_text_length 25
+  use_space_char: &use_space_char False
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_lpv.txt
   use_amp: True
-  grad_clip_val: 10
+  grad_clip_val: 20
 
 Optimizer:
   name: AdamW
@@ -28,18 +31,17 @@ Optimizer:
 
 LRScheduler:
   name: OneCycleLR
-  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  warmup_epoch: 1 # pct_start 0.075*20 = 1.5ep
   cycle_momentum: False
 
 Architecture:
   model_type: rec
-  algorithm: SRN
+  algorithm: BGPD
   in_channels: 3
   Transform:
   Encoder:
     name: SVTRv2LNConvTwo33
     use_pos_embed: False
-    out_channels: 256
     dims: [128, 256, 384]
     depths: [6, 6, 6]
     num_heads: [4, 8, 12]
@@ -49,26 +51,33 @@ Architecture:
     last_stage: false
     feat2d: True
   Decoder:
-    name: SRNDecoder
-    hidden_dims: 384
+    name: LPVDecoder
+    num_layer: 3
+    max_len: *max_text_length
+    use_mask: True
+    dim_feedforward: 1536
+    nhead: 12
+    dropout: 0.1
+    trans_layer: 3
 
 Loss:
-  name: SRNLoss
-  # smoothing: True
+  name: LPVLoss
+
+PostProcess:
+  name: ARLabelDecode
+  character_dict_path: *character_dict_path
+  use_space_char: *use_space_char
 
 Metric:
   name: RecMetric
   main_indicator: acc
   is_filter: True
 
-PostProcess:
-  name: SRNLabelDecode
-
 Train:
   dataset:
     name: RatioDataSetTVResize
     ds_width: True
-    padding: False
+    padding: false
     data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
     '../Union14M-L-LMDB-Filtered/filter_train_hard',
     '../Union14M-L-LMDB-Filtered/filter_train_medium',
@@ -79,9 +88,12 @@ Train:
       - DecodeImagePIL: # load image
           img_mode: RGB
       - PARSeqAugPIL:
-      - SRNLabelEncode: # Class handling label
+      - ARLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length']
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -94,7 +106,7 @@ Train:
     shuffle: True
     batch_size_per_card: *bs
     drop_last: True
-    max_ratio: 4
+    max_ratio: &max_ratio 4
     num_workers: 4
 
 Eval:
@@ -102,24 +114,28 @@ Eval:
     name: RatioDataSetTVResize
     ds_width: True
     padding: False
-    data_dir_list: ['../evaluation/CUTE80',
-    '../evaluation/IC13_857',
-    '../evaluation/IC15_1811',
-    '../evaluation/IIIT5k',
-    '../evaluation/SVT',
-    '../evaluation/SVTP',
-    ]
+    data_dir_list: [
+      '../evaluation/CUTE80',
+      '../evaluation/IC13_857',
+      '../evaluation/IC15_1811',
+      '../evaluation/IIIT5k',
+      '../evaluation/SVT',
+      '../evaluation/SVTP',
+      ]
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - SRNLabelEncode: # Class handling label
+      - ARLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
     # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
-    first_bs: 256
+    first_bs: *bs
     fix_bs: false
     divided_factor: [4, 16] # w, h
     is_training: False
@@ -127,5 +143,5 @@ Eval:
     shuffle: False
     drop_last: False
     batch_size_per_card: *bs
-    max_ratio: 4
+    max_ratio: *max_ratio
     num_workers: 4
