@@ -29,6 +29,8 @@ def main():
     cfg.merge_dict(opt)
 
     cfg.cfg['Global']['use_amp'] = False
+    if cfg.cfg['Global']['output_dir'][-1] == '/':
+        cfg.cfg['Global']['output_dir'] = cfg.cfg['Global']['output_dir'][:-1]
     cfg.cfg['Global']['max_text_length'] = 200
     cfg.cfg['Architecture']['Decoder']['max_len'] = 200
     cfg.cfg['Metric']['name'] = 'RecMetricLong'
@@ -43,14 +45,13 @@ def main():
         trainer.logger.info('{}:{}'.format(k, v))
 
     data_dirs_list = [
-        [
-            '../ltb/long_lmdb'
-        ],
+        ['../ltb/long_lmdb'],
     ]
 
     cfg = cfg.cfg
     file_csv = open(
-        './output/rec/' + cfg['Global']['output_dir'].split('/')[3] +
+        cfg['Global']['output_dir'] + '/' +
+        cfg['Global']['output_dir'].split('/')[-1] +
         '_result1_1_test_all_long_final_ultra_bs1.csv', 'w')
     csv_w = csv.writer(file_csv)
 
