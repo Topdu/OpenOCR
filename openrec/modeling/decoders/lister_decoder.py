@@ -393,13 +393,14 @@ class LISTERDecoder(nn.Module):
                  in_channels,
                  out_channels,
                  max_len=25,
-                 use_fem=False,
+                 use_fem=True,
                  detach_grad=False,
                  nhead=8,
                  window_size=11,
                  iters=2,
                  num_sa_layers=1,
                  num_mg_layers=1,
+                 coef=[1.0, 0.01, 0.001],
                  **kwargs):
         super().__init__()
         num_classes = out_channels - 1
@@ -414,7 +415,7 @@ class LISTERDecoder(nn.Module):
                                        max_len=max_len,
                                        detach_grad=detach_grad,
                                        **kwargs)
-        if iters > 0:
+        if iters > 0 and use_fem:
             self.cntx_module = LocalAttentionModule(feat_dim,
                                                     nhead,
                                                     window_size,
@@ -428,8 +429,7 @@ class LISTERDecoder(nn.Module):
                                                   num_layers=num_mg_layers)
         self.celoss_fn = nn.CrossEntropyLoss(reduction='mean',
                                              ignore_index=self.ignore_index)
-        self.coef = (1.0, 0.01, 0.001
-                     )  # for loss of rec, eos and ent respectively
+        self.coef = coef  # for loss of rec, eos and ent respectively
         # self.coef=(1.0, 0.0, 0.0)
         self.apply(self._init_weights)
 
@@ -450,24 +450,22 @@ class LISTERDecoder(nn.Module):
             max_char = self.max_len
 
         res_vis = self.decoder(x, max_char=max_char)
-
-        if not self.use_fem:
-            return res_vis
         res_list = [res_vis]
-        for it in range(self.iters):
-            char_feat_cntx = self.cntx_module(res_list[-1]['char_feats'],
-                                              res_list[-1]['char_masks'])
-            # import ipdb;ipdb.set_trace()
-            char_maps = res_list[-1]['char_maps']
-            if self.detach_grad:
-                char_maps = char_maps.detach()
-            feat_map = self.merge_layer(
-                x,
-                char_feat_cntx,
-                char_maps[:, :, :-1],
-            )
-            res_i = self.decoder(feat_map, max_char)
-            res_list.append(res_i)
+        if self.use_fem:
+            for it in range(self.iters):
+                char_feat_cntx = self.cntx_module(res_list[-1]['char_feats'],
+                                                  res_list[-1]['char_masks'])
+                # import ipdb;ipdb.set_trace()
+                char_maps = res_list[-1]['char_maps']
+                if self.detach_grad:
+                    char_maps = char_maps.detach()
+                feat_map = self.merge_layer(
+                    x,
+                    char_feat_cntx,
+                    char_maps[:, :, :-1],
+                )
+                res_i = self.decoder(feat_map, max_char)
+                res_list.append(res_i)
         if self.training:
             loss_dict = self.get_loss(res_list[0], labels, label_lens)
             for it in range(self.iters):
