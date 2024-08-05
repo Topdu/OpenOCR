@@ -206,7 +206,7 @@ class ABINetDecoder(nn.Module):
         # bs, c, h, w
         x = x.permute([0, 2, 3, 1])  # bs, h, w, c
         _, H, W, C = x.shape
-        assert H % 8 == 0 and W % 16 == 0, 'The height and width should be multiples of 8 and 16.'
+        # assert H % 8 == 0 and W % 16 == 0, 'The height and width should be multiples of 8 and 16.'
         feature = x.flatten(1, 2)  # bs, h*w, c
         feature = self.pos_encoder(feature)  # bs, h*w, c
         for encoder_layer in self.encoder:
