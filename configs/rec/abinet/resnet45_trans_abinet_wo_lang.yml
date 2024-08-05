@@ -17,6 +17,7 @@ Global:
   use_space_char: False
   save_res_path: ./output/rec/u14m_filter/predicts_resnet45_trans_abinet_wo_lang.txt
   grad_clip_val: 20
+  use_amp: True
 
 Optimizer:
   name: Adam
