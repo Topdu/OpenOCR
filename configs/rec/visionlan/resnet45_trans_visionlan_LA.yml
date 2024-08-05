@@ -3,12 +3,12 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/resnet45_visionlan_LA/
+  output_dir: ./output/rec/u14m_filter/resnet45_trans_visionlan_LA/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
   pretrained_model:
-  # ./output/rec/resnet45_visionlan_LF2/best.pth
+  # ./output/rec/u14m_filter/resnet45_trans_visionlan_LF2/best.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
@@ -17,13 +17,13 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_visionlan_LA.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_resnet45_trans_visionlan_LA.txt
   grad_clip_val: 20
   use_amp: True
 
 Optimizer:
   name: Adam
-  lr: 0.0002
+  lr: 0.0002 # for 4gpus bs128/gpu
   weight_decay: 0.0
 
 LRScheduler:

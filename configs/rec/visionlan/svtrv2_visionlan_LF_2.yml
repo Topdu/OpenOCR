@@ -1,0 +1,112 @@
+Global:
+  device: gpu
+  epoch_num: 10
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/u14m_filter/svtrv2_visionlan_LF2/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  # ./output/rec/u14m_filter/svtrv2_visionlan_LF1/best.pth
+  checkpoints:
+  use_tensorboard: false
+  infer_img:
+  # for data or label process
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
+  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  max_text_length: &max_text_length 25
+  use_space_char: &use_space_char False
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_visionlan_LF2.txt
+  grad_clip_val: 20
+  use_amp: True
+
+Optimizer:
+  name: AdamW
+  lr: 0.00065 # for 4gpus bs256/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: True
+
+LRScheduler:
+  name: OneCycleLR
+  warmup_epoch: 1 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: VisionLAN
+  Transform:
+  Encoder:
+    name: SVTRv2LNConvTwo33
+    use_pos_embed: False
+    dims: [128, 256, 384]
+    depths: [6, 6, 6]
+    num_heads: [4, 8, 12]
+    mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','FGlobal','Global','Global','Global'],['Global','Global','Global','Global','Global','Global']]
+    local_k: [[5, 5], [5, 5], [-1, -1]]
+    sub_k: [[1, 1], [2, 1], [-1, -1]]
+    last_stage: false
+    feat2d: True
+  Decoder:
+    name: VisionLANDecoder
+    training_step: &training_step 'LF_2'
+    n_position: 128
+
+Loss:
+  name: VisionLANLoss
+  training_step: *training_step
+
+PostProcess:
+  name: VisionLANLabelDecode
+  character_dict_path: *character_dict_path
+  use_space_char: *use_space_char
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../Union14M-L-LMDB-Filtered
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
+      - VisionLANLabelEncode:
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'label_res', 'label_sub', 'label_id', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - VisionLANLabelEncode:
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'label_res', 'label_sub', 'label_id', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 2

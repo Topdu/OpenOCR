@@ -3,7 +3,7 @@ Global:
   epoch_num: 10
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/resnet45_visionlan_LF1/
+  output_dir: ./output/rec/u14m_filter/svtrv2_visionlan_LF1/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -16,31 +16,40 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_visionlan_LF1.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_visionlan_LF1.txt
   grad_clip_val: 20
   use_amp: True
 
 Optimizer:
-  name: Adam
-  lr: 0.0002
-  weight_decay: 0.0
+  name: AdamW
+  lr: 0.00065 # for 4gpus bs256/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: True
 
 LRScheduler:
-  name: MultiStepLR
-  milestones: [6]
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
 
 Architecture:
   model_type: rec
   algorithm: VisionLAN
   Transform:
   Encoder:
-    name: ResNet45
-    in_channels: 3
-    strides: [2, 2, 2, 1, 1]
+    name: SVTRv2LNConvTwo33
+    use_pos_embed: False
+    dims: [128, 256, 384]
+    depths: [6, 6, 6]
+    num_heads: [4, 8, 12]
+    mixer: [['Conv','Conv','Conv','Conv','Conv','Conv'],['Conv','Conv','FGlobal','Global','Global','Global'],['Global','Global','Global','Global','Global','Global']]
+    local_k: [[5, 5], [5, 5], [-1, -1]]
+    sub_k: [[1, 1], [2, 1], [-1, -1]]
+    last_stage: false
+    feat2d: True
   Decoder:
     name: VisionLANDecoder
     training_step: &training_step 'LF_1'
-    n_position: 256
+    n_position: 128
 
 Loss:
   name: VisionLANLoss
@@ -69,13 +78,13 @@ Train:
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - RecTVResize:
-          image_shape: [64, 256]
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'label_res', 'label_sub', 'label_id', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 128
+    batch_size_per_card: 256
     drop_last: True
     num_workers: 4
 
@@ -91,12 +100,12 @@ Eval:
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - RecTVResize:
-          image_shape: [64, 256]
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'label_res', 'label_sub', 'label_id', 'length'] # dataloader will return list in this order
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 128
+    batch_size_per_card: 256
     num_workers: 2
