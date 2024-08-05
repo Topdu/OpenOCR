@@ -3,9 +3,9 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/vit_mgpstr/
+  output_dir: ./output/rec/u14m_filter/vit_mgpstr_only_char/
   eval_epoch_step: [0, 1]
-  eval_batch_step: [100000, 2000]
+  eval_batch_step: [0, 500]
   cal_metric_during_train: False
   pretrained_model:
   checkpoints:
@@ -16,7 +16,7 @@ Global:
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
   use_amp: True
-  save_res_path: ./output/rec/u14m_filter/predicts_vit_mgpstr.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_vit_mgpstr_only_char.txt
   grad_clip_val: 5
 
 Optimizer:
@@ -32,7 +32,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: MGPSRT
+  algorithm: MGPSTR
   Transform:
   Encoder:
     name: ViT
@@ -45,7 +45,7 @@ Architecture:
     qkv_bias: True
   Decoder:
     name: MGPDecoder
-    only_char: &only_char False
+    only_char: &only_char True
 
 Loss:
   name: MGPLoss
@@ -58,7 +58,7 @@ PostProcess:
   only_char: *only_char
 
 Metric:
-  name: RecMPGMetric
+  name: RecMetric
   main_indicator: acc
   is_filter: True
 
@@ -79,7 +79,7 @@ Train:
           image_shape: [32, 128]
           padding: False
       - KeepKeys:
-          keep_keys: ['image', 'char_label', 'bpe_label', 'wp_label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'char_label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
     batch_size_per_card: 128
@@ -102,7 +102,7 @@ Eval:
           image_shape: [32, 128]
           padding: False
       - KeepKeys:
-          keep_keys: ['image', 'char_label', 'bpe_label', 'wp_label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'char_label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: False
     drop_last: False
