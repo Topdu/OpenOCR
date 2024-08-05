@@ -3,14 +3,14 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/svtr_base666_lpv_u14m/
+  output_dir: ./output/rec/u14m_filter/svtr_base_lpv/
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
   cal_metric_during_train: True
   pretrained_model:
-  # ./output/rec/svtr_base666_lpv_u14m_wo_glrm/best.pth
+  # ./output/rec/u14m_filter/svtr_base_lpv_wo_glrm/best.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
@@ -19,7 +19,7 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_svtr_lpv.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtr_lpv.txt
   use_amp: True
   grad_clip_val: 20
 

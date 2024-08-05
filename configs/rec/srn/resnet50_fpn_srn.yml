@@ -20,7 +20,6 @@ Global:
   use_amp: True
   grad_clip_val: 10
 
-
 Optimizer:
   name: Adam
   lr: 0.002 # for 4gpus bs128/gpu
@@ -31,7 +30,6 @@ LRScheduler:
   name: OneCycleLR
   warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
   cycle_momentum: False
-
 
 Architecture:
   model_type: rec
