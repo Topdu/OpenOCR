@@ -27,7 +27,7 @@ Optimizer:
 
 LRScheduler:
   name: OneCycleLR
-  # warmup_epoch: 2
+
   warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
   cycle_momentum: False
 

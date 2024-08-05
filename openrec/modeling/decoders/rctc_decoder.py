@@ -6,14 +6,14 @@ from torch.nn.init import trunc_normal_
 from openrec.modeling.common import Block
 
 
-class CTCDecoder2D(nn.Module):
+class RCTCDecoder(nn.Module):
 
     def __init__(self,
                  in_channels,
                  out_channels=6625,
                  return_feats=False,
                  **kwargs):
-        super(CTCDecoder2D, self).__init__()
+        super(RCTCDecoder, self).__init__()
         self.char_token = nn.Parameter(
             torch.zeros([1, 1, in_channels], dtype=torch.float32),
             requires_grad=True,
@@ -29,11 +29,6 @@ class CTCDecoder2D(nn.Module):
             2 * in_channels,
             bias=True,
         )
-        # self.fc_q = nn.Linear(
-        #         in_channels,
-        #         in_channels,
-        #         bias=True,
-        #     )
         self.w_atten_block = Block(dim=in_channels,
                                    num_heads=in_channels // 32,
                                    mlp_ratio=4.0,
@@ -44,20 +39,10 @@ class CTCDecoder2D(nn.Module):
     def forward(self, x, data=None):
 
         B, C, H, W = x.shape
-
-        # char_token = self.char_token.tile([x.shape[0], 1, 1])
-        # attn_ctc2d = char_token @ x.flatten(2) # B 1 hw
-        # attn_ctc2d = attn_ctc2d.reshape([-1, sz[0], sz[1]])
-        # attn_ctc2d = F.softmax(attn_ctc2d, 1)
-        # attn_ctc2d = attn_ctc2d.transpose(1, 2).unsqueeze(2) # B w, 1, h
-        # feats = attn_ctc2d @ x.permute([0, 3, 2, 1]) # B, w, 1, c
-        # feats = feats.squeeze(2)
         x = self.w_atten_block(x.permute(0, 2, 3,
                                          1).reshape(-1, W, C)).reshape(
                                              B, H, W, C).permute(0, 3, 1, 2)
-
         # B, D, 8, 32
-
         x_kv = self.fc_kv(x.flatten(2).transpose(1, 2)).reshape(
             B, H * W, 2, C).permute(2, 0, 3, 1)  # 2, b, c, hw
         x_k, x_v = x_kv.unbind(0)  # b, c, hw

@@ -9,7 +9,7 @@ def build_decoder(config):
     from .aster_decoder import ASTERDecoder
     from .cdistnet_decoder import CDistNetDecoder
     from .cppd_decoder import CPPDDecoder
-    from .ctc2d_decoder import CTCDecoder2D
+    from .rctc_decoder import RCTCDecoder
     from .ctc_decoder import CTCDecoder
     from .dan_decoder import DANDecoder
     from .igtr_decoder import IGTRDecoder
@@ -32,7 +32,7 @@ def build_decoder(config):
         'CTCDecoder', 'NRTRDecoder', 'CPPDDecoder', 'ABINetDecoder',
         'CDistNetDecoder', 'VisionLANDecoder', 'PARSeqDecoder', 'IGTRDecoder',
         'SMTRDecoder', 'LPVDecoder', 'SARDecoder', 'RobustScannerDecoder',
-        'SRNDecoder', 'ASTERDecoder', 'CTCDecoder2D', 'LISTERDecoder',
+        'SRNDecoder', 'ASTERDecoder', 'RCTCDecoder', 'LISTERDecoder',
         'GTCDecoder', 'SMTRDecoderNumAttn', 'MATRNDecoder', 'MGPDecoder',
         'DANDecoder', 'CAMDecoder', 'OTEDecoder'
     ]

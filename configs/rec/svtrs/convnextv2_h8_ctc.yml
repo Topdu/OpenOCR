@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/vit_ctc2d/
+  output_dir: ./output/rec/u14m_filter/convnextv2_h8_ctc/
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -15,19 +15,17 @@ Global:
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/predicts_svtr_tiny.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_convnextv2_h8_ctc.txt
   use_amp: True
-
 
 Optimizer:
   name: AdamW
-  lr: 0.0005
+  lr: 0.00065 # for 4gpus bs256/gpu
   weight_decay: 0.05
   filter_bias_and_bn: True
 
 LRScheduler:
   name: OneCycleLR
-  # warmup_epoch: 2
   warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
   cycle_momentum: False
 
@@ -36,13 +34,15 @@ Architecture:
   algorithm: SVTR
   Transform:
   Encoder:
-    name: ViT
-    img_size: [32, 128]
-    patch_size: [4, 4]
-    last_stage: false
-    feat2d: True
+    name: ConvNeXtV2
+    out_channels: 256
+    depths: [2, 2, 8, 2]
+    dims: [80, 160, 320, 640]
+    drop_path_rate: 0.1
+    strides: [[4,4], [1,1], [2,1], [1,1]]
+    last_stage: True
   Decoder:
-    name: CTCDecoder2D
+    name: CTCDecoder
 
 Loss:
   name: CTCLoss
@@ -50,6 +50,8 @@ Loss:
 
 PostProcess:
   name: CTCLabelDecode
+  character_dict_path: *character_dict_path
+  use_space_char: *use_space_char
 
 Metric:
   name: RecMetric
@@ -60,19 +62,17 @@ Metric:
 Train:
   dataset:
     name: LMDBDataSet
-    data_dir: ../Union14M-LMDB-L-wh/
+    data_dir: ../Union14M-L-LMDB-Filtered
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
-      #     aug_type: 0 # or 1
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
       - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 32, 128]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
@@ -87,15 +87,14 @@ Eval:
     name: LMDBDataSet
     data_dir: ../evaluation/
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
+      - DecodeImagePIL: # load image
+          img_mode: RGB
       - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      - SVTRResize:
-          image_shape: [3, 32, 128]
+      - RecTVResize:
+          image_shape: [32, 128]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
