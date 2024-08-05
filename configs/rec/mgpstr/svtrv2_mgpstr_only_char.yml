@@ -31,7 +31,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: mgpstr
+  algorithm: MGPSTR
   Transform:
   Encoder:
     name: SVTRv2LNConvTwo33

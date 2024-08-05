@@ -36,7 +36,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: BGPD
+  algorithm: LPV
   in_channels: 3
   Transform:
   Encoder:

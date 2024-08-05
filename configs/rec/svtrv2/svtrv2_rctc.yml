@@ -33,7 +33,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: SVTR
+  algorithm: SVTRv2
   Transform:
   Encoder:
     name: SVTRv2LNConvTwo33
