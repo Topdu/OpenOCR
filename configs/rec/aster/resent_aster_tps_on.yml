@@ -43,7 +43,7 @@ Architecture:
     name: ASTERDecoder
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 Metric:
   name: RecMetric
