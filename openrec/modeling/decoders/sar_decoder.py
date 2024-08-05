@@ -85,9 +85,9 @@ class SARDecoder(nn.Module):
         if use_lstm:
             # encoder module
             self.encoder = SAREncoder(enc_bi_rnn=enc_bi_rnn,
-                                    enc_drop_rnn=enc_drop_rnn,
-                                    in_channels=in_channels,
-                                    d_enc=enc_dim)
+                                      enc_drop_rnn=enc_drop_rnn,
+                                      in_channels=in_channels,
+                                      d_enc=enc_dim)
 
         # decoder module
 
@@ -223,9 +223,6 @@ class SARDecoder(nn.Module):
         return outputs
 
     def forward(self, feat, data=None):
-        '''
-        data: [label, valid_ratio]
-        '''
         if self.use_lstm:
             holistic_feat = self.encoder(feat)  # bsz c
         else:

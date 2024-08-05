@@ -25,7 +25,8 @@ def main():
     opt = FLAGS.pop('opt')
     cfg.merge_dict(FLAGS)
     cfg.merge_dict(opt)
-    cfg.cfg['Eval']['dataset']['name'] = cfg.cfg['Eval']['dataset']['name']  + 'Test'
+    cfg.cfg['Eval']['dataset'][
+        'name'] = cfg.cfg['Eval']['dataset']['name'] + 'Test'
     if cfg.cfg['Global']['pretrained_model'] is None:
         cfg.cfg['Global'][
             'pretrained_model'] = cfg.cfg['Global']['output_dir'] + '/best.pth'
@@ -40,15 +41,14 @@ def main():
     data_dirs_list = [[
         '../test/IC13_857/', '../test/SVT/', '../test/IIIT5k/',
         '../test/IC15_1811/', '../test/SVTP/', '../test/CUTE80/'
-    ],
-    ['../test/IC13_1015', '../test/IC15_2077'],
-    ['../OST/weak', '../OST/heavy'],
-    [
-        '../u14m/curve/', '../u14m/multi_oriented/',
-        '../u14m/artistic/', '../u14m/contextless/',
-        '../u14m/salient/', '../u14m/multi_words/',
-        '../u14m/general/'
-    ]]
+    ], ['../test/IC13_1015', '../test/IC15_2077'],
+                      ['../OST/weak', '../OST/heavy'],
+                      [
+                          '../u14m/curve/', '../u14m/multi_oriented/',
+                          '../u14m/artistic/', '../u14m/contextless/',
+                          '../u14m/salient/', '../u14m/multi_words/',
+                          '../u14m/general/'
+                      ]]
     cfg = cfg.cfg
     file_csv = open(
         cfg['Global']['output_dir'] + '/' +
