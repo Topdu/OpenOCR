@@ -353,9 +353,7 @@ class Trainer(object):
                     for k, v in train_stats.get().items():
                         self.writer.add_scalar(f'TRAIN/{k}', v, global_step)
 
-                if self.local_rank == 0 and (
-                    (global_step > 0 and global_step % print_batch_step == 0)
-                        or (idx >= len(self.train_dataloader) - 1)):
+                if self.local_rank == 0 and ((global_step > 0 and global_step % print_batch_step == 0) or (idx >= len(self.train_dataloader) - 1)):
                     logs = train_stats.log()
 
                     eta_sec = (
@@ -376,9 +374,7 @@ class Trainer(object):
                     train_batch_cost = 0.0
                 reader_start = time.time()
                 # eval
-                if (global_step > start_eval_step and
-                    (global_step - start_eval_step) % eval_batch_step
-                        == 0) and self.local_rank == 0:
+                if (global_step > start_eval_step and (global_step - start_eval_step) % eval_batch_step == 0) and self.local_rank == 0:
                     cur_metric = self.eval()
                     cur_metric_str = f"cur metric, {', '.join(['{}: {}'.format(k, v) for k, v in cur_metric.items()])}"
                     self.logger.info(cur_metric_str)
