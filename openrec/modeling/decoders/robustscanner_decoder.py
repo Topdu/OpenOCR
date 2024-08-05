@@ -21,13 +21,14 @@ class RobustScannerDecoder(nn.Module):
             **kwargs):
         super(RobustScannerDecoder, self).__init__()
 
-        start_idx = out_channels -2
+        start_idx = out_channels - 2
         padding_idx = out_channels - 1
         end_idx = 0
         # encoder module
         self.encoder = ChannelReductionEncoder(in_channels=in_channels,
                                                out_channels=enc_outchannles)
         self.max_text_length = max_text_length + 1
+        self.mask = mask
         # decoder module
         self.decoder = Decoder(
             num_classes=out_channels,
@@ -36,7 +37,7 @@ class RobustScannerDecoder(nn.Module):
             hybrid_decoder_rnn_layers=hybrid_dec_rnn_layers,
             hybrid_decoder_dropout=hybrid_dec_dropout,
             position_decoder_rnn_layers=position_dec_rnn_layers,
-            max_seq_len=max_text_length+1,
+            max_seq_len=max_text_length + 1,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
@@ -50,9 +51,12 @@ class RobustScannerDecoder(nn.Module):
         out_enc = self.encoder(inputs)
         bs = out_enc.shape[0]
         valid_ratios = None
-        word_positions = torch.arange(0, self.max_text_length, device=inputs.device).unsqueeze(0).tile([bs, 1])
+        word_positions = torch.arange(0,
+                                      self.max_text_length,
+                                      device=inputs.device).unsqueeze(0).tile(
+                                          [bs, 1])
 
-        if len(data) > 1:
+        if self.mask:
             valid_ratios = data[-2]
 
         if self.training:
@@ -303,9 +307,9 @@ class SequenceAttentionDecoder(BaseDecoder):
         """
         batch_size = feat.shape[0]
 
-        decode_sequence = (torch.ones(
-            (batch_size, self.max_seq_len), dtype=torch.int64, device=feat.device) *
-                           self.start_idx)
+        decode_sequence = (torch.ones((batch_size, self.max_seq_len),
+                                      dtype=torch.int64,
+                                      device=feat.device) * self.start_idx)
 
         outputs = []
         for i in range(self.max_seq_len):

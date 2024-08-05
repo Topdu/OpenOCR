@@ -48,7 +48,7 @@ Architecture:
     depth: 4
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode

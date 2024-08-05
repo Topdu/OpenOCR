@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/resnet31_robustscanner
+  output_dir: ./output/rec/u14m_filter/resnet31_robustscanner
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -15,7 +15,7 @@ Global:
   character_dict_path: ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: False
-  save_res_path: ./output/rec/predicts_robustscanner.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_resnet31_robustscanner.txt
   use_amp: True
 
 Optimizer:
@@ -48,7 +48,7 @@ Architecture:
     max_text_length: *max_text_length
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode

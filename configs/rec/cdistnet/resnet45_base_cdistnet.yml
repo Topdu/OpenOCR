@@ -43,7 +43,7 @@ Architecture:
     add_conv: True
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode
