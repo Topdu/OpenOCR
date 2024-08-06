@@ -1,0 +1,104 @@
+Global:
+  device: gpu
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/u14m_filter/vit_busnet_pretraining/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img:
+  # for data or label process
+  character_dict_path: ./tools/utils/EN_symbol_dict.txt
+  max_text_length: 25
+  use_space_char: False
+  save_res_path: ./output/rec/u14m_filter/predicts_vit_busnet_pretraining.txt
+  grad_clip_val: 20
+  use_amp: True
+
+Optimizer:
+  name: Adam
+  lr: 0.00053
+  weight_decay: 0.0
+  filter_bias_and_bn: False
+
+LRScheduler:
+  name: MultiStepLR
+  milestones: [12]
+  gamma: 0.1
+
+Architecture:
+  model_type: rec
+  algorithm: BUSBet
+  Transform:
+  Encoder:
+    name: ViT
+    img_size: [32,128]
+    patch_size: [4, 8]
+    embed_dim: 384
+    depth: 12
+    num_heads: 6
+    mlp_ratio: 4
+    qkv_bias: True
+  Decoder:
+    name: BUSDecoder
+    nhead: 6
+    num_layers: 6
+    dim_feedforward: 1536
+    ignore_index: &ignore_index 100
+    pretraining: True
+Loss:
+  name: ABINetLoss
+  ignore_index: *ignore_index
+
+PostProcess:
+  name: ABINetLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../Union14M-L-LMDB-Filtered
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
+      - ABINetLabelEncode:
+          ignore_index: *ignore_index
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - ABINetLabelEncode:
+          ignore_index: *ignore_index
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 2
