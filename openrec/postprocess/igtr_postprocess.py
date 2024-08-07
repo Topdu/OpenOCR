@@ -94,8 +94,7 @@ class IGTRLabelDecode(NRTRLabelDecode):
             text = ''.join(char_list)
             if idx_top5 is not None:
                 result_list.append(
-                    (text.lower(),
-                     [np.mean(conf_list).tolist(), char_list_top5]))
+                    (text, [np.mean(conf_list).tolist(), char_list_top5]))
             else:
-                result_list.append((text.lower(), np.mean(conf_list).tolist()))
+                result_list.append((text, np.mean(conf_list).tolist()))
         return result_list

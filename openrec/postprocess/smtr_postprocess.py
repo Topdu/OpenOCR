@@ -69,5 +69,5 @@ class SMTRLabelDecode(BaseRecLabelDecode):
                 text = ''.join(char_list)
             else:
                 text = ''.join(char_list[::-1])
-            result_list.append((text.lower(), np.mean(conf_list).tolist()))
+            result_list.append((text, np.mean(conf_list).tolist()))
         return result_list
