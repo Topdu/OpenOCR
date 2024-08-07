@@ -1,6 +1,6 @@
 Global:
   device: gpu
-  epoch_num: 20
+  epoch_num: 10
   log_smooth_window: 20
   print_batch_step: 10
   output_dir: ./output/rec/u14m_filter/vit_busnet_pretraining/
@@ -21,13 +21,13 @@ Global:
 
 Optimizer:
   name: Adam
-  lr: 0.00053
+  lr: 0.00053 # 4gpus bs256/gpu
   weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
   name: MultiStepLR
-  milestones: [12]
+  milestones: [6]
   gamma: 0.1
 
 Architecture:

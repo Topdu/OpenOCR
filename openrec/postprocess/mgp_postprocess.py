@@ -103,8 +103,8 @@ class MPGLabelDecode(BaseRecLabelDecode):
                 else:
                     conf_list.append(1)
             text = ''.join(char_list)
-            result_list.append((text.lower() if self.lower else text,
-                                np.mean(conf_list).tolist()))
+            result_list.append(
+                (text if self.lower else text, np.mean(conf_list).tolist()))
         return result_list
 
     def bpe_decode(self, text_index, text_prob):
@@ -120,8 +120,8 @@ class MPGLabelDecode(BaseRecLabelDecode):
                 text_decoded.append(tokenstr)
                 conf_list.append(prob)
             text = ''.join(text_decoded)
-            result_list.append((text.lower() if self.lower else text,
-                                np.mean(conf_list).tolist()))
+            result_list.append(
+                (text if self.lower else text, np.mean(conf_list).tolist()))
         return result_list
 
     def wp_decode(self, text_index, text_prob):
@@ -139,6 +139,6 @@ class MPGLabelDecode(BaseRecLabelDecode):
                 text_decoded.append(tokenstr)
                 conf_list.append(prob)
             text = ''.join(text_decoded)
-            result_list.append((text.lower() if self.lower else text,
-                                np.mean(conf_list).tolist()))
+            result_list.append(
+                (text if self.lower else text, np.mean(conf_list).tolist()))
         return result_list
