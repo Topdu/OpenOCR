@@ -8,6 +8,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Ours STR algorithms
 
+- [**DPTR**](<>) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [paper coming soon](<>))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* 2024. [Doc](./configs/rec/igtr/readme.md), [paper](https://arxiv.org/abs/2401.17851))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. SVTRv2: Towards Arbitrary-Shaped Text Recognition with a Single Visual Model,* 2024. [paper coming soon](<>))
 - [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* 2024. [paper](https://arxiv.org/abs/2407.12317))
@@ -23,7 +24,7 @@ Reproduction schedule:
 | Method                                        | Venue                                                                                          | Training | Evaluation | Contributor                                 |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------- | ---------- | ------------------------------------------- |
 | CRNN                                          | [TPAMI2016](https://arxiv.org/abs/1507.05717)                                                  | ✅       | ✅         |                                             |
-| [ASTER](./configs/rec/aster/)                 | [TPAMI2018](https://ieeexplore.ieee.org/document/8395027)                                      | ✅       | ✅         | [pretto0](https://github.com/pretto0)       |
+| [ASTER](./configs/rec/aster/)                 | [TPAMI2019](https://ieeexplore.ieee.org/document/8395027)                                      | ✅       | ✅         | [pretto0](https://github.com/pretto0)       |
 | [NRTR](./configs/rec/nrtr/)                   | [ICDAR2019](https://arxiv.org/abs/1806.00926)                                                  | ✅       | ✅         |                                             |
 | [SAR](./configs/rec/sar/)                     | [AAAI2019](https://aaai.org/papers/08610-show-attend-and-read-a-simple-and-strong-baseline-for-irregular-text-recognition/) | ✅       | ✅         | [pretto0](https://github.com/pretto0)       |
 | [MORAN](./configs/rec/moran/)                 | [PR2019](https://www.sciencedirect.com/science/article/abs/pii/S0031320319300263)              | ✅       | ✅         | Debug                                       |
@@ -45,7 +46,7 @@ Reproduction schedule:
 | DCTC                                          | [AAAI2024](https://ojs.aaai.org/index.php/AAAI/article/view/28575)                             |          |            | TODO                                        |
 | [CAM](./configs/rec/cam/)                     | [PR2024](https://arxiv.org/abs/2402.13643)                                                     | ✅       | ✅         |                                             |
 | [OTE](./configs/rec/ote/)                     | [CVPR2024](https://openaccess.thecvf.com/content/CVPR2024/papers/Xu_OTE_Exploring_Accurate_Scene_Text_Recognition_Using_One_Token_CVPR_2024_paper.pdf) | ✅       | ✅         |                                             |
-| CACE                                          | [IJCAI2024](https://arxiv.org/abs/2407.05562)                                                  |          |            | TODO                                        |
+| CFF                                           | [IJCAI2024](https://arxiv.org/abs/2407.05562)                                                  |          |            | TODO                                        |
 | [IGTR](./configs/rec/igtr/)                   | [2024](https://arxiv.org/abs/2401.17851)                                                       | ✅       | ✅         |                                             |
 | [SMTR](./configs/rec/smtr/)                   | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
 | [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
