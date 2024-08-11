@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/resnet31_lstm_aster_tps_on
+  output_dir: ./output/rec/u14m_filter/autostr_lstm_aster_tps_on
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -15,13 +15,13 @@ Global:
   character_dict_path: ./tools/utils/EN_symbol_dict.txt
   max_text_length: 25
   use_space_char: False
-  save_res_path: ./output/rec/u14m_filter/predicts_resnet31_lstm_aster_tps_on.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_autostr_lstm_aster_tps_on.txt
   use_amp: True
   grad_clip_val: 1.0
 
 Optimizer:
   name: Adam
-  lr: 0.002 # for 1gpus bs1024/gpu
+  lr: 0.002 # for 4gpus bs256/gpu
   weight_decay: 0.0
   filter_bias_and_bn: False
 
@@ -32,13 +32,15 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: aster
+  algorithm: autostr
   Transform:
     name: Aster_TPS
     tps_inputsize: [32, 64]
     tps_outputsize: [32, 128]
   Encoder:
-    name: ResNet_ASTER
+    name: AutoSTREncoder
+    stride_stages: '[(2, 2), (2, 1), (2, 2), (2, 1), (2, 1)]'
+    conv_op_ids: [2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 4, 1, 1, 6, 6]
   Decoder:
     name: ASTERDecoder
 
@@ -69,7 +71,7 @@ Train:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 1024
+    batch_size_per_card: 256
     drop_last: True
     num_workers: 4
 

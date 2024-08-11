@@ -1,0 +1,116 @@
+Global:
+  device: gpu
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/rec/u14m_filter/crnn_ctc_long/
+  eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  use_tensorboard: false
+  infer_img:
+  # for data or label process
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
+  max_text_length: &max_text_length 25
+  use_space_char: &use_space_char False
+  save_res_path: ./output/rec/u14m_filter/predicts_crnn_ctc.txt
+  use_amp: True
+
+Optimizer:
+  name: AdamW
+  lr: 0.00065 # for 4gpus bs256/gpu
+  weight_decay: 0.0
+  filter_bias_and_bn: False
+
+LRScheduler:
+  name: OneCycleLR
+  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Encoder:
+    name: ResNet_ASTER
+  Decoder:
+    name: CTCDecoder
+
+Loss:
+  name: CTCLoss
+  zero_infinity: True
+
+PostProcess:
+  name: CTCLabelDecode
+  character_dict_path: *character_dict_path
+  use_space_char: *use_space_char
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: True
+
+
+Train:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../Union14M-L-LMDB-Filtered
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
+      - CTCLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - RecTVResize:
+          image_shape: [32, 128]
+          padding: False
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 4
+
+
+Eval:
+  dataset:
+    name: RatioDataSetTVResize
+    ds_width: True
+    padding: False
+    base_shape: [[32, 32], [64, 32], [96, 32], [128, 32]]
+    data_dir_list: [
+      '../evaluation/CUTE80',
+      '../evaluation/IC13_857',
+      '../evaluation/IC15_1811',
+      '../evaluation/IIIT5k',
+      '../evaluation/SVT',
+      '../evaluation/SVTP',
+      ]
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - CTCLabelEncode: # Class handling label
+          character_dict_path: *character_dict_path
+          use_space_char: *use_space_char
+          max_text_length: *max_text_length
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  sampler:
+    name: RatioSampler
+    scales: [[128, 32]] # w, h
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    first_bs: 256
+    fix_bs: false
+    divided_factor: [4, 16] # w, h
+    is_training: False
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    max_ratio: 20
+    num_workers: 4
