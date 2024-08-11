@@ -21,11 +21,13 @@ def build_encoder(config):
     from .vit import ViT
     from .cam_encoder import CAMEncoder
     from .convnextv2 import ConvNeXtV2
+    from .autostr_encoder import AutoSTREncoder
     support_dict = [
         'MobileNetV1Enhance', 'ResNet31', 'MobileNetV3', 'PPLCNetV3',
         'PPHGNet_small', 'ResNet', 'MTB', 'SVTRNet', 'ResNet45', 'ViT',
         'SVTRNet2DPos', 'SVTRv2', 'FocalSVTR', 'ResNet_FPN', 'ResNet_ASTER',
-        'SVTRv2LNConv', 'SVTRv2LNConvTwo33', 'CAMEncoder', 'ConvNeXtV2'
+        'SVTRv2LNConv', 'SVTRv2LNConvTwo33', 'CAMEncoder', 'ConvNeXtV2',
+        'AutoSTREncoder'
     ]
 
     module_name = config.pop('name')
