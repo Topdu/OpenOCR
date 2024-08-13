@@ -22,7 +22,7 @@ Optimizer:
   name: AdamW
   lr: 0.0008 # for 4gpus bs256/gpu
   weight_decay: 0.05
-  filter_bias_and_bn: False
+  filter_bias_and_bn: True
   eps: 1.e-8
 
 LRScheduler:
@@ -94,7 +94,7 @@ Train:
           keep_keys: ['image', 'label', 'length', 'binary_mask'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 128
+    batch_size_per_card: 256
     drop_last: True
     num_workers: 4
 

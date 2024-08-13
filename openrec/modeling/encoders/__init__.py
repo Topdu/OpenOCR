@@ -22,12 +22,13 @@ def build_encoder(config):
     from .cam_encoder import CAMEncoder
     from .convnextv2 import ConvNeXtV2
     from .autostr_encoder import AutoSTREncoder
+    from .nrtr_encoder import NRTREncoder
     support_dict = [
         'MobileNetV1Enhance', 'ResNet31', 'MobileNetV3', 'PPLCNetV3',
         'PPHGNet_small', 'ResNet', 'MTB', 'SVTRNet', 'ResNet45', 'ViT',
         'SVTRNet2DPos', 'SVTRv2', 'FocalSVTR', 'ResNet_FPN', 'ResNet_ASTER',
         'SVTRv2LNConv', 'SVTRv2LNConvTwo33', 'CAMEncoder', 'ConvNeXtV2',
-        'AutoSTREncoder'
+        'AutoSTREncoder', 'NRTREncoder'
     ]
 
     module_name = config.pop('name')
