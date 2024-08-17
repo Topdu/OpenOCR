@@ -147,20 +147,21 @@ class RatioSampler(Sampler):
                                                 axis=-1)
                 batch_ratio = ratio_ids_full.tolist()
 
-                drop = ratio_ids[batch_num_ratio * batch_size_ratio:]
-                drop_full = ratio_ids[:batch_size_ratio -
-                                      (num_ratio -
-                                       batch_num_ratio * batch_size_ratio)]
-                drop = np.append(drop_full, drop)
-                drop = drop.reshape(-1, 1)
-                w = np.full_like(drop, ratio * self.base_im_h)
-                h = np.full_like(drop, self.base_im_h)
-                ra_wh = np.full_like(drop, ratio)
+                if batch_num_ratio * batch_size_ratio < num_ratio:
+                    drop = ratio_ids[batch_num_ratio * batch_size_ratio:]
+                    if self.is_training:
+                        drop_full = ratio_ids[:batch_size_ratio - (
+                            num_ratio - batch_num_ratio * batch_size_ratio)]
+                        drop = np.append(drop_full, drop)
+                    drop = drop.reshape(-1, 1)
+                    w = np.full_like(drop, ratio * self.base_im_h)
+                    h = np.full_like(drop, self.base_im_h)
+                    ra_wh = np.full_like(drop, ratio)
 
-                drop = np.concatenate([w, h, drop, ra_wh], axis=-1)
+                    drop = np.concatenate([w, h, drop, ra_wh], axis=-1)
 
-                batch_ratio.append(drop.tolist())
-                batch_list += batch_ratio
+                    batch_ratio.append(drop.tolist())
+                    batch_list += batch_ratio
             else:
                 print(self.rank, num_ratio, ratio * self.base_im_h,
                       batch_size_ratio)
