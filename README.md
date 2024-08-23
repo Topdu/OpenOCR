@@ -2,7 +2,7 @@
 
 OpenOCR aims to establish a unified training and evaluation benchmark for scene text detection and recognition algorithms, at the same time, serves as the official code repository for the OCR team from the [FVL](https://fvl.fudan.edu.cn) Laboratory, Fudan University.
 
-We are actively developing and refining it and expect to release the first version in July 2024.
+We are actively developing and refining it and expect to release the first version as soon as possible.
 
 We sincerely welcome the researcher to recommend OCR or relevant algorithms and point out any potential factual errors or bugs. Upon receiving the suggestions, we will promptly evaluate and critically reproduce them. We look forward to collaborating with you to advance the development of OpenOCR and continuously contribute to the OCR community!
 
