@@ -57,9 +57,48 @@ class RecMetric(object):
                    text))
         return text
 
-    #.lower()
+    def __call__(self,
+                 pred_label,
+                 batch=None,
+                 training=False,
+                 *args,
+                 **kwargs):
+        if self.with_ratio and not training:
+            return self.eval_all_metric(pred_label, batch)
+        else:
+            return self.eval_metric(pred_label)
 
-    def __call__(self, pred_label, batch=None, *args, **kwargs):
+    def eval_metric(self, pred_label, *args, **kwargs):
+        preds, labels = pred_label
+        correct_num = 0
+        all_num = 0
+        norm_edit_dis = 0.0
+        for (pred, pred_conf), (target, _) in zip(preds, labels):
+            if self.stream:
+                assert len(labels) == 1
+                pred, _ = stream_match(preds)
+            if self.ignore_space:
+                pred = pred.replace(' ', '')
+                target = target.replace(' ', '')
+            if self.is_filter:
+                pred = self._normalize_text(pred)
+                target = self._normalize_text(target)
+            if self.is_lower:
+                pred = pred.lower()
+                target = target.lower()
+            norm_edit_dis += Levenshtein.normalized_distance(pred, target)
+            if pred == target:
+                correct_num += 1
+            all_num += 1
+        self.correct_num += correct_num
+        self.all_num += all_num
+        self.norm_edit_dis += norm_edit_dis
+        return {
+            'acc': correct_num / (all_num + self.eps),
+            'norm_edit_dis': 1 - norm_edit_dis / (all_num + self.eps),
+        }
+
+    def eval_all_metric(self, pred_label, batch=None, *args, **kwargs):
         if self.with_ratio:
             ratio = batch[-1]
         preds, labels = pred_label
@@ -134,7 +173,26 @@ class RecMetric(object):
             'norm_edit_dis': 1 - norm_edit_dis / (all_num + self.eps),
         }
 
-    def get_metric(self):
+    def get_metric(self, training=False):
+        """
+        return metrics {
+                 'acc': 0,
+                 'norm_edit_dis': 0,
+            }
+        """
+        if self.with_ratio and not training:
+            return self.get_all_metric()
+        acc = 1.0 * self.correct_num / (self.all_num + self.eps)
+        norm_edit_dis = 1 - self.norm_edit_dis / (self.all_num + self.eps)
+        num_samples = self.all_num
+        self.reset()
+        return {
+            'acc': acc,
+            'norm_edit_dis': norm_edit_dis,
+            'num_samples': num_samples
+        }
+
+    def get_all_metric(self):
         """
         return metrics {
                  'acc': 0,
@@ -179,11 +237,11 @@ class RecMetric(object):
 
     def reset(self):
         self.correct_num = 0
+        self.all_num = 0
+        self.norm_edit_dis = 0
         self.correct_num_real = 0
         self.correct_num_ignore_space = 0
         self.correct_num_ignore_space_symbol = 0
-        self.all_num = 0
-        self.norm_edit_dis = 0
         self.each_len_num = np.array([0 for _ in range(self.max_len)])
         self.each_len_correct_num = np.array([0 for _ in range(self.max_len)])
         self.each_len_norm_edit_dis = np.array(

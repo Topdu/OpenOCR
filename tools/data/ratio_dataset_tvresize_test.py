@@ -214,46 +214,9 @@ class RatioDataSetTVResizeTest(Dataset):
         data['image'] = img
         data['valid_ratio'] = valid_ratio
         data['gen_ratio'] = imgW // imgH
-        data['real_ratio'] = w // h
+        r = float(w) / float(h)
+        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
         return data
-
-    # def resize_norm_img(self, data, gen_ratio, padding=True):
-    #     img = data['image']
-    #     h = img.shape[0]
-    #     w = img.shape[1]
-
-    #     imgW, imgH = self.base_shape[gen_ratio - 1] if gen_ratio <= 4 else [
-    #         self.base_h * gen_ratio, self.base_h
-    #     ]
-    #     use_ratio = imgW // imgH
-    #     if use_ratio >= (w // h) + 2:
-    #         self.error += 1
-    #         return None
-    #     if not padding:
-    #         resized_image = cv2.resize(img, (imgW, imgH),
-    #                                    interpolation=cv2.INTER_LINEAR)
-    #         resized_w = imgW
-    #     else:
-    #         ratio = w / float(h)
-    #         if math.ceil(imgH * ratio) > imgW:
-    #             resized_w = imgW
-    #         else:
-    #             resized_w = int(
-    #                 math.ceil(imgH * ratio * (random.random() + 0.5)))
-    #             resized_w = min(imgW, resized_w)
-
-    #         resized_image = cv2.resize(img, (resized_w, imgH))
-    #     resized_image = resized_image.astype('float32')
-    #     resized_image = resized_image.transpose((2, 0, 1)) / 255
-    #     resized_image -= 0.5
-    #     resized_image /= 0.5
-    #     padding_im = np.zeros((3, imgH, imgW), dtype=np.float32)
-    #     padding_im[:, :, :resized_w] = resized_image
-    #     valid_ratio = min(1.0, float(resized_w / imgW))
-    #     data['image'] = padding_im
-    #     data['valid_ratio'] = valid_ratio
-
-    #     return data
 
     def get_lmdb_sample_info(self, txn, index):
         label_key = 'label-%09d'.encode() % index

@@ -111,6 +111,8 @@ class RecTVResize(object):
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
         return data
 
 
@@ -408,10 +410,7 @@ class VisionLANResize(object):
 
 class RobustScannerRecResizeImg(object):
 
-    def __init__(self,
-                 image_shape,
-                 width_downsample_ratio=0.25,
-                 **kwargs):
+    def __init__(self, image_shape, width_downsample_ratio=0.25, **kwargs):
         self.image_shape = image_shape
         self.width_downsample_ratio = width_downsample_ratio
 

@@ -31,10 +31,15 @@ class RecGTCMetric(object):
                                     max_len=max_len,
                                     max_ratio=max_ratio)
 
-    def __call__(self, pred_label, batch=None, *args, **kwargs):
+    def __call__(self,
+                 pred_label,
+                 batch=None,
+                 training=False,
+                 *args,
+                 **kwargs):
 
-        ctc_metric = self.ctc_metric(pred_label[1], batch)
-        gtc_metric = self.gtc_metric(pred_label[0], batch)
+        ctc_metric = self.ctc_metric(pred_label[1], batch, training=training)
+        gtc_metric = self.gtc_metric(pred_label[0], batch, training=training)
         ctc_metric['gtc_acc'] = gtc_metric['acc']
         ctc_metric['gtc_norm_edit_dis'] = gtc_metric['norm_edit_dis']
         return ctc_metric
