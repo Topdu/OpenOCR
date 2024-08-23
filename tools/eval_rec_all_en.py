@@ -26,8 +26,7 @@ def main():
     opt = FLAGS.pop('opt')
     cfg.merge_dict(FLAGS)
     cfg.merge_dict(opt)
-    cfg.cfg['Eval']['dataset'][
-        'name'] = cfg.cfg['Eval']['dataset']['name'] + 'Test'
+
     msr = False
     if 'RatioDataSet' in cfg.cfg['Eval']['dataset']['name']:
         msr = True
@@ -63,7 +62,7 @@ def main():
         cfg['Global']['output_dir'].split('/')[-1] +
         '_eval_all_length_ratio.csv', 'w')
     csv_w = csv.writer(file_csv)
-
+    cfg['Eval']['dataset']['name'] = cfg['Eval']['dataset']['name'] + 'Test'
     for data_dirs in data_dirs_list:
 
         acc_each = []
