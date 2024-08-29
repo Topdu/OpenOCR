@@ -36,6 +36,12 @@ def main():
         cfg.cfg['Global'][
             'pretrained_model'] = cfg.cfg['Global']['output_dir'] + '/best.pth'
     cfg.cfg['Global']['use_amp'] = False
+    cfg.cfg['PostProcess']['with_ratio'] = True
+    cfg.cfg['Metric']['with_ratio'] = True
+    cfg.cfg['Metric']['max_len'] = 25
+    cfg.cfg['Metric']['max_ratio'] = 12
+    cfg.cfg['Eval']['dataset']['transforms'][-1]['KeepKeys'][
+        'keep_keys'].append('real_ratio')
     trainer = Trainer(cfg, mode='eval')
 
     best_model_dict = trainer.status.get('metrics', {})
@@ -44,10 +50,10 @@ def main():
         trainer.logger.info('{}:{}'.format(k, v))
 
     data_dirs_list = [[
-        '../benchmark_bctr/benchmark_bctr_test/scene_test',
-        '../benchmark_bctr/benchmark_bctr_test/web_test',
+        # '../benchmark_bctr/benchmark_bctr_test/scene_test',
+        # '../benchmark_bctr/benchmark_bctr_test/web_test',
         '../benchmark_bctr/benchmark_bctr_test/document_test',
-        '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
+        # '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
     ]]
     cfg = cfg.cfg
     file_csv = open(

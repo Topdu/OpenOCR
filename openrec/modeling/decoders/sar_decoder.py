@@ -58,7 +58,7 @@ class SARDecoder(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 max_seq_len=25,
+                 max_len=25,
                  enc_bi_rnn=False,
                  enc_drop_rnn=0.1,
                  dec_bi_rnn=False,
@@ -74,7 +74,7 @@ class SARDecoder(nn.Module):
         self.start_idx = out_channels - 2
         self.padding_idx = out_channels - 1
         self.end_idx = 0
-        self.max_seq_len = max_seq_len + 1
+        self.max_seq_len = max_len + 1
         self.pred_concat = pred_concat
         self.mask = mask
         enc_dim = in_channels
