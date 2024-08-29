@@ -60,7 +60,7 @@ class ASTERDecoder(nn.Module):
                  embedding_dim=256,
                  hiddendim=256,
                  attndim=256,
-                 max_seq_len=25,
+                 max_len=25,
                  **kwargs):
         super(ASTERDecoder, self).__init__()
         self.num_classes = out_channels
@@ -73,7 +73,7 @@ class ASTERDecoder(nn.Module):
 
         self.attndim = attndim
         self.hiddendim = hiddendim
-        self.max_seq_len = max_seq_len + 1
+        self.max_seq_len = max_len + 1
 
         self.featdim = in_channels
 
@@ -81,7 +81,7 @@ class ASTERDecoder(nn.Module):
             featdim=self.featdim,
             hiddendim=hiddendim,
             embedding_dim=embedding_dim,
-            out_channels=out_channels-2,
+            out_channels=out_channels - 2,
             attndim=attndim,
         )
 

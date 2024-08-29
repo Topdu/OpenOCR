@@ -629,7 +629,7 @@ class Decoder(BaseDecoder):
                  hybrid_decoder_rnn_layers=2,
                  hybrid_decoder_dropout=0,
                  position_decoder_rnn_layers=2,
-                 max_seq_len=40,
+                 max_len=40,
                  start_idx=0,
                  mask=True,
                  padding_idx=None,
@@ -639,7 +639,7 @@ class Decoder(BaseDecoder):
         self.num_classes = num_classes
         self.dim_input = dim_input
         self.dim_model = dim_model
-        self.max_seq_len = max_seq_len
+        self.max_seq_len = max_len
         self.encode_value = encode_value
         self.start_idx = start_idx
         self.padding_idx = padding_idx
@@ -652,7 +652,7 @@ class Decoder(BaseDecoder):
             rnn_layers=hybrid_decoder_rnn_layers,
             dim_input=dim_input,
             dim_model=dim_model,
-            max_seq_len=max_seq_len,
+            max_seq_len=max_len,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
@@ -666,7 +666,7 @@ class Decoder(BaseDecoder):
             rnn_layers=position_decoder_rnn_layers,
             dim_input=dim_input,
             dim_model=dim_model,
-            max_seq_len=max_seq_len,
+            max_seq_len=max_len,
             mask=mask,
             encode_value=encode_value,
             return_feature=True)
