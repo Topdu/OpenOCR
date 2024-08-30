@@ -36,9 +36,12 @@ class ABINetResize(object):
 
     def __call__(self, data):
         img = data['image']
+        h, w = img.shape[:2]
         norm_img, valid_ratio = resize_norm_img_abinet(img, self.image_shape)
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
         return data
 
 
@@ -70,11 +73,13 @@ class SVTRResize(object):
 
     def __call__(self, data):
         img = data['image']
-
+        h, w = img.shape[:2]
         norm_img, valid_ratio = resize_norm_img(img, self.image_shape,
                                                 self.padding)
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
         return data
 
 
