@@ -212,7 +212,7 @@ class RatioDataSetTest(Dataset):
         data['image'] = padding_im
         data['valid_ratio'] = valid_ratio
         data['gen_ratio'] = imgW // imgH
-        data['real_ratio'] = w // h
+        data['real_ratio'] = round(w / h)
         return data
 
     def get_lmdb_sample_info(self, txn, index):
