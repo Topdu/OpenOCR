@@ -4,6 +4,24 @@ from torch.nn import functional as F
 from torch.nn import init
 
 
+class Embedding(nn.Module):
+
+    def __init__(self, in_timestep, in_planes, mid_dim=4096, embed_dim=300):
+        super(Embedding, self).__init__()
+        self.in_timestep = in_timestep
+        self.in_planes = in_planes
+        self.embed_dim = embed_dim
+        self.mid_dim = mid_dim
+        self.eEmbed = nn.Linear(
+            in_timestep * in_planes,
+            self.embed_dim)  # Embed encoder output to a word-embedding like
+
+    def forward(self, x):
+        x = x.flatten(1)
+        x = self.eEmbed(x)
+        return x
+
+
 class Attn_Rnn_Block(nn.Module):
 
     def __init__(self, featdim, hiddendim, embedding_dim, out_channels,
@@ -61,12 +79,19 @@ class ASTERDecoder(nn.Module):
                  hiddendim=256,
                  attndim=256,
                  max_len=25,
+                 seed=False,
+                 time_step=32,
                  **kwargs):
         super(ASTERDecoder, self).__init__()
         self.num_classes = out_channels
         self.bos_eos_idx = out_channels - 2
         self.padding_idx = out_channels - 1
-
+        self.seed = seed
+        if seed:
+            self.embeder = Embedding(
+                in_timestep=time_step,
+                in_planes=in_channels,
+            )
         self.word_embedding = nn.Embedding(self.num_classes,
                                            embedding_dim,
                                            padding_idx=self.padding_idx)
@@ -84,12 +109,28 @@ class ASTERDecoder(nn.Module):
             out_channels=out_channels - 2,
             attndim=attndim,
         )
+        self.embed_fc = nn.Linear(300, self.hiddendim)
+
+    def get_initial_state(self, embed, tile_times=1):
+        assert embed.shape[1] == 300
+        state = self.embed_fc(embed)  # N * sDim
+        if tile_times != 1:
+            state = state.unsqueeze(1)
+            trans_state = state.transpose(0, 1)
+            state = trans_state.tile([tile_times, 1, 1])
+            trans_state = state.transpose(0, 1)
+            state = trans_state.reshape(-1, self.hiddendim)
+        state = state.unsqueeze(0)  # 1 * N * sDim
+        return state
 
     def forward(self, feat, data=None):
         # b,25,512
         b = feat.size(0)
-
-        h_state = torch.zeros(1, b, self.hiddendim).to(feat.device)
+        if self.seed:
+            embedding_vectors = self.embeder(feat)
+            h_state = self.get_initial_state(embedding_vectors)
+        else:
+            h_state = torch.zeros(1, b, self.hiddendim).to(feat.device)
         outputs = []
         if self.training:
             label = data[0]
@@ -108,7 +149,6 @@ class ASTERDecoder(nn.Module):
 
         for i in range(1, max_len):
             if not self.training:
-                pred = F.softmax(pred, -1)
                 max_idx = torch.argmax(pred, dim=-1)
                 tokens = self.word_embedding(max_idx.squeeze(1))
             else:
@@ -116,4 +156,6 @@ class ASTERDecoder(nn.Module):
             pred, h_state = self.attn_rnn_block(feat, h_state, tokens)
             outputs.append(pred)
         preds = torch.cat(outputs, 1)
-        return preds
+        if self.seed and self.training:
+            return [embedding_vectors, preds]
+        return preds if self.training else F.softmax(preds, -1)

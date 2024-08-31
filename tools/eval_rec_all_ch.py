@@ -50,10 +50,10 @@ def main():
         trainer.logger.info('{}:{}'.format(k, v))
 
     data_dirs_list = [[
-        # '../benchmark_bctr/benchmark_bctr_test/scene_test',
-        # '../benchmark_bctr/benchmark_bctr_test/web_test',
+        '../benchmark_bctr/benchmark_bctr_test/scene_test',
+        '../benchmark_bctr/benchmark_bctr_test/web_test',
         '../benchmark_bctr/benchmark_bctr_test/document_test',
-        # '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
+        '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
     ]]
     cfg = cfg.cfg
     file_csv = open(
