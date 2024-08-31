@@ -15,7 +15,7 @@ class RobustScannerDecoder(nn.Module):
             hybrid_dec_rnn_layers=2,
             hybrid_dec_dropout=0,
             position_dec_rnn_layers=2,
-            max_text_length=40,
+            max_len=25,
             mask=True,
             encode_value=False,
             **kwargs):
@@ -27,7 +27,7 @@ class RobustScannerDecoder(nn.Module):
         # encoder module
         self.encoder = ChannelReductionEncoder(in_channels=in_channels,
                                                out_channels=enc_outchannles)
-        self.max_text_length = max_text_length + 1
+        self.max_text_length = max_len + 1
         self.mask = mask
         # decoder module
         self.decoder = Decoder(
@@ -37,7 +37,7 @@ class RobustScannerDecoder(nn.Module):
             hybrid_decoder_rnn_layers=hybrid_dec_rnn_layers,
             hybrid_decoder_dropout=hybrid_dec_dropout,
             position_decoder_rnn_layers=position_dec_rnn_layers,
-            max_seq_len=max_text_length + 1,
+            max_len=max_len + 1,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
@@ -57,10 +57,10 @@ class RobustScannerDecoder(nn.Module):
                                           [bs, 1])
 
         if self.mask:
-            valid_ratios = data[-2]
+            valid_ratios = data[-1]
 
         if self.training:
-            max_len = data[-1].max()
+            max_len = data[1].max()
             label = data[0][:, :1 + max_len]  # label
             final_out = self.decoder(inputs, out_enc, label, valid_ratios,
                                      word_positions[:, :1 + max_len])

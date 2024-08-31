@@ -9,7 +9,8 @@ Global:
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
   cal_metric_during_train: True
-  pretrained_model: ./open_ocr_vit_small_params.pth
+  pretrained_model:
+  # ./open_ocr_vit_small_params.pth
   checkpoints:
   use_tensorboard: false
   infer_img:

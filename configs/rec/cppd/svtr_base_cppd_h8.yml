@@ -3,27 +3,29 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/vit_parseq/
-  eval_epoch_step: [0, 1]
+  output_dir: ./output/rec/u14m_filter/svtr_base_h8_cppd/
+  save_epoch_step: 1
+  # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
+  eval_epoch_step: [0, 1]
   cal_metric_during_train: True
   pretrained_model:
   checkpoints:
   use_tensorboard: false
   infer_img:
   # for data or label process
-  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
+  # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
+  save_res_path: ./output/rec/u14m_filter/predicts_svtr_base_cppd.txt
   use_amp: True
-  save_res_path: ./output/rec/u14m_filter/predicts_vit_parseq.txt
-  grad_clip_val: 20
 
 Optimizer:
   name: AdamW
-  lr: 0.001485 # 2gpus 384bs/gpu
-  weight_decay: 0.
-  filter_bias_and_bn: False
+  lr: 0.00065 # for 4gpus bs256/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: True
 
 LRScheduler:
   name: OneCycleLR
@@ -32,27 +34,46 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: PARSeq
+  algorithm: CPPD
+  in_channels: 3
   Transform:
   Encoder:
-    name: ViT
+    name: SVTRNet
+    img_size: [32, 128]
+    out_char_num: 25
+    out_channels: 256
+    patch_merging: 'Conv'
+    embed_dim: [128, 256, 384]
+    depth: [6, 6, 6]
+    num_heads: [4, 8, 12]
+    sub_k: [[1, 1], [1, 2]]
+    mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
+    local_mixer: [[5, 5], [5, 5], [5, 5]]
+    last_stage: False
+    prenorm: True
   Decoder:
-    name: PARSeqDecoder
-    decode_ar: True
-    refine_iters: 1
+    name: CPPDDecoder
+    vis_seq: 128
+    num_layer: 2
+    pos_len: False
+    rec_layer: 1
+
 
 Loss:
-  name: PARSeqLoss
+  name: CPPDLoss
+  ignore_index: 100
+  smoothing: True
+  pos_len: False
+  sideloss_weight: 1.0
 
 PostProcess:
-  name: ARLabelDecode
+  name: CPPDLabelDecode
   character_dict_path: *character_dict_path
   use_space_char: *use_space_char
 
 Metric:
   name: RecMetric
   main_indicator: acc
-  is_filter: True
 
 Train:
   dataset:
@@ -61,8 +82,9 @@ Train:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - PARSeqAug:
-      - ARLabelEncode: # Class handling label
+      - PARSeqAugPIL:
+      - CPPDLabelEncode: # Class handling label
+          pos_len: False
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
@@ -70,10 +92,10 @@ Train:
           image_shape: [32, 128]
           padding: False
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'label_node', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 384
+    batch_size_per_card: 256
     drop_last: True
     num_workers: 4
 
@@ -84,7 +106,8 @@ Eval:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - ARLabelEncode: # Class handling label
+      - CPPDLabelEncode: # Class handling label
+          pos_len: False
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
@@ -96,5 +119,5 @@ Eval:
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 256
-    num_workers: 2
+    batch_size_per_card: 128
+    num_workers: 4

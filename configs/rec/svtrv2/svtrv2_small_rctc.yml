@@ -3,24 +3,21 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/focalsvtr_smtr_maxratio12
+  output_dir: ./output/rec/u14m_filter/svtrv2_small_rctc/
   save_epoch_step: 1
   # evaluation is run every 2000 iterations
-  eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
+  eval_batch_step: [0, 500]
   cal_metric_during_train: True
-  pretrained_model: ./output/rec/focalsvtr_smtr/best.pth
-  # ./output/focalnet_subs_nocmff_20ep_u14m_k8_max_ratio12_h8_norand1_h2_padrand_doub_96/best.pth
-  # ./output/rec/focalsvtr_smtr/best.pth
+  pretrained_model:
   checkpoints:
   use_tensorboard: false
-  infer_img: ../ltb/img
+  infer_img:
   # for data or label process
-  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
-  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
   max_text_length: &max_text_length 25
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/u14m_filter/predicts_focalsvtr_smtr_maxratio12.txt
+  save_res_path: ./output/rec/u14m_filter/predicts_svtrv2_rctc.txt
   use_amp: True
 
 Optimizer:
@@ -36,33 +33,28 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: SMTR
-  in_channels: 3
+  algorithm: SVTRv2
   Transform:
   Encoder:
-    name: FocalSVTR
-    img_size: [32, 128]
-    depths: [6, 6, 6]
-    embed_dim: 96
-    sub_k: [[1, 1], [2, 1], [1, 1]]
-    focal_levels: [3, 3, 3]
-    last_stage: False
+    name: SVTRv2LNConvTwo33
+    use_pos_embed: False
+    dims: [96, 192, 384]
+    depths: [3, 6, 3]
+    num_heads: [3, 6, 12]
+    mixer: [['Conv','Conv','Conv'],['Conv','Conv','Conv','FGlobal','Global','Global'],['Global','Global','Global']]
+    local_k: [[5, 5], [5, 5], [-1, -1]]
+    sub_k: [[1, 1], [2, 1], [-1, -1]]
+    last_stage: false
+    feat2d: True
   Decoder:
-    name: SMTRDecoder
-    num_layer: 1
-    ds: True
-    max_len: *max_text_length
-    next_mode: &next True
-    sub_str_len: &subsl 5
+    name: RCTCDecoder
 
 Loss:
-  name: SMTRLoss
+  name: CTCLoss
+  zero_infinity: True
 
 PostProcess:
-  name: SMTRLabelDecode
-  next_mode: *next
-  character_dict_path: *character_dict_path
-  use_space_char: *use_space_char
+  name: CTCLabelDecode
 
 Metric:
   name: RecMetric
@@ -71,11 +63,9 @@ Metric:
 
 Train:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
-    padding: &padding True
-    padding_rand: True
-    padding_doub: True
+    padding: False
     data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
     '../Union14M-L-LMDB-Filtered/filter_train_hard',
     '../Union14M-L-LMDB-Filtered/filter_train_medium',
@@ -83,18 +73,15 @@ Train:
     '../Union14M-L-LMDB-Filtered/filter_train_easy',
     ]
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - PARSeqAug:
-      - SMTRLabelEncode: # Class handling label
-          sub_str_len: *subsl
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - PARSeqAugPIL:
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'label_subs', 'label_next', 'length_subs',
-          'label_subs_pre', 'label_next_pre', 'length_subs_pre', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length']
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -107,15 +94,14 @@ Train:
     shuffle: True
     batch_size_per_card: *bs
     drop_last: True
-    max_ratio: &max_ratio 12
+    max_ratio: 4
     num_workers: 4
 
 Eval:
   dataset:
-    name: RatioDataSet
+    name: RatioDataSetTVResize
     ds_width: True
     padding: False
-    padding_rand: False
     data_dir_list: [
       '../evaluation/CUTE80',
       '../evaluation/IC13_857',
@@ -125,26 +111,25 @@ Eval:
       '../evaluation/SVTP',
       ]
     transforms:
-      - DecodeImage: # load image
-          img_mode: BGR
-          channel_first: False
-      - ARLabelEncode: # Class handling label
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length']
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
     # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
-    first_bs: 128
+    first_bs: 256
     fix_bs: false
     divided_factor: [4, 16] # w, h
     is_training: False
   loader:
     shuffle: False
     drop_last: False
-    max_ratio: *max_ratio
-    batch_size_per_card: 128
+    batch_size_per_card: *bs
+    max_ratio: 4
     num_workers: 4

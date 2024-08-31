@@ -191,4 +191,4 @@ class DANDecoder(nn.Module):
                 mid_res = self.generator(hidden).argmax(-1)
                 prev_emb = self.char_embeddings(mid_res)
             gru_res = self.generator(gru_res)
-            return gru_res.transpose(1, 0)
+            return F.softmax(gru_res.transpose(1, 0), -1)

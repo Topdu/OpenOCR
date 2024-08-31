@@ -3,7 +3,7 @@ Global:
   epoch_num: 20
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/u14m_filter/vit_parseq/
+  output_dir: ./output/rec/u14m_filter/resnet31_lstm_seed_tps_on
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
@@ -12,17 +12,17 @@ Global:
   use_tensorboard: false
   infer_img:
   # for data or label process
-  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt
-  max_text_length: &max_text_length 25
-  use_space_char: &use_space_char False
+  character_dict_path: ./tools/utils/EN_symbol_dict.txt
+  max_text_length: 25
+  use_space_char: False
+  save_res_path: ./output/rec/predicts_aster_tps.txt
   use_amp: True
-  save_res_path: ./output/rec/u14m_filter/predicts_vit_parseq.txt
-  grad_clip_val: 20
+  grad_clip_val: 1.0
 
 Optimizer:
-  name: AdamW
-  lr: 0.001485 # 2gpus 384bs/gpu
-  weight_decay: 0.
+  name: Adam
+  lr: 0.002 # for 1gpus bs1024/gpu
+  weight_decay: 0.0
   filter_bias_and_bn: False
 
 LRScheduler:
@@ -32,27 +32,27 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: PARSeq
+  algorithm: aster
   Transform:
+    name: Aster_TPS
+    tps_inputsize: [32, 64]
+    tps_outputsize: [32, 128]
   Encoder:
-    name: ViT
+    name: ResNet_ASTER
   Decoder:
-    name: PARSeqDecoder
-    decode_ar: True
-    refine_iters: 1
+    name: ASTERDecoder
+    seed: True
 
 Loss:
-  name: PARSeqLoss
-
-PostProcess:
-  name: ARLabelDecode
-  character_dict_path: *character_dict_path
-  use_space_char: *use_space_char
+  name: SEEDLoss
 
 Metric:
   name: RecMetric
   main_indicator: acc
   is_filter: True
+
+PostProcess:
+  name: ARLabelDecode
 
 Train:
   dataset:
@@ -61,35 +61,31 @@ Train:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - PARSeqAug:
+      - PARSeqAugPIL:
+      - Fasttext:
+          path: './cc.en.300.bin' # wget https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.en.300.bin.gz; gzip -dk cc.en.300.bin.gz
       - ARLabelEncode: # Class handling label
-          character_dict_path: *character_dict_path
-          use_space_char: *use_space_char
-          max_text_length: *max_text_length
       - RecTVResize:
-          image_shape: [32, 128]
+          image_shape: [64, 256]
           padding: False
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length', 'fast_label'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 384
+    batch_size_per_card: 1024
     drop_last: True
     num_workers: 4
 
 Eval:
   dataset:
     name: LMDBDataSet
-    data_dir: ../evaluation/
+    data_dir: ../evaluation
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
       - ARLabelEncode: # Class handling label
-          character_dict_path: *character_dict_path
-          use_space_char: *use_space_char
-          max_text_length: *max_text_length
       - RecTVResize:
-          image_shape: [32, 128]
+          image_shape: [64, 256]
           padding: False
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order

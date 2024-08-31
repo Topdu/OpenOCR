@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 
@@ -9,7 +10,8 @@ import json
 
 import numpy as np
 import torch
-
+from torchvision import transforms as T
+from torchvision.transforms import functional as F
 from openrec.modeling import build_model
 from openrec.postprocess import build_post_process
 from openrec.preprocess import create_operators, transform
@@ -20,87 +22,131 @@ from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
 
 
+class RatioRecTVReisze(object):
+
+    def __init__(self, ceil=False):
+        self.max_ratio = 12
+        self.base_shape = [[64, 64], [96, 48], [112, 40], [128, 32]]
+        self.base_h = 32
+        self.interpolation = T.InterpolationMode.BICUBIC
+        transforms = []
+        transforms.extend([
+            T.ToTensor(),
+            T.Normalize(0.5, 0.5),
+        ])
+        self.transforms = T.Compose(transforms)
+        self.ceil = ceil
+
+    def __call__(self, data):
+        img = data['image']
+        imgH = self.base_h
+        w, h = img.size
+        if self.ceil:
+            gen_ratio = int(float(w) / float(h)) + 1
+        else:
+            gen_ratio = max(1, round(float(w) / float(h)))
+        ratio_resize = min(gen_ratio, self.max_ratio)
+        imgW, imgH = self.base_shape[ratio_resize -
+                                     1] if ratio_resize <= 4 else [
+                                         self.base_h *
+                                         ratio_resize, self.base_h
+                                     ]
+        resized_w = imgW
+        resized_image = F.resize(img, (imgH, resized_w),
+                                 interpolation=self.interpolation)
+        img = self.transforms(resized_image)
+        data['image'] = img
+        return data
+
+
 def build_rec_process(cfg):
     transforms = []
+    ratio_resize_flag = True
     for op in cfg['Eval']['dataset']['transforms']:
         op_name = list(op)[0]
+        if 'Resize' in op_name:
+            ratio_resize_flag = False
         if 'Label' in op_name:
             continue
         elif op_name in ['RecResizeImg']:
             op[op_name]['infer_mode'] = True
         elif op_name == 'KeepKeys':
-            if cfg['Architecture']['algorithm'] == 'SRN':
-                op[op_name]['keep_keys'] = [
-                    'image',
-                    'encoder_word_pos',
-                    'gsrm_word_pos',
-                    'gsrm_slf_attn_bias1',
-                    'gsrm_slf_attn_bias2',
-                ]
-            elif cfg['Architecture']['algorithm'] == 'SAR':
-                op[op_name]['keep_keys'] = ['image', 'valid_ratio']
-            elif cfg['Architecture']['algorithm'] == 'RobustScanner':
-                op[op_name]['keep_keys'] = [
-                    'image', 'valid_ratio', 'word_positons'
-                ]
+            if cfg['Architecture']['algorithm'] in ['SAR', 'RobustScanner']:
+                if 'valid_ratio' in op[op_name]['keep_keys']:
+                    op[op_name]['keep_keys'] = ['image', 'valid_ratio']
+                else:
+                    op[op_name]['keep_keys'] = ['image']
             else:
                 op[op_name]['keep_keys'] = ['image']
         transforms.append(op)
-    return transforms
+    return transforms, ratio_resize_flag
+
+
+def set_device(device):
+    if device == 'gpu' and torch.cuda.is_available():
+        device = torch.device('cuda:0')
+    else:
+        device = torch.device('cpu')
+    return device
 
 
 def main(cfg):
     logger = get_logger()
     global_config = cfg['Global']
-
+    if cfg['Global']['pretrained_model'] is None:
+        cfg['Global'][
+            'pretrained_model'] = cfg['Global']['output_dir'] + '/best.pth'
+    if cfg['Global']['infer_img'] is None:
+        cfg['Global']['infer_img'] = '../iiit5k_test_image'
     # build post process
-    post_process_class = build_post_process(cfg['PostProcess'])
+    post_process_class = build_post_process(cfg['PostProcess'], cfg['Global'])
 
-    char_num = len(getattr(post_process_class, 'character'))
+    char_num = post_process_class.get_character_num()
     cfg['Architecture']['Decoder']['out_channels'] = char_num
     model = build_model(cfg['Architecture'])
     load_ckpt(model, cfg)
+    device = set_device(cfg['Global']['device'])
     model.eval()
+    model.to(device=device)
 
     # create data ops
-    transforms = build_rec_process(cfg)
+    transforms, ratio_resize_flag = build_rec_process(cfg)
     global_config['infer_mode'] = True
     ops = create_operators(transforms, global_config)
+    if ratio_resize_flag:
+        ratio_resize = RatioRecTVReisze(
+            ceil=cfg['Eval']['dataset'].get('ceil', False))
+        ops.insert(-1, ratio_resize)
+    t_sum = 0
+    sample_num = 0
 
+    text_len_time = [0 for _ in range(26)]
+    text_len_num = [0 for _ in range(26)]
     for file in get_image_file_list(global_config['infer_img']):
         logger.info('infer_img: {}'.format(file))
+
         with open(file, 'rb') as f:
             img = f.read()
             data = {'image': img}
         batch = transform(data, ops)
         others = None
-        if cfg['Architecture']['algorithm'] == 'SRN':
-            encoder_word_pos_list = np.expand_dims(batch[1], axis=0)
-            gsrm_word_pos_list = np.expand_dims(batch[2], axis=0)
-            gsrm_slf_attn_bias1_list = np.expand_dims(batch[3], axis=0)
-            gsrm_slf_attn_bias2_list = np.expand_dims(batch[4], axis=0)
-
-            others = [
-                torch.from_numpy(encoder_word_pos_list),
-                torch.from_numpy(gsrm_word_pos_list),
-                torch.from_numpy(gsrm_slf_attn_bias1_list),
-                torch.from_numpy(gsrm_slf_attn_bias2_list),
-            ]
-        elif cfg['Architecture']['algorithm'] == 'SAR':
+        if cfg['Architecture']['algorithm'] in ['SAR', 'RobustScanner']:
             valid_ratio = np.expand_dims(batch[-1], axis=0)
-            others = [torch.from_numpy(valid_ratio)]
-        elif cfg['Architecture']['algorithm'] == 'RobustScanner':
-            valid_ratio = np.expand_dims(batch[1], axis=0)
-            word_positons = np.expand_dims(batch[2], axis=0)
-            others = [
-                torch.from_numpy(valid_ratio),
-                torch.from_numpy(word_positons),
-            ]
+            others = [torch.from_numpy(valid_ratio).to(device=device)]
         images = np.expand_dims(batch[0], axis=0)
-        images = torch.from_numpy(images)
+        images = torch.from_numpy(images).to(device=device)
+        if sample_num == 0:
+            for _ in range(100):
+                with torch.no_grad():
+                    preds = model(images, others)
+            sample_num += 1
+            continue
         with torch.no_grad():
+            ts = time.time()
             preds = model(images, others)
+            te = time.time()
         post_result = post_process_class(preds)
+
         if isinstance(post_result, dict):
             rec_info = dict()
             for key in post_result:
@@ -116,8 +162,26 @@ def main(cfg):
         else:
             if len(post_result[0]) >= 2:
                 info = post_result[0][0] + '\t' + str(post_result[0][1])
-
+        t_cost = te - ts
+        text_len_num[min(25, len(post_result[0][0]))] += 1
+        text_len_time[min(25, len(post_result[0][0]))] += t_cost
         logger.info(f'{file}\t result: {info}')
+        logger.info(f'{file}\t time cost: {t_cost}')
+        t_sum += t_cost
+        sample_num += 1
+
+    sample_num -= 1
+    print(text_len_num)
+    w_avg_t_cost = []
+    for l_t_cost, l_num in zip(text_len_time, text_len_num):
+        if l_num != 0:
+            w_avg_t_cost.append(l_t_cost / l_num)
+    print(w_avg_t_cost)
+    w_avg_t_cost = sum(w_avg_t_cost) / len(w_avg_t_cost)
+
+    logger.info(
+        f'Sample num: {sample_num}, Weighted Avg time cost: {t_sum/sample_num}, Avg time cost: {w_avg_t_cost}'
+    )
     logger.info('success!')
 
 
