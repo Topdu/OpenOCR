@@ -24,10 +24,10 @@ from tools.utils.utility import get_image_file_list
 
 class RatioRecTVReisze(object):
 
-    def __init__(self, ceil=False):
-        self.max_ratio = 12
-        self.base_shape = [[64, 64], [96, 48], [112, 40], [128, 32]]
-        self.base_h = 32
+    def __init__(self, cfg):
+        self.max_ratio = cfg['Eval']['loader'].get('max_ratio', 12)
+        self.base_shape = cfg['Eval']['dataset'].get('base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
+        self.base_h = cfg['Eval']['dataset'].get('base_h', 32)
         self.interpolation = T.InterpolationMode.BICUBIC
         transforms = []
         transforms.extend([
@@ -35,7 +35,7 @@ class RatioRecTVReisze(object):
             T.Normalize(0.5, 0.5),
         ])
         self.transforms = T.Compose(transforms)
-        self.ceil = ceil
+        self.ceil = cfg['Eval']['dataset'].get('ceil', False), 
 
     def __call__(self, data):
         img = data['image']
@@ -114,17 +114,14 @@ def main(cfg):
     global_config['infer_mode'] = True
     ops = create_operators(transforms, global_config)
     if ratio_resize_flag:
-        ratio_resize = RatioRecTVReisze(
-            ceil=cfg['Eval']['dataset'].get('ceil', False))
+        ratio_resize = RatioRecTVReisze(cfg=cfg)
         ops.insert(-1, ratio_resize)
     t_sum = 0
     sample_num = 0
-
-    text_len_time = [0 for _ in range(26)]
-    text_len_num = [0 for _ in range(26)]
+    max_len = cfg['Global']['max_text_length']
+    text_len_time = [0 for _ in range(max_len)]
+    text_len_num = [0 for _ in range(max_len)]
     for file in get_image_file_list(global_config['infer_img']):
-        logger.info('infer_img: {}'.format(file))
-
         with open(file, 'rb') as f:
             img = f.read()
             data = {'image': img}
@@ -163,10 +160,9 @@ def main(cfg):
             if len(post_result[0]) >= 2:
                 info = post_result[0][0] + '\t' + str(post_result[0][1])
         t_cost = te - ts
-        text_len_num[min(25, len(post_result[0][0]))] += 1
-        text_len_time[min(25, len(post_result[0][0]))] += t_cost
-        logger.info(f'{file}\t result: {info}')
-        logger.info(f'{file}\t time cost: {t_cost}')
+        text_len_num[min(max_len-1, len(post_result[0][0]))] += 1
+        text_len_time[min(max_len-1, len(post_result[0][0]))] += t_cost
+        logger.info(f'{file}\t result: {info}, time cost: {t_cost}')
         t_sum += t_cost
         sample_num += 1
 

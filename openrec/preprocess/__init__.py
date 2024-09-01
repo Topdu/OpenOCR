@@ -48,6 +48,20 @@ def transform(data, ops=None):
     return data
 
 
+class Fasttext(object):
+    def __init__(self, path="None", **kwargs):
+        # pip install fasttext==0.9.1
+        import fasttext
+
+        self.fast_model = fasttext.load_model(path)
+
+    def __call__(self, data):
+        label = data["label"]
+        fast_label = self.fast_model[label]
+        data["fast_label"] = fast_label
+        return data
+
+
 class DecodeImage(object):
     """decode image."""
 
