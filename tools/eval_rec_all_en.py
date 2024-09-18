@@ -73,7 +73,9 @@ def main():
 
         acc_each = []
         acc_each_real = []
+        acc_each_lower = []
         acc_each_ingore_space = []
+        acc_each_ingore_space_lower = []
         acc_each_ignore_space_symbol = []
         acc_each_lower_ignore_space_symbol = []
         acc_each_num = []
@@ -86,22 +88,23 @@ def main():
                 config_each['Eval']['dataset']['data_dir_list'] = [datadir]
             else:
                 config_each['Eval']['dataset']['data_dir'] = datadir
-            # config_each['Eval']['dataset']['label_file_list']=[label_file_list]
             valid_dataloader = build_dataloader(config_each, 'Eval',
                                                 trainer.logger)
             trainer.logger.info(
                 f'{datadir} valid dataloader has {len(valid_dataloader)} iters'
             )
-            # valid_dataloaders.append(valid_dataloader)
             trainer.valid_dataloader = valid_dataloader
             metric = trainer.eval()
             acc_each.append(metric['acc'] * 100)
             acc_each_real.append(metric['acc_real'] * 100)
+            acc_each_lower.append(metric['acc_lower'] * 100)
             acc_each_ingore_space.append(metric['acc_ignore_space'] * 100)
+            acc_each_ingore_space_lower.append(
+                metric['acc_ignore_space_lower'] * 100)
             acc_each_ignore_space_symbol.append(
                 metric['acc_ignore_space_symbol'] * 100)
             acc_each_lower_ignore_space_symbol.append(
-                metric['acc_lower_ignore_space_symbol'] * 100)
+                metric['acc_ignore_space_lower_symbol'] * 100)
             acc_each_dis.append(metric['norm_edit_dis'])
             acc_each_num.append(metric['num_samples'])
 
@@ -139,12 +142,24 @@ def main():
         csv_w.writerow(['acc_real'] + acc_each_real +
                        [sum(acc_each_real) / len(acc_each_real)] +
                        [avg1.sum().tolist()])
+        avg1 = np.array(acc_each_lower) * np.array(acc_each_num) / sum(
+            acc_each_num)
+        csv_w.writerow(['acc_lower'] + acc_each_lower +
+                       [sum(acc_each_lower) / len(acc_each_lower)] +
+                       [avg1.sum().tolist()])
         avg1 = np.array(acc_each_ingore_space) * np.array(acc_each_num) / sum(
             acc_each_num)
         csv_w.writerow(
             ['acc_ignore_space'] + acc_each_ingore_space +
             [sum(acc_each_ingore_space) / len(acc_each_ingore_space)] +
             [avg1.sum().tolist()])
+        avg1 = np.array(acc_each_ingore_space_lower) * np.array(
+            acc_each_num) / sum(acc_each_num)
+        csv_w.writerow(['acc_ignore_space_lower'] +
+                       acc_each_ingore_space_lower + [
+                           sum(acc_each_ingore_space_lower) /
+                           len(acc_each_ingore_space_lower)
+                       ] + [avg1.sum().tolist()])
         avg1 = np.array(acc_each_ignore_space_symbol) * np.array(
             acc_each_num) / sum(acc_each_num)
         csv_w.writerow(['acc_ignore_space_symbol'] +
@@ -154,7 +169,7 @@ def main():
                        ] + [avg1.sum().tolist()])
         avg1 = np.array(acc_each_lower_ignore_space_symbol) * np.array(
             acc_each_num) / sum(acc_each_num)
-        csv_w.writerow(['acc_lower_ignore_space_symbol'] +
+        csv_w.writerow(['acc_ignore_space_lower_symbol'] +
                        acc_each_lower_ignore_space_symbol + [
                            sum(acc_each_lower_ignore_space_symbol) /
                            len(acc_each_lower_ignore_space_symbol)
