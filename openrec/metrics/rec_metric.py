@@ -104,7 +104,9 @@ class RecMetric(object):
         preds, labels = pred_label
         correct_num = 0
         correct_num_real = 0
+        correct_num_lower = 0
         correct_num_ignore_space = 0
+        correct_num_ignore_space_lower = 0
         correct_num_ignore_space_symbol = 0
         all_num = 0
         norm_edit_dis = 0.0
@@ -121,11 +123,17 @@ class RecMetric(object):
             if pred == target:
                 correct_num_real += 1
 
+            if pred.lower() == target.lower():
+                correct_num_lower += 1
+
             if self.ignore_space:
                 pred = pred.replace(' ', '')
                 target = target.replace(' ', '')
             if pred == target:
                 correct_num_ignore_space += 1
+
+            if pred.lower() == target.lower():
+                correct_num_ignore_space_lower += 1
 
             if self.is_filter:
                 pred = self._normalize_text(pred)
@@ -154,7 +162,9 @@ class RecMetric(object):
             all_num += 1
         self.correct_num += correct_num
         self.correct_num_real += correct_num_real
+        self.correct_num_lower += correct_num_lower
         self.correct_num_ignore_space += correct_num_ignore_space
+        self.correct_num_ignore_space_lower += correct_num_ignore_space_lower
         self.correct_num_ignore_space_symbol += correct_num_ignore_space_symbol
         self.all_num += all_num
         self.norm_edit_dis += norm_edit_dis
@@ -201,10 +211,14 @@ class RecMetric(object):
         """
         acc = 1.0 * self.correct_num / (self.all_num + self.eps)
         acc_real = 1.0 * self.correct_num_real / (self.all_num + self.eps)
+        acc_lower = 1.0 * self.correct_num_lower / (self.all_num + self.eps)
         acc_ignore_space = 1.0 * self.correct_num_ignore_space / (
+            self.all_num + self.eps)
+        acc_ignore_space_lower = 1.0 * self.correct_num_ignore_space_lower / (
             self.all_num + self.eps)
         acc_ignore_space_symbol = 1.0 * self.correct_num_ignore_space_symbol / (
             self.all_num + self.eps)
+
         norm_edit_dis = 1 - self.norm_edit_dis / (self.all_num + self.eps)
         num_samples = self.all_num
         each_len_acc = (self.each_len_correct_num /
@@ -222,9 +236,11 @@ class RecMetric(object):
         return {
             'acc': acc,
             'acc_real': acc_real,
+            'acc_lower': acc_lower,
             'acc_ignore_space': acc_ignore_space,
+            'acc_ignore_space_lower': acc_ignore_space_lower,
             'acc_ignore_space_symbol': acc_ignore_space_symbol,
-            'acc_lower_ignore_space_symbol': acc,
+            'acc_ignore_space_lower_symbol': acc,
             'each_len_num': each_len_num,
             'each_len_acc': each_len_acc,
             'each_len_norm_edit_dis': each_len_norm_edit_dis,
@@ -240,7 +256,9 @@ class RecMetric(object):
         self.all_num = 0
         self.norm_edit_dis = 0
         self.correct_num_real = 0
+        self.correct_num_lower = 0
         self.correct_num_ignore_space = 0
+        self.correct_num_ignore_space_lower = 0
         self.correct_num_ignore_space_symbol = 0
         self.each_len_num = np.array([0 for _ in range(self.max_len)])
         self.each_len_correct_num = np.array([0 for _ in range(self.max_len)])

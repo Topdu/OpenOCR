@@ -89,6 +89,11 @@ class MGPDecoder(nn.Module):
             # wp
             wp_attn, x_wp = self.wp_tokenLearner(x)
             wp_out = self.wp_head(x_wp)
-            return [char_out, bpe_out, wp_out]
+            return [char_out, bpe_out, wp_out] if self.training else [
+                F.softmax(char_out, -1),
+                F.softmax(bpe_out, -1),
+                F.softmax(wp_out, -1)
+            ]
             # attens += [wp_attn]
-        return char_out
+
+        return char_out if self.training else F.softmax(char_out, -1)

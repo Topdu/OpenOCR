@@ -140,7 +140,7 @@ class CPPDLabelEncode(BaseRecLabelEncode):
                     [sum(text_lengths)] = [text_index_0 + text_index_1 + ... + text_index_(n - 1)]
             length: length of each text. [batch_size]
         """
-        if len(text) == 0 or len(text) > self.max_text_len:
+        if len(text) == 0:
             return None, None, None
         if self.lower:
             text = text.lower()
@@ -168,6 +168,6 @@ class CPPDLabelEncode(BaseRecLabelEncode):
         text_node_index = sorted(text_node_dict)
 
         text_node_num = [text_node_dict[k] for k in text_node_index]
-        if len(text_list) == 0:
+        if len(text_list) == 0 or len(text_list) > self.max_text_len:
             return None, None, None
         return text_list, text_node_index, text_node_num

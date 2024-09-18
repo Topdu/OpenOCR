@@ -21,6 +21,7 @@ Global:
   use_space_char: &use_space_char False
   save_res_path: ./output/rec/u14m_filter/predicts_vit_nrtr_ft_mae.txt
   use_amp: True
+  project_name: maerec
 
 Optimizer:
   name: AdamW

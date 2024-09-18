@@ -46,7 +46,7 @@ Architecture:
     embed_dim: [128, 256, 384]
     depth: [6, 6, 6]
     num_heads: [4, 8, 12]
-    sub_k: [[1, 1], [1, 2]]
+    sub_k: [[1, 1], [2, 1]]
     mixer: ['Conv','Conv','Conv','Conv','Conv','Conv', 'Conv','Conv', 'Global','Global','Global','Global','Global','Global','Global','Global','Global','Global']
     local_mixer: [[5, 5], [5, 5], [5, 5]]
     last_stage: False
@@ -57,7 +57,6 @@ Architecture:
     num_layer: 2
     pos_len: False
     rec_layer: 1
-
 
 Loss:
   name: CPPDLoss
@@ -74,6 +73,7 @@ PostProcess:
 Metric:
   name: RecMetric
   main_indicator: acc
+  is_filter: True
 
 Train:
   dataset:
