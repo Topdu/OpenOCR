@@ -62,9 +62,11 @@ class GTCLabelDecode(object):
     def __call__(self, preds, batch=None, *args, **kwargs):
         if self.with_ratio:
             batch = batch[:-1]
-        gtc = self.gtc_label_decode(preds['gtc_pred'], batch[:-2])
+        gtc = self.gtc_label_decode(preds['gtc_pred'],
+                                    batch[:-2] if batch is not None else None)
         if self.only_gtc:
             return gtc
-        ctc = self.ctc_label_decode(preds['ctc_pred'], [None] + batch[-2:])
+        ctc = self.ctc_label_decode(preds['ctc_pred'], [None] +
+                                    batch[-2:] if batch is not None else None)
 
         return [gtc, ctc]

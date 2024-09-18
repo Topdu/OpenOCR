@@ -41,7 +41,7 @@ class ABINetResize(object):
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
         r = float(w) / float(h)
-        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
+        data['real_ratio'] = max(1, round(r))
         return data
 
 
@@ -79,7 +79,7 @@ class SVTRResize(object):
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
         r = float(w) / float(h)
-        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
+        data['real_ratio'] = max(1, round(r))
         return data
 
 
@@ -117,7 +117,7 @@ class RecTVResize(object):
         data['image'] = img
         data['valid_ratio'] = valid_ratio
         r = float(w) / float(h)
-        data['real_ratio'] = np.array(int(r) + 1 if r <= 4 else round(r))
+        data['real_ratio'] = max(1, round(r))
         return data
 
 

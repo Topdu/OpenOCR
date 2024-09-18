@@ -75,18 +75,16 @@ class BaseRecLabelEncode(object):
                     [sum(text_lengths)] = [text_index_0 + text_index_1 + ... + text_index_(n - 1)]
             length: length of each text. [batch_size]
         """
-        if len(text) == 0 or len(text) > self.max_text_len:
+        if len(text) == 0:
             return None
         if self.lower:
             text = text.lower()
         text_list = []
         for char in text:
             if char not in self.dict:
-                # logger = get_logger()
-                # logger.warning('{} is not in dict'.format(char))
                 continue
             text_list.append(self.dict[char])
-        if len(text_list) == 0:
+        if len(text_list) == 0 or len(text_list) > self.max_text_len:
             return None
         return text_list
 
