@@ -152,7 +152,7 @@ class ASTERDecoder(nn.Module):
                              self.padding_idx,
                              dtype=torch.int64,
                              device=feat.get_device())
-        dec_seq[:, 0] = torch.argmax(pred, dim=-1)
+        dec_seq[:, :1] = torch.argmax(pred, dim=-1)
         for i in range(1, max_len):
             if not self.training:
                 max_idx = torch.argmax(pred, dim=-1).squeeze(1)

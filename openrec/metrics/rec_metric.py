@@ -148,8 +148,7 @@ class RecMetric(object):
             norm_edit_dis += dis
             ratio_i = ratio[all_num] - 1 if ratio[
                 all_num] < self.max_ratio else self.max_ratio - 1
-            len_i = len(target) - 1 if len(
-                target) < self.max_len else self.max_len - 1
+            len_i = max(0, min(self.max_len, len(target)) - 1)
             if pred == target:
                 correct_num += 1
                 each_len_correct_num[len_i] += 1
