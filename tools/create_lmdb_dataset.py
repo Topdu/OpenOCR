@@ -5,6 +5,15 @@ from tqdm import tqdm
 import numpy as np
 import io
 from PIL import Image
+import sys
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+
+sys.path.append(__dir__)
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
+
+from download.utils import parse_args_preprocess, get_preprocess_fn
+
 """ a modified version of CRNN torch repository https://github.com/bgshih/crnn/blob/master/tool/create_dataset.py """
 
 
@@ -96,23 +105,13 @@ def createDataset(data_list, outputPath, checkValid=True):
     writeCache(env, cache)
     print('Created dataset with %d samples' % nSamples)
 
+def main():
+    args = parse_args_preprocess()
+    preprocess_fn = get_preprocess_fn(args)
+    data = preprocess_fn(args)
+    dataset_dir = os.path.join(args.root, args.dataset_name)
+    os.makedirs(dataset_dir, exist_ok=True)
+    createDataset(data, dataset_dir)
 
 if __name__ == '__main__':
-    data_dir = './Union14M-L/'
-    label_file_list = [
-        './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_challenging.jsonl.txt',
-        './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_easy.jsonl.txt',
-        './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_hard.jsonl.txt',
-        './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_medium.jsonl.txt',
-        './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_normal.jsonl.txt'
-    ]
-    save_path_root = './Union14M-L-LMDB-Filtered/'
-
-    for data_list in label_file_list:
-        save_path = save_path_root + data_list.split('/')[-1].split(
-            '.')[0] + '/'
-        os.makedirs(save_path, exist_ok=True)
-        print(save_path)
-        train_data_list = get_datalist(data_dir, data_list, 800)
-
-        createDataset(train_data_list, save_path)
+    main()

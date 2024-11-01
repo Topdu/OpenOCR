@@ -15,7 +15,7 @@ def main():
     for url, filename_path, unpack_path in zip(urls, filename_paths, unpack_paths):
         print(f"Downloading {filename_path} from {url} . . .")
         urlretrieve(url=url, filename=filename_path, check_validity=check_validity)
-        if not filename_path.endswith(".txt"):
+        if not filename_path.endswith(".txt") and not filename_path.endswith(".json"):
             extract_archive(from_path=filename_path, to_path=unpack_path, remove_finished=True)
     print("Downloads finished!")
 
