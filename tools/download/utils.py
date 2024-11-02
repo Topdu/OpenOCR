@@ -52,7 +52,7 @@ URLS = {
     "svtp": (
         {
             "str": [
-                # The original page is not available, so we fall back to a paper that uses the dataset
+                # The original page is not available, so we fall back to a paper repository that uses the dataset
                 ("https://github.com/Jyouhou/Case-Sensitive-Scene-Text-Recognition-Datasets/archive/refs/heads/master.zip", "data.zip")
             ]
         },
@@ -61,9 +61,29 @@ URLS = {
     "cute": (
         {
             "str": [
-                # We refer to these URLs as the original download link does not provide labels
+                # Fall back to MMOCR download links as the original does not provide labels
                 ("https://download.openmmlab.com/mmocr/data/mixture/ct80/timage.tar.gz", "data.tar.gz"),
                 ("https://download.openmmlab.com/mmocr/data/1.x/recog/ct80/textrecog_test.json", "anns.json")
+            ]
+        },
+        True
+    ),
+    "sroie19": (
+        {
+            "str": [
+                # fall back to MMOCR download links as the original relies on Google drive folders
+                ("https://download.openmmlab.com/mmocr/data/sroie/task1&2_test(361p).zip", "data.zip"),
+                ("https://download.openmmlab.com/mmocr/data/sroie/text.zip", "labels.zip")
+            ]
+        },
+        True
+    ),
+    "textocr": (
+        {
+            "str": [
+                ("https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_train.json", "train_anns.json"),
+                ("https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_val.json", "val_anns.json"),
+                ("https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip", "train_images.zip"),
             ]
         },
         True
@@ -71,7 +91,7 @@ URLS = {
     "union-14m-l": (
         {
             "str": [
-                ("https://drive.usercontent.google.com/download?id=18qbJ29K81Ub82bSTlSGG3O3fVVLjfVAu&confirm=t", "data.tar.gz")
+                ("https://drive.usercontent.google.com/download?id=18qbJ29K81Ub82bSTlSGG3O3fVVLjfVAu&authuser=0&confirm=t", "data.tar.gz")
             ]
         },
         True
@@ -277,7 +297,99 @@ def _cute_preprocess_str(args):
             ])
     return data
 
+def _sroie19_preprocess_str(args):
+    data_dir = os.path.join(args.root, args.dataset_name)
+
+    imgs_paths = sorted(os.listdir(os.path.join(data_dir, "data", "fulltext_test(361p)")), key=lambda x: x.split(".")[0])
+    anns_paths = sorted(os.listdir(os.path.join(data_dir, "labels")), key=lambda x: x.split(".")[0])
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    for ann_path, img_path in zip(anns_paths, imgs_paths):
+        full_ann_path = os.path.join(data_dir, "labels", ann_path)
+        img = cv2.imread(os.path.join(data_dir, "data", "fulltext_test(361p)", img_path))
+        if ann_path == "X51006619503.txt":
+            encoding = "iso-8859-1"
+        else:
+            encoding = "utf-8"
+        with open(full_ann_path, "r", encoding=encoding) as f:
+            csvreader = csv.reader(f)
+            for row in csvreader:
+                if row == []:
+                    continue
+                word = row[-1]
+                if len(word) >= args.max_len:
+                    continue
+                # LT, RT, RB, LB, WORD
+                l, t, r, b = int(row[0]), int(row[1]), int(row[2]), int(row[5])
+                if l  == r or t == b:
+                    continue
+                curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                data.append([curr_remapped_path, word])
+                idx += 1
+    return data
+
+def _textocr_preprocess_str(args):
+    try:
+        # Use PIL instead of opencv to mitigate risk of metadata rotation
+        from PIL import Image
+    except ImportError:
+        raise ValueError("The ICDAR15 dataset requires scipy to be installed.")
+
+    data_dir = os.path.join(args.root, args.dataset_name)
+
+    train_json = json.load(open(os.path.join(data_dir, "train_anns", "train_anns.json"), "r"))
+    val_json = json.load(open(os.path.join(data_dir, "val_anns", "val_anns.json"), "r"))
+
+    # imgs_train = {v["id"]:k for k, v in train_json["imgs"].items()}
+    # imgs_val = {v["id"]:k for k, v in val_json["imgs"].items()}
+
+    anns_train = {v["id"]:v for k, v in train_json["anns"].items()}
+    anns_val = {v["id"]:v for k, v in val_json["anns"].items()}
+
+
+    ann2img_train = {}
+    for k, v in train_json["imgToAnns"].items():
+        ann2img_train.update({vi:k for vi in v})
+
+    ann2img_val = {}
+    for k, v in val_json["imgToAnns"].items():
+        ann2img_val.update({vi:k for vi in v})
+    
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    anns_jsons = [
+        (anns_train, ann2img_train),
+        (anns_val, ann2img_val),
+    ]
+    for ann_json, mapping_json in anns_jsons:
+        for k, v in tqdm(ann_json.items()):
+            corresponding_img = mapping_json[k]
+            img_path = os.path.join(data_dir, "train_images", "train_images", f"{corresponding_img}.jpg")
+            img = Image.open(img_path)
+            bbox, word = v["bbox"], v["utf8_string"]
+            # LT, RT, RB, LB
+            l, t, w, h = [int(x) for x in bbox]
+            r, b = l + w, t + h
+            curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+            img.crop((l, t, r, b)).save(curr_remapped_path)
+            data.append([curr_remapped_path, word])
+            idx += 1
+    return data
+
 def _union_14m_l_preprocess_str(args):
+    # TODO
+    pass
+
+def _synth_text_preprocess_str(args):
+    # TODO
     pass
 
 PREPROCESS_FN = {
@@ -299,8 +411,17 @@ PREPROCESS_FN = {
     "cute": {
         "str":_cute_preprocess_str,
     },
+    "sroie19": {
+        "str":_sroie19_preprocess_str,
+    },
+    "textocr": {
+        "str":_textocr_preprocess_str,
+    },
     "union-14m-l": {
         "str":_union_14m_l_preprocess_str,
+    },
+    "synth_text": {
+        "str": _synth_text_preprocess_str
     },
 }
 
