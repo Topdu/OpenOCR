@@ -41,7 +41,7 @@ def _iiit_preprocess_str(cfg):
     data = []
     for path, label, _ in train_set:
         path, label = path[0], label[0]
-        if len(label) >= cfg["max_len"]:
+        if len(label) > cfg["max_len"]:
             continue
         data.append(
             [os.path.join(data_path, path), str(label)]
@@ -49,7 +49,7 @@ def _iiit_preprocess_str(cfg):
 
     for path, label, _ in test_set:
         path, label = path[0], label[0]
-        if len(label) >= cfg["max_len"]:
+        if len(label) > cfg["max_len"]:
             continue
         data.append(
             [os.path.join(data_path, path), str(label)]
@@ -67,7 +67,7 @@ def _icdar13_preprocess_str(cfg):
         for l in f:
             path, label = l.strip().split(", ")
             label = label[1:-1]
-            if len(label) >= cfg["max_len"]:
+            if len(label) > cfg["max_len"]:
                 continue
             data.append(
                 [os.path.join(train_images_path, path), str(label)]
@@ -78,7 +78,7 @@ def _icdar13_preprocess_str(cfg):
         for l in f:
             path, label = l.strip().split(", ")
             label = label[1:-1]
-            if len(label) >= cfg["max_len"]:
+            if len(label) > cfg["max_len"]:
                 continue
             data.append(
                 [os.path.join(data_dir, "test", path), str(label)]
@@ -113,7 +113,7 @@ def _icdar15_preprocess_str(cfg):
             csvreader = csv.reader(f)
             for row in csvreader:
                 word = row[-1]
-                if len(word) >= cfg["max_len"] or word == "###":
+                if len(word) > cfg["max_len"] or word == "###":
                     continue
                 # LT, RT, RB, LB, WORD
                 l, t, r, b = int(row[0]), int(row[1]), int(row[2]), int(row[5])
@@ -150,7 +150,7 @@ def _svt_preprocess_str(cfg):
                 if subelem.tag == "taggedRectangles":
                     for subsubelem in subelem:
                         label_text = next(iter(subsubelem)).text
-                        if len(label_text) >= cfg["max_len"]:
+                        if len(label_text) > cfg["max_len"]:
                             continue
                         label_dict["paths"].append(os.path.join(img_anns_dir, curr_img_path))
                         label_dict["bboxes"].append(
@@ -194,6 +194,8 @@ def _svtp_preprocess_str(cfg):
     for path, ann_path in zip(imgs_paths, anns_paths):
         with open(os.path.join(data_dir, "label", ann_path), "r") as f:
             label = f.read().strip()
+        if len(label) > cfg["max_len"]:
+            continue
         data.append([
             os.path.join(data_dir, "IMG", path), 
             label
@@ -210,6 +212,8 @@ def _cute_preprocess_str(cfg):
     data = []
     for d in labels:
         for i in d["instances"]:
+            if len(i["text"]) > cfg["max_len"]:
+                continue
             data.append([
                 os.path.join(data_dir, "data", "timage", d["img_path"].split("/")[-1]), 
                 i["text"]
@@ -240,7 +244,7 @@ def _sroie19_preprocess_str(cfg):
                 if row == []:
                     continue
                 word = row[-1]
-                if len(word) >= cfg["max_len"]:
+                if len(word) > cfg["max_len"]:
                     continue
                 # LT, RT, RB, LB, WORD
                 l, t, r, b = int(row[0]), int(row[1]), int(row[2]), int(row[5])
@@ -286,10 +290,12 @@ def _textocr_preprocess_str(cfg):
     ]
     for ann_json, mapping_json in anns_jsons:
         for k, v in tqdm(ann_json.items()):
+            bbox, word = v["bbox"], v["utf8_string"]
+            if len(word) > cfg["max_len"]:
+                continue
             corresponding_img = mapping_json[k]
             img_path = os.path.join(data_dir, "train_images", "train_images", f"{corresponding_img}.jpg")
             img = Image.open(img_path)
-            bbox, word = v["bbox"], v["utf8_string"]
             # LT, RT, RB, LB
             l, t, w, h = [int(x) for x in bbox]
             r, b = l + w, t + h
@@ -324,6 +330,8 @@ def _totaltext_preprocess_str(cfg):
             x, y, word = l[1][0], l[3][0], l[4][0]
             # For these images the annotations are not provided
             if word == "#":
+                continue
+            if len(word) > cfg["max_len"]:
                 continue
             l, r = min(x), max(x)
             t, b = min(y), max(y)
@@ -364,7 +372,11 @@ def _synthtext_preprocess_str(cfg):
             h, w, _ = img.shape
             ai_split = []
             for words in ai:
-                ai_split.extend(words.split())
+                for w in words.split():
+                    w = w.strip()
+                    if len(w) > cfg["max_len"]:
+                        continue
+                    ai_split.append(w)
             for i in range(x.shape[-1]):
                 curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
                 t, b = max(0, min(y[:, i])), min(h, max(y[:, i])) 
@@ -373,7 +385,7 @@ def _synthtext_preprocess_str(cfg):
                 if t >= b or l >= r:
                     continue
                 cv2.imwrite(curr_remapped_path, img[t:b, l:r])
-                data.append([curr_remapped_path, ai_split[i].strip()])
+                data.append([curr_remapped_path, ai_split[i]])
                 idx += 1
     return data
 
@@ -409,6 +421,8 @@ def _wildreceipt_preprocess_str(cfg):
             h, w, _ = img.shape
             for a in json_f["annotations"]:
                 bbox, word = a["box"], a["text"]
+                if len(word) > cfg["max_len"]:
+                    continue
                 xs = list(map(int, bbox[::2]))
                 ys = list(map(int, bbox[1::2]))
                 l, r = max(0, min(xs)), min(w, max(xs))
@@ -448,6 +462,8 @@ def _mjsynth_preprocess_str(cfg):
             for l in f:
                 path = l.split()[0][2:]
                 label = path.split("_")[-2]
+                if len(label) > cfg["max_len"]:
+                    continue
                 path = os.path.join(data_dir, "mjsynth", "mnt", "ramdisk", "max", "90kDICT32px", path)
                 data.append([path, label])
     return data
@@ -496,6 +512,8 @@ def _naf_preprocess_str(cfg):
                     else:
                         continue
                     bbox, word = bbox["poly_points"], words[k]
+                    if len(word) > cfg["max_len"]:
+                        continue
                     if word == "\"\"":
                         continue
                     bbox_flat = [x for y in bbox for x in y]
@@ -544,6 +562,8 @@ def _funsd_preprocess_str(cfg):
                 words = [x["text"] for x in bbox_words]
                 img = cv2.imread(img_file)
                 for bbox, word in zip(bboxes, words):
+                    if len(word) > cfg["max_len"]:
+                        continue
                     l, t, r, b = bbox
                     curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
                     cv2.imwrite(curr_remapped_path, img[t:b, l:r])
@@ -580,6 +600,8 @@ def _ctw1500_preprocess_str(cfg):
                     for subsubelem in subelem:
                         if subsubelem.tag == "label":
                             word = subsubelem.text
+                            if len(word) > cfg["max_len"]:
+                                continue
                             if word == "###":
                                 continue
                             curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
@@ -611,10 +633,12 @@ def _cocotextv2_preprocess_str(cfg):
     for k, v in tqdm(anns.items()):
         if v["legibility"] != "legible":
             continue
+        bbox, word = v["bbox"], v["utf8_string"]
+        if len(word) > cfg["max_len"]:
+            continue
         corresponding_img = ann2img[k]
         img_path = os.path.join(data_dir, "train_images", "train2014", f"COCO_train2014_{int(corresponding_img):012d}.jpg")
         img = Image.open(img_path)
-        bbox, word = v["bbox"], v["utf8_string"]
         # LT, RT, RB, LB
         l, t, w, h = [int(x) for x in bbox]
         r, b = l + w, t + h
