@@ -1,4 +1,4 @@
-import argparse
+import sys
 import urllib
 import ssl
 from tqdm import tqdm
@@ -7,122 +7,41 @@ import json
 import csv
 import cv2
 import xml.etree.ElementTree as ET
+from torchvision.datasets.utils import extract_archive
+import numpy as np
 
-URLS = {
-    "iiit": (
-        {
-            "str": [
-                ("https://cvit.iiit.ac.in/images/Projects/SceneTextUnderstanding/IIIT5K-Word_V3.0.tar.gz", "data.tar.gz"),
-            ]
-        }, 
-        False,
-    ),
-    "icdar13": (
-        {
-            "str": [
-                ("https://rrc.cvc.uab.es/downloads/Challenge2_Training_Task3_Images_GT.zip", "train_images_anns.zip"),
-                ("https://rrc.cvc.uab.es/downloads/Challenge2_Test_Task3_Images.zip", "test.zip"),
-                ("https://rrc.cvc.uab.es/downloads/Challenge2_Test_Task3_GT.txt", "test_anns.txt"),
-            ]
-        }, 
-        False,
-    ),
-    "icdar15": (
-        {
-            "str": [
-                ("https://rrc.cvc.uab.es/downloads/ch2_training_images.zip", "train_images.zip"),
-                ("https://rrc.cvc.uab.es/downloads/ch2_training_localization_transcription_gt.zip", "train_localization_transcription.zip"),
-                # ("https://rrc.cvc.uab.es/downloads/ch2_training_vocabularies_per_image.zip", "train_vocabularies.zip"),
-                # ("https://rrc.cvc.uab.es/downloads/ch2_training_vocabulary.txt", "training_vocabulary.txt"),
-                # ("https://rrc.cvc.uab.es/downloads/Challenge2_Test_Task12_Images.zip", "test_images.zip"),
-                # ("https://rrc.cvc.uab.es/downloads/ch2_test_vocabularies_per_image.zip", "test_vocabularies_per_image.zip"),
-                # ("https://rrc.cvc.uab.es/downloads/ch2_test_vocabulary.txt", "test_vocabulary.txt"),
-            ]
-        }, 
-        False,
-    ),
-    "svt": (
-        {
-            "str": [
-                ("http://www.iapr-tc11.org/dataset/SVT/svt.zip", "data.zip")
-            ]
-        },
-        True
-    ),
-    "svtp": (
-        {
-            "str": [
-                # The original page is not available, so we fall back to a paper repository that uses the dataset
-                ("https://github.com/Jyouhou/Case-Sensitive-Scene-Text-Recognition-Datasets/archive/refs/heads/master.zip", "data.zip")
-            ]
-        },
-        True
-    ),
-    "cute": (
-        {
-            "str": [
-                # Fall back to MMOCR download links as the original does not provide labels
-                ("https://download.openmmlab.com/mmocr/data/mixture/ct80/timage.tar.gz", "data.tar.gz"),
-                ("https://download.openmmlab.com/mmocr/data/1.x/recog/ct80/textrecog_test.json", "anns.json")
-            ]
-        },
-        True
-    ),
-    "sroie19": (
-        {
-            "str": [
-                # fall back to MMOCR download links as the original relies on Google drive folders
-                ("https://download.openmmlab.com/mmocr/data/sroie/task1&2_test(361p).zip", "data.zip"),
-                ("https://download.openmmlab.com/mmocr/data/sroie/text.zip", "labels.zip")
-            ]
-        },
-        True
-    ),
-    "textocr": (
-        {
-            "str": [
-                ("https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_train.json", "train_anns.json"),
-                ("https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_val.json", "val_anns.json"),
-                ("https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip", "train_images.zip"),
-            ]
-        },
-        True
-    ),
-    "union-14m-l": (
-        {
-            "str": [
-                ("https://drive.usercontent.google.com/download?id=18qbJ29K81Ub82bSTlSGG3O3fVVLjfVAu&authuser=0&confirm=t", "data.tar.gz")
-            ]
-        },
-        True
-    )
-}
-
-def get_dataset_info(args):
-    urls_and_filenames, check_validity = URLS[args.dataset_name]
+def get_dataset_info(cfg):
+    download_urls, filenames, check_validity = cfg["download_links"], cfg["filenames"], cfg["check_validity"]
     urls, filename_paths, unpack_paths = [], [], []
-    for u, f in urls_and_filenames[args.task]:
+    for u, f in zip(download_urls, filenames):
         urls.append(u)
-        unpack_path = os.path.join(args.root, args.dataset_name, f.split(".")[0])
+        unpack_path = os.path.join(cfg["root"], cfg["dataset_name"], f.split(".")[0])
         unpack_paths.append(unpack_path)
         filename_paths.append(os.path.join(unpack_path, f))
     return urls, filename_paths, unpack_paths, check_validity
 
+async def download_torrent(save_path, magnet_link, dataset_name):
+    try: 
+        from torrentp import TorrentDownloader
+    except ImportError:
+        raise ValueError(f"The {dataset_name} dataset requires torrentp to be installed.")
+    torrent_file = TorrentDownloader(file_path=magnet_link, save_path=save_path)
+    await torrent_file.start_download(download_speed=0, upload_speed=0)
 
-def _iiit_preprocess_str(args):
+def _iiit_preprocess_str(cfg):
     try: 
         from scipy.io import loadmat
     except ImportError:
         raise ValueError("The IIIT dataset requires scipy to be installed.")
     
-    data_path = os.path.join(args.root, args.dataset_name, "data", "IIIT5K")
+    data_path = os.path.join(cfg["root"], cfg["dataset_name"], "data", "IIIT5K")
     train_set = loadmat(os.path.join(data_path, "trainCharBound.mat"))["trainCharBound"][0]
     test_set = loadmat(os.path.join(data_path, "testCharBound.mat"))["testCharBound"][0]
     
     data = []
     for path, label, _ in train_set:
         path, label = path[0], label[0]
-        if len(label) >= args.max_len:
+        if len(label) >= cfg["max_len"]:
             continue
         data.append(
             [os.path.join(data_path, path), str(label)]
@@ -130,7 +49,7 @@ def _iiit_preprocess_str(args):
 
     for path, label, _ in test_set:
         path, label = path[0], label[0]
-        if len(label) >= args.max_len:
+        if len(label) >= cfg["max_len"]:
             continue
         data.append(
             [os.path.join(data_path, path), str(label)]
@@ -138,8 +57,8 @@ def _iiit_preprocess_str(args):
 
     return data
 
-def _icdar13_preprocess_str(args):
-    data_dir = os.path.join(args.root, args.dataset_name)
+def _icdar13_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
     train_images_path = os.path.join(data_dir, "train_images_anns")
     train_images_anns_path = os.path.join(train_images_path, "gt.txt")
     
@@ -148,7 +67,7 @@ def _icdar13_preprocess_str(args):
         for l in f:
             path, label = l.strip().split(", ")
             label = label[1:-1]
-            if len(label) >= args.max_len:
+            if len(label) >= cfg["max_len"]:
                 continue
             data.append(
                 [os.path.join(train_images_path, path), str(label)]
@@ -159,21 +78,21 @@ def _icdar13_preprocess_str(args):
         for l in f:
             path, label = l.strip().split(", ")
             label = label[1:-1]
-            if len(label) >= args.max_len:
+            if len(label) >= cfg["max_len"]:
                 continue
             data.append(
                 [os.path.join(data_dir, "test", path), str(label)]
             )
     return data
 
-def _icdar15_preprocess_str(args):
+def _icdar15_preprocess_str(cfg):
     try:
         # We have to use PIL instead of opencv because of metadata rotations
         from PIL import Image
     except ImportError:
         raise ValueError("The ICDAR15 dataset requires scipy to be installed.")
 
-    data_dir = os.path.join(args.root, args.dataset_name)
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
     train_imgs_path = os.path.join(data_dir, "train_images")
     train_imgs_files = sorted(
         os.listdir(train_imgs_path), key=lambda x: int(x.split("_")[-1].split(".")[0])
@@ -194,7 +113,7 @@ def _icdar15_preprocess_str(args):
             csvreader = csv.reader(f)
             for row in csvreader:
                 word = row[-1]
-                if len(word) >= args.max_len or word == "###":
+                if len(word) >= cfg["max_len"] or word == "###":
                     continue
                 # LT, RT, RB, LB, WORD
                 l, t, r, b = int(row[0]), int(row[1]), int(row[2]), int(row[5])
@@ -205,8 +124,8 @@ def _icdar15_preprocess_str(args):
 
     return data
 
-def _svt_preprocess_str(args):
-    data_dir = os.path.join(args.root, args.dataset_name, "data")
+def _svt_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"], "data")
 
     remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
     os.makedirs(remapped_imgs_path, exist_ok=True)
@@ -231,7 +150,7 @@ def _svt_preprocess_str(args):
                 if subelem.tag == "taggedRectangles":
                     for subsubelem in subelem:
                         label_text = next(iter(subsubelem)).text
-                        if len(label_text) >= args.max_len:
+                        if len(label_text) >= cfg["max_len"]:
                             continue
                         label_dict["paths"].append(os.path.join(img_anns_dir, curr_img_path))
                         label_dict["bboxes"].append(
@@ -261,8 +180,8 @@ def _svt_preprocess_str(args):
                 idx += 1
     return data
 
-def _svtp_preprocess_str(args):
-    data_dir = os.path.join(args.root, args.dataset_name, "data", "Case-Sensitive-Scene-Text-Recognition-Datasets-master", "svtp_test")
+def _svtp_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"], "data", "Case-Sensitive-Scene-Text-Recognition-Datasets-master", "svtp_test")
     
     imgs_paths = sorted(
         os.listdir(os.path.join(data_dir, "IMG")), key=lambda x: int(x.split(".")[0])
@@ -282,8 +201,8 @@ def _svtp_preprocess_str(args):
 
     return data
 
-def _cute_preprocess_str(args):
-    data_dir = os.path.join(args.root, args.dataset_name)
+def _cute_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
 
     with open(os.path.join(data_dir, "anns", "anns.json"), "r") as f:
         labels = json.load(f)["data_list"]
@@ -297,8 +216,8 @@ def _cute_preprocess_str(args):
             ])
     return data
 
-def _sroie19_preprocess_str(args):
-    data_dir = os.path.join(args.root, args.dataset_name)
+def _sroie19_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
 
     imgs_paths = sorted(os.listdir(os.path.join(data_dir, "data", "fulltext_test(361p)")), key=lambda x: x.split(".")[0])
     anns_paths = sorted(os.listdir(os.path.join(data_dir, "labels")), key=lambda x: x.split(".")[0])
@@ -321,7 +240,7 @@ def _sroie19_preprocess_str(args):
                 if row == []:
                     continue
                 word = row[-1]
-                if len(word) >= args.max_len:
+                if len(word) >= cfg["max_len"]:
                     continue
                 # LT, RT, RB, LB, WORD
                 l, t, r, b = int(row[0]), int(row[1]), int(row[2]), int(row[5])
@@ -333,24 +252,20 @@ def _sroie19_preprocess_str(args):
                 idx += 1
     return data
 
-def _textocr_preprocess_str(args):
+def _textocr_preprocess_str(cfg):
     try:
         # Use PIL instead of opencv to mitigate risk of metadata rotation
         from PIL import Image
     except ImportError:
         raise ValueError("The ICDAR15 dataset requires scipy to be installed.")
 
-    data_dir = os.path.join(args.root, args.dataset_name)
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
 
     train_json = json.load(open(os.path.join(data_dir, "train_anns", "train_anns.json"), "r"))
     val_json = json.load(open(os.path.join(data_dir, "val_anns", "val_anns.json"), "r"))
 
-    # imgs_train = {v["id"]:k for k, v in train_json["imgs"].items()}
-    # imgs_val = {v["id"]:k for k, v in val_json["imgs"].items()}
-
     anns_train = {v["id"]:v for k, v in train_json["anns"].items()}
     anns_val = {v["id"]:v for k, v in val_json["anns"].items()}
-
 
     ann2img_train = {}
     for k, v in train_json["imgToAnns"].items():
@@ -384,76 +299,106 @@ def _textocr_preprocess_str(args):
             idx += 1
     return data
 
-def _union_14m_l_preprocess_str(args):
+def _totaltext_preprocess_str(cfg):
+    try: 
+        from scipy.io import loadmat
+        from PIL import Image
+    except ImportError:
+        raise ValueError("The TotalText dataset requires scipy and Pillow to be installed.")
+    
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+    gt_files = os.listdir(os.path.join(data_dir, "labels", "Train")) 
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    for gt in gt_files:
+        labels = loadmat(os.path.join(data_dir, "labels", "Train", gt))["gt"]
+        img = Image.open(
+            os.path.join(data_dir, "data", "Images", "Train", 
+                         f"{gt.split('_')[-1].split('.')[0]}{'.JPG' if gt == 'gt_img61.mat' else '.jpg'}")
+        )
+        for l in labels:
+            x, y, word = l[1][0], l[3][0], l[4][0]
+            # For these images the annotations are not provided
+            if word == "#":
+                continue
+            l, r = min(x), max(x)
+            t, b = min(y), max(y)
+            curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+            img.crop((l, t, r, b)).save(curr_remapped_path)
+            data.append([curr_remapped_path, word])
+            idx += 1
+    return data
+
+def _synthtext_preprocess_str(cfg):
+    try: 
+        from scipy.io import loadmat
+    except ImportError:
+        raise ValueError("The SynthText dataset requires scipy to be installed.")
+    
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+
+    zip_file = os.path.join(data_dir, "SynthText", "SynthText.zip")
+    if os.path.exists(zip_file):
+        extract_archive(from_path=zip_file, to_path=os.path.join(data_dir, "SynthText"), 
+                        remove_finished=True)
+    gt = loadmat(os.path.join(data_dir, "SynthText", "SynthText", "gt.mat"))
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    bboxes, imgs_paths, anns = gt["wordBB"], gt["imnames"], gt["txt"]
+    for b, p, a in zip(bboxes, imgs_paths, anns):
+        assert len(b) == len(p) == len(a)
+        for bi, pi, ai in tqdm(zip(b, p, a)):
+            if len(bi.shape) != 3:
+                bi = bi.reshape(*bi.shape, 1)
+            bi = bi.astype(np.int32)
+            x, y = bi[0], bi[1]
+            img = cv2.imread(os.path.join(data_dir, "SynthText", "SynthText", pi[0]))
+            h, w, _ = img.shape
+            ai_split = []
+            for words in ai:
+                ai_split.extend(words.split())
+            for i in range(x.shape[-1]):
+                curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                t, b = max(0, min(y[:, i])), min(h, max(y[:, i])) 
+                l, r = max(0, min(x[:, i])), min(w, max(x[:, i]))
+                # Some annotations contain errors where this happens after clamping
+                if t >= b or l >= r:
+                    continue
+                cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                data.append([curr_remapped_path, ai_split[i].strip()])
+                idx += 1
+    return data
+
+def _union14ml_preprocess_str(cfg):
     # TODO
     pass
 
-def _synth_text_preprocess_str(args):
-    # TODO
-    pass
+def preprocess(cfg):
+    fn_name = f"_{cfg['dataset_name']}_preprocess_{cfg['task']}"
+    print(f"Looking for function {fn_name} . . .")
+    preprocess_fn = getattr(sys.modules[__name__], fn_name, None)
 
-PREPROCESS_FN = {
-    "iiit": {
-        "str":_iiit_preprocess_str,
-    },
-    "icdar13": {
-        "str":_icdar13_preprocess_str,
-    },
-    "icdar15": {
-        "str":_icdar15_preprocess_str,
-    },
-    "svt": {
-        "str":_svt_preprocess_str,
-    },
-    "svtp": {
-        "str":_svtp_preprocess_str,
-    }, 
-    "cute": {
-        "str":_cute_preprocess_str,
-    },
-    "sroie19": {
-        "str":_sroie19_preprocess_str,
-    },
-    "textocr": {
-        "str":_textocr_preprocess_str,
-    },
-    "union-14m-l": {
-        "str":_union_14m_l_preprocess_str,
-    },
-    "synth_text": {
-        "str": _synth_text_preprocess_str
-    },
-}
-
-def get_preprocess_fn(args):
-    if args.dataset_name not in PREPROCESS_FN:
-        raise ValueError("The given dataset is not supported")
+    if preprocess_fn is None:
+        raise ValueError(f"The function {fn_name} was not found. "
+                         "The given dataset is not supported or you have not downloaded the dataset.")
     
-    dataset_path = os.path.join(args.root, args.dataset_name)
-    if not os.path.isdir(dataset_path):
-        raise ValueError(f"The given directory {dataset_path} does not exist. "
-                         "If you have not downloaded the dataset use the tools/download_dataset.py script."
-                         )
-    
-    preprocess_fn = PREPROCESS_FN[args.dataset_name][args.task]
-    return preprocess_fn
+    print("Found the function and now doing preprocessing . . .")
+    return preprocess_fn(cfg)
 
-def parse_args_download():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=str, required=True)
-    parser.add_argument("--dataset_name", type=str, required=True, choices=list(URLS.keys()))
-    parser.add_argument("--task", type=str, default="str", choices=("str")) # later add std, e2e
-    args = parser.parse_args()
-    return args
-
-def parse_args_preprocess():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=str, required=True)
-    parser.add_argument("--dataset_name", type=str, required=True, choices=list(URLS.keys()))
-    parser.add_argument("--task", type=str, default="str", choices=("str")) # later add std, e2e
-    parser.add_argument("--max_len", type=int, default=800)
-    args = parser.parse_args()
-    return args
+# WildReceipt
+# Synthetic Word Dataset (MJSynth/Syn90k)
+# NAF
+# FUNSD
+# CTW1500
+# COCO Text v2
 
 # Modified from torchvision as some datasets cant pass the certificate validity check:
 # https://github.com/pytorch/vision/blob/868a3b42f4bffe29e4414ad7e4c7d9d0b4690ecb/torchvision/datasets/utils.py#L27C1-L32C40
