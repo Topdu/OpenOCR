@@ -18,14 +18,13 @@ def main(cfg):
     for url, filename_path, unpack_path in zip(urls, filename_paths, unpack_paths):
         print(f"Downloading {filename_path} from {url} . . .")
         ext = filename_path.split(".")[-1]
-        if ext != "torrent":
-            urlretrieve(url=url, filename=filename_path, check_validity=check_validity)
-        else:
+        urlretrieve(url=url, filename=filename_path, check_validity=check_validity)
+        if ext == "torrent":
             asyncio.run(
                 download_torrent(
                     magnet_link=filename_path, 
-                    save_path=os.path.join(cfg.root, cfg.dataset_name), 
-                    dataset_name=cfg.dataset_name
+                    save_path=os.path.join(cfg["root"], cfg["dataset_name"]), 
+                    dataset_name=cfg["dataset_name"]
                 )
             )
 
