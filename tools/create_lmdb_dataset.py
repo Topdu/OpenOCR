@@ -11,8 +11,11 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..', '..')))
 
-from download.utils import parse_args_preprocess, get_preprocess_fn
+from engine import Config
+from utility import ArgsParser
+from download.utils import preprocess
 
 """ a modified version of CRNN torch repository https://github.com/bgshih/crnn/blob/master/tool/create_dataset.py """
 
@@ -106,10 +109,14 @@ def createDataset(data_list, outputPath, checkValid=True):
     print('Created dataset with %d samples' % nSamples)
 
 def main():
-    args = parse_args_preprocess()
-    preprocess_fn = get_preprocess_fn(args)
-    data = preprocess_fn(args)
-    dataset_dir = os.path.join(args.root, args.dataset_name)
+    FLAGS = ArgsParser().parse_args()
+    cfg = Config(FLAGS.config)
+    FLAGS = vars(FLAGS)
+    opt = FLAGS.pop('opt')
+    cfg.merge_dict(FLAGS)
+    cfg.merge_dict(opt)
+    data = preprocess(cfg.cfg)
+    dataset_dir = os.path.join(cfg.cfg["root"], cfg.cfg["dataset_name"])
     os.makedirs(dataset_dir, exist_ok=True)
     createDataset(data, dataset_dir)
 
