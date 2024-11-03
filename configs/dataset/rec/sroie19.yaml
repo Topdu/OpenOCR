@@ -1,0 +1,11 @@
+root: datasets
+dataset_name: sroie19
+task: str
+download_links:
+  - https://download.openmmlab.com/mmocr/data/sroie/task1&2_test(361p).zip,
+  - https://download.openmmlab.com/mmocr/data/sroie/text.zip
+filenames:
+  - data.zip
+  - labels.zip
+check_validity: true
+max_len: 800

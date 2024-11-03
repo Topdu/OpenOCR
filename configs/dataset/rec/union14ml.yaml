@@ -1,0 +1,9 @@
+root: datasets
+dataset_name: union14ml
+task: str
+download_links:
+  - https://drive.usercontent.google.com/download?id=18qbJ29K81Ub82bSTlSGG3O3fVVLjfVAu&authuser=0&confirm=t
+filenames:
+  - data.tar.gz
+check_validity: true
+max_len: 800
