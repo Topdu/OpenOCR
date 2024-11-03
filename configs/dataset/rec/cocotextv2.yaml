@@ -1,0 +1,11 @@
+root: datasets
+dataset_name: cocotextv2
+task: str
+download_links:
+  - http://images.cocodataset.org/zips/train2014.zip
+  - https://github.com/bgshih/cocotext/releases/download/dl/cocotext.v2.zip
+filenames:
+  - train_images.zip
+  - labels.zip
+check_validity: true
+max_len: 800

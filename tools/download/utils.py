@@ -90,7 +90,7 @@ def _icdar15_preprocess_str(cfg):
         # We have to use PIL instead of opencv because of metadata rotations
         from PIL import Image
     except ImportError:
-        raise ValueError("The ICDAR15 dataset requires scipy to be installed.")
+        raise ValueError("The ICDAR15 dataset requires Pillow to be installed.")
 
     data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
     train_imgs_path = os.path.join(data_dir, "train_images")
@@ -257,7 +257,7 @@ def _textocr_preprocess_str(cfg):
         # Use PIL instead of opencv to mitigate risk of metadata rotation
         from PIL import Image
     except ImportError:
-        raise ValueError("The ICDAR15 dataset requires scipy to be installed.")
+        raise ValueError("The ICDAR15 dataset requires Pillow to be installed.")
 
     data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
 
@@ -377,6 +377,253 @@ def _synthtext_preprocess_str(cfg):
                 idx += 1
     return data
 
+def _wildreceipt_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+
+    train_jsons = []
+    with open(os.path.join(data_dir, "data", "wildreceipt", "train.txt"), "r") as f:
+        for l in f:
+            l = l.strip()
+            if l == "":
+                continue
+            train_jsons.append(json.loads(l))
+
+    test_jsons = []
+    with open(os.path.join(data_dir, "data", "wildreceipt", "test.txt"), "r") as f:
+        for l in f:
+            l = l.strip()
+            if l == "":
+                continue
+            test_jsons.append(json.loads(l))
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    json_files = [train_jsons, test_jsons]
+    for json_l_files in json_files:
+        for json_f in json_l_files:
+            filename = json_f["file_name"]
+            img = cv2.imread(os.path.join(data_dir, "data", "wildreceipt", filename))
+            h, w, _ = img.shape
+            for a in json_f["annotations"]:
+                bbox, word = a["box"], a["text"]
+                xs = list(map(int, bbox[::2]))
+                ys = list(map(int, bbox[1::2]))
+                l, r = max(0, min(xs)), min(w, max(xs))
+                t, b = max(0, min(ys)), min(h, max(ys))
+                if l >= r or t >= b:
+                    continue
+                curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                data.append([curr_remapped_path, word])
+                idx += 1
+    return data
+
+
+def _mjsynth_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+
+    archive_file = os.path.join(data_dir, "mjsynth.tar.gz")
+    if os.path.exists(archive_file):
+        extract_archive(from_path=archive_file, to_path=os.path.join(data_dir, "mjsynth"), 
+                        remove_finished=True)
+
+    train_ann_path = os.path.join(
+        data_dir, "mjsynth", "mnt", "ramdisk", "max", "90kDICT32px", "annotation_train.txt"
+    )   
+    val_ann_path = os.path.join(
+        data_dir, "mjsynth", "mnt", "ramdisk", "max", "90kDICT32px", "annotation_val.txt"
+    )   
+    test_ann_path = os.path.join(
+        data_dir, "mjsynth", "mnt", "ramdisk", "max", "90kDICT32px", "annotation_test.txt"
+    )   
+    ann_files = [train_ann_path, val_ann_path, test_ann_path]
+
+    data = []
+
+    for ann_file in ann_files:
+        with open(ann_file, "r") as f:
+            for l in f:
+                path = l.split()[0][2:]
+                label = path.split("_")[-2]
+                path = os.path.join(data_dir, "mjsynth", "mnt", "ramdisk", "max", "90kDICT32px", path)
+                data.append([path, label])
+    return data
+
+def _naf_preprocess_str(cfg):
+    # This function might not be correct
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+
+    label_splits = json.load(open(
+        os.path.join(data_dir, "labels", "NAF_dataset-master", "groups", "train_valid_test_split.json"), 
+        "r"
+    ))
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    seen_anns = set()
+    splits = list(label_splits.keys())
+    for s in splits:
+        split_json = label_splits[s]
+        for img_num in split_json.keys():
+            imgs_paths = split_json[img_num]
+            ann_dir = os.path.join(data_dir, "labels", "NAF_dataset-master", "groups", img_num)
+            for img_path in imgs_paths:
+                if img_path.replace(".jpg", ".json") not in os.listdir(ann_dir):
+                    continue
+                ann_path = os.path.join(ann_dir, img_path.replace(".jpg", ".json"))
+                if ann_path not in seen_anns:
+                    seen_anns.add(ann_path)
+                else:
+                    continue
+                anns = json.load(open(ann_path, "r"))
+                bboxes, bboxes_fields, words = anns["textBBs"], anns["fieldBBs"], anns["transcriptions"]
+                img = cv2.imread(os.path.join(data_dir, "data", "labeled_images", anns["imageFilename"]))
+                h, w, _ = img.shape
+                bboxes = {v["id"]:v for v in bboxes}
+                # This includes handwritten texts - exclude for now
+                # bboxes_fields = {v["id"]:v for v in bboxes_fields}
+                for k in words.keys():
+                    if k in bboxes:
+                        bbox = bboxes[k]
+                    # elif k in bboxes_fields:
+                    #     bbox = bboxes_fields[k]
+                    else:
+                        continue
+                    bbox, word = bbox["poly_points"], words[k]
+                    if word == "\"\"":
+                        continue
+                    bbox_flat = [x for y in bbox for x in y]
+                    l, r = max(0, min(bbox_flat[::2])), min(max(bbox_flat[::2]), w)
+                    t, b = max(0, min(bbox_flat[1::2])), min(max(bbox_flat[1::2]), h)
+                    if l >= r or t >= b:
+                        continue
+                    curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                    cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                    data.append([curr_remapped_path, word])
+                    idx += 1
+    return data
+
+def _funsd_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+    
+    train_dir = os.path.join(data_dir, "data", "dataset", "training_data")
+    train_anns_dir = os.path.join(train_dir, "annotations")
+    train_imgs_dir = os.path.join(train_dir, "images")
+    train_anns_paths = [os.path.join(train_anns_dir, x) for x in sorted(os.listdir(train_anns_dir), key=lambda x: x.split(".")[0])]
+    train_imgs_paths = [os.path.join(train_imgs_dir, x) for x in sorted(os.listdir(train_imgs_dir), key=lambda x: x.split(".")[0])]
+
+    test_dir = os.path.join(data_dir, "data", "dataset", "testing_data")
+    test_anns_dir = os.path.join(test_dir, "annotations")
+    test_imgs_dir = os.path.join(test_dir, "images")
+    test_anns_paths = [os.path.join(test_anns_dir, x) for x in sorted(os.listdir(test_anns_dir), key=lambda x: x.split(".")[0])]
+    test_imgs_paths = [os.path.join(test_imgs_dir, x) for x in sorted(os.listdir(test_imgs_dir), key=lambda x: x.split(".")[0])]
+
+    anns_file_dirs = [(train_anns_paths, train_imgs_paths), (test_anns_paths, test_imgs_paths)]
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    for anns_files, imgs_files in anns_file_dirs:
+        assert len(anns_files) == len(imgs_files)
+        for ann_file, img_file in zip(anns_files, imgs_files):
+            form = json.load(open(ann_file, "r"))["form"]
+            for elem in form:
+                # Exclude empty annotations
+                if elem["text"] == "":
+                    continue
+                bbox_words = elem["words"]
+                bboxes = [x["box"] for x in bbox_words]
+                words = [x["text"] for x in bbox_words]
+                img = cv2.imread(img_file)
+                for bbox, word in zip(bboxes, words):
+                    l, t, r, b = bbox
+                    curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                    cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                    data.append([curr_remapped_path, word])
+                    idx += 1
+    return data        
+    
+def _ctw1500_preprocess_str(cfg):
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+    
+    images_dir = os.path.join(data_dir, "train_images", "train_images")
+    images_paths = sorted(os.listdir(images_dir), key=lambda x: x.split(".")[0])
+
+    labels_dir = os.path.join(data_dir, "train_labels", "ctw1500_train_labels")
+    labels_paths = sorted(os.listdir(labels_dir), key=lambda x: x.split(".")[0])
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    for label_path, img_path in zip(labels_paths, images_paths):
+        img = cv2.imread(os.path.join(images_dir, img_path))
+        h, w, _ = img.shape
+        xml_file = os.path.join(labels_dir, label_path)
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        for elem in root:
+            for subelem in elem:
+                if subelem.tag == "box":
+                    l, t = int(subelem.get("left")), int(subelem.get("top"))
+                    h_bbox, w_bbox = int(subelem.get("height")), int(subelem.get("width")) 
+                    r, b = min(l + w_bbox, w), min(t + h_bbox, h)
+                    for subsubelem in subelem:
+                        if subsubelem.tag == "label":
+                            word = subsubelem.text
+                            if word == "###":
+                                continue
+                            curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+                            cv2.imwrite(curr_remapped_path, img[t:b, l:r])
+                            data.append([curr_remapped_path, word])
+                            idx += 1
+    return data
+
+def _cocotextv2_preprocess_str(cfg):
+    try:
+        from PIL import Image
+    except ImportError:
+        raise ValueError("The COCOTextV2 dataset requires Pillow to be installed.")
+
+    data_dir = os.path.join(cfg["root"], cfg["dataset_name"])
+    labels = json.load(open(os.path.join(data_dir, "labels", "cocotext.v2.json"), "r"))
+    
+    ann2img = {}
+    for k, v in labels["imgToAnns"].items():
+        ann2img.update({vi:k for vi in v})
+
+    anns = {v["id"]:v for v in labels["anns"].values()}
+
+    data = []
+    idx = 0
+    remapped_imgs_path = os.path.join(data_dir, "remapped_imgs")
+    os.makedirs(remapped_imgs_path, exist_ok=True)
+
+    for k, v in tqdm(anns.items()):
+        if v["legibility"] != "legible":
+            continue
+        corresponding_img = ann2img[k]
+        img_path = os.path.join(data_dir, "train_images", "train2014", f"COCO_train2014_{int(corresponding_img):012d}.jpg")
+        img = Image.open(img_path)
+        bbox, word = v["bbox"], v["utf8_string"]
+        # LT, RT, RB, LB
+        l, t, w, h = [int(x) for x in bbox]
+        r, b = l + w, t + h
+        curr_remapped_path = os.path.join(remapped_imgs_path, f"{idx}.jpg")
+        img.crop((l, t, r, b)).save(curr_remapped_path)
+        data.append([curr_remapped_path, word])
+        idx += 1
+    return data
+
 def _union14ml_preprocess_str(cfg):
     # TODO
     pass
@@ -393,12 +640,7 @@ def preprocess(cfg):
     print("Found the function and now doing preprocessing . . .")
     return preprocess_fn(cfg)
 
-# WildReceipt
-# Synthetic Word Dataset (MJSynth/Syn90k)
-# NAF
-# FUNSD
-# CTW1500
-# COCO Text v2
+# TODO check for max len for each of these functions at end
 
 # Modified from torchvision as some datasets cant pass the certificate validity check:
 # https://github.com/pytorch/vision/blob/868a3b42f4bffe29e4414ad7e4c7d9d0b4690ecb/torchvision/datasets/utils.py#L27C1-L32C40

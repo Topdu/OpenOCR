@@ -1,0 +1,9 @@
+root: datasets
+dataset_name: mjsynth
+task: str
+download_links:
+  - https://academictorrents.com/download/3d0b4f09080703d2a9c6be50715b46389fdb3af1.torrent
+filenames:
+  - mjsynth.torrent
+check_validity: true
+max_len: 800
