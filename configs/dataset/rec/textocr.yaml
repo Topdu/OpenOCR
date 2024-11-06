@@ -1,0 +1,13 @@
+root: datasets
+dataset_name: textocr
+task: str
+download_links:
+  - https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_train.json
+  - https://dl.fbaipublicfiles.com/textvqa/data/textocr/TextOCR_0.1_val.json
+  - https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip
+filenames:
+  - train_anns.json
+  - val_anns.json
+  - train_images.zip
+check_validity: true
+max_len: 800

@@ -1,0 +1,9 @@
+root: datasets
+dataset_name: iiit
+task: str
+download_links:
+  - https://cvit.iiit.ac.in/images/Projects/SceneTextUnderstanding/IIIT5K-Word_V3.0.tar.gz
+filenames:
+  - data.tar.gz
+check_validity: false
+max_len: 800

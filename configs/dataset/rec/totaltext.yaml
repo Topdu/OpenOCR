@@ -1,0 +1,11 @@
+root: datasets
+dataset_name: totaltext
+task: str
+download_links:
+  - https://drive.usercontent.google.com/download?id=1bC68CzsSVTusZVvOkk7imSZSbgD1MqK2&confirm=t
+  - https://drive.usercontent.google.com/download?id=1-XrQBoU9as1PXaB_0dUrDTJgvGFFOnDE&confirm=t
+filenames:
+  - data.zip
+  - labels.zip
+check_validity: true
+max_len: 800

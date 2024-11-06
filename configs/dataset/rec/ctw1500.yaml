@@ -1,0 +1,11 @@
+root: datasets
+dataset_name: ctw1500
+task: str
+download_links:
+  - https://universityofadelaide.box.com/shared/static/py5uwlfyyytbb2pxzq9czvu6fuqbjdh8.zip
+  - https://universityofadelaide.box.com/shared/static/jikuazluzyj4lq6umzei7m2ppmt3afyw.zip
+filenames:
+  - train_images.zip
+  - train_labels.zip
+check_validity: true
+max_len: 800
