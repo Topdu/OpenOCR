@@ -38,15 +38,13 @@ class BaseRecognizer(nn.Module):
             self.encoder = build_encoder(config['Encoder'])
             in_channels = self.encoder.out_channels
 
-        # build head
+        # build decoder
         if 'Decoder' not in config or config['Decoder'] is None:
             self.use_decoder = False
         else:
             self.use_decoder = True
             config['Decoder']['in_channels'] = in_channels
             self.decoder = build_decoder(config['Decoder'])
-
-        self.return_all_feats = config.get('return_all_feats', False)
 
     @torch.jit.ignore
     def no_weight_decay(self):
