@@ -6,15 +6,11 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
-import json
 
 import numpy as np
 import torch
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
-from openrec.modeling import build_model
-from openrec.postprocess import build_post_process
-from openrec.preprocess import create_operators, transform
 from tools.engine import Config
 from tools.utility import ArgsParser
 from tools.utils.ckpt import load_ckpt
@@ -26,7 +22,8 @@ class RatioRecTVReisze(object):
 
     def __init__(self, cfg):
         self.max_ratio = cfg['Eval']['loader'].get('max_ratio', 12)
-        self.base_shape = cfg['Eval']['dataset'].get('base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
+        self.base_shape = cfg['Eval']['dataset'].get(
+            'base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
         self.base_h = cfg['Eval']['dataset'].get('base_h', 32)
         self.interpolation = T.InterpolationMode.BICUBIC
         transforms = []
@@ -35,7 +32,7 @@ class RatioRecTVReisze(object):
             T.Normalize(0.5, 0.5),
         ])
         self.transforms = T.Compose(transforms)
-        self.ceil = cfg['Eval']['dataset'].get('ceil', False), 
+        self.ceil = cfg['Eval']['dataset'].get('ceil', False),
 
     def __call__(self, data):
         img = data['image']
@@ -90,83 +87,127 @@ def set_device(device):
     return device
 
 
+class OpenRecognizer(object):
+
+    def __init__(self, config):
+        global_config = config['Global']
+        self.cfg = config
+        if global_config['pretrained_model'] is None:
+            global_config[
+                'pretrained_model'] = global_config['output_dir'] + '/best.pth'
+        # build post process
+        from openrec.modeling import build_model as build_rec_model
+        from openrec.postprocess import build_post_process
+        from openrec.preprocess import create_operators, transform
+        self.transform = transform
+        self.post_process_class = build_post_process(config['PostProcess'],
+                                                     global_config)
+
+        char_num = self.post_process_class.get_character_num()
+        config['Architecture']['Decoder']['out_channels'] = char_num
+        # print(char_num)
+        self.model = build_rec_model(config['Architecture'])
+        load_ckpt(self.model, config)
+        # exit(0)
+        self.device = set_device(global_config['device'])
+        self.model.eval()
+        self.model.to(device=self.device)
+
+        transforms, ratio_resize_flag = build_rec_process(self.cfg)
+        global_config['infer_mode'] = True
+        self.ops = create_operators(transforms, global_config)
+        if ratio_resize_flag:
+            ratio_resize = RatioRecTVReisze(cfg=self.cfg)
+            self.ops.insert(-1, ratio_resize)
+
+    def __call__(self,
+                 img_path=None,
+                 img_numpy_list=None,
+                 img_numpy=None,
+                 batch_num=1):
+
+        if img_numpy is not None:
+            img_numpy_list = [img_numpy]
+            num_img = 1
+        elif img_path is not None:
+            img_path = get_image_file_list(img_path)
+            num_img = len(img_path)
+        elif img_numpy_list is not None:
+            num_img = len(img_numpy_list)
+        else:
+            raise Exception('No input image path or numpy array.')
+        results = []
+        for img_idx in range(num_img):
+            if img_numpy_list is not None:
+                img = img_numpy_list[img_idx]
+                data = {'image': img}
+            elif img_path is not None:
+                file_name = img_path[img_idx]
+                with open(file_name, 'rb') as f:
+                    img = f.read()
+                    data = {'image': img}
+                data = self.transform(data, self.ops[:1])
+            batch = self.transform(data, self.ops[1:])
+            others = None
+            if self.cfg['Architecture']['algorithm'] in [
+                    'SAR', 'RobustScanner'
+            ]:
+                valid_ratio = np.expand_dims(batch[-1], axis=0)
+                others = [torch.from_numpy(valid_ratio).to(device=self.device)]
+            images = np.expand_dims(batch[0], axis=0)
+            images = torch.from_numpy(images).to(device=self.device)
+
+            with torch.no_grad():
+                t_start = time.time()
+                preds = self.model(images, others)
+                torch.cuda.synchronize()
+                t_cost = time.time() - t_start
+            post_result = self.post_process_class(preds)
+
+            if img_path is not None:
+                info = {
+                    'file': file_name,
+                    'text': post_result[0][0],
+                    'score': post_result[0][1],
+                    'latency': t_cost
+                }
+            else:
+                info = {
+                    'text': post_result[0][0],
+                    'score': post_result[0][1],
+                    'latency': t_cost
+                }
+
+            results.append(info)
+        return results
+
+
 def main(cfg):
     logger = get_logger()
-    global_config = cfg['Global']
-    if cfg['Global']['pretrained_model'] is None:
-        cfg['Global'][
-            'pretrained_model'] = cfg['Global']['output_dir'] + '/best.pth'
     if cfg['Global']['infer_img'] is None:
         cfg['Global']['infer_img'] = '../iiit5k_test_image'
-    # build post process
-    post_process_class = build_post_process(cfg['PostProcess'], cfg['Global'])
+    model = OpenRecognizer(cfg)
 
-    char_num = post_process_class.get_character_num()
-    cfg['Architecture']['Decoder']['out_channels'] = char_num
-    model = build_model(cfg['Architecture'])
-    load_ckpt(model, cfg)
-    device = set_device(cfg['Global']['device'])
-    model.eval()
-    model.to(device=device)
-
-    # create data ops
-    transforms, ratio_resize_flag = build_rec_process(cfg)
-    global_config['infer_mode'] = True
-    ops = create_operators(transforms, global_config)
-    if ratio_resize_flag:
-        ratio_resize = RatioRecTVReisze(cfg=cfg)
-        ops.insert(-1, ratio_resize)
     t_sum = 0
     sample_num = 0
     max_len = cfg['Global']['max_text_length']
     text_len_time = [0 for _ in range(max_len)]
     text_len_num = [0 for _ in range(max_len)]
-    for file in get_image_file_list(global_config['infer_img']):
-        with open(file, 'rb') as f:
-            img = f.read()
-            data = {'image': img}
-        batch = transform(data, ops)
-        others = None
-        if cfg['Architecture']['algorithm'] in ['SAR', 'RobustScanner']:
-            valid_ratio = np.expand_dims(batch[-1], axis=0)
-            others = [torch.from_numpy(valid_ratio).to(device=device)]
-        images = np.expand_dims(batch[0], axis=0)
-        images = torch.from_numpy(images).to(device=device)
-        if sample_num == 0:
-            for _ in range(100):
-                with torch.no_grad():
-                    preds = model(images, others)
-            sample_num += 1
-            continue
-        with torch.no_grad():
-            ts = time.time()
-            preds = model(images, others)
-            te = time.time()
-        post_result = post_process_class(preds)
 
-        if isinstance(post_result, dict):
-            rec_info = dict()
-            for key in post_result:
-                if len(post_result[key][0]) >= 2:
-                    rec_info[key] = {
-                        'label': post_result[key][0][0],
-                        'score': float(post_result[key][0][1]),
-                    }
-            info = json.dumps(rec_info, ensure_ascii=False)
-        elif isinstance(post_result, list) and isinstance(post_result[0], int):
-            # for RFLearning CNT branch
-            info = str(post_result[0])
-        else:
-            if len(post_result[0]) >= 2:
-                info = post_result[0][0] + '\t' + str(post_result[0][1])
-        t_cost = te - ts
-        text_len_num[min(max_len-1, len(post_result[0][0]))] += 1
-        text_len_time[min(max_len-1, len(post_result[0][0]))] += t_cost
+    rec_result = model(img_path=cfg['Global']['infer_img'])
+
+    for post_result in rec_result:
+        rec_text = post_result['text']
+        score = post_result['score']
+        t_cost = post_result['latency']
+        file = post_result['file']
+        info = rec_text + '\t' + str(score)
+        text_len_num[min(max_len - 1, len(rec_text))] += 1
+        text_len_time[min(max_len - 1, len(rec_text))] += t_cost
         logger.info(f'{file}\t result: {info}, time cost: {t_cost}')
         t_sum += t_cost
         sample_num += 1
 
-    sample_num -= 1
     print(text_len_num)
     w_avg_t_cost = []
     for l_t_cost, l_num in zip(text_len_time, text_len_num):
