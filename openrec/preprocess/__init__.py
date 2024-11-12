@@ -18,7 +18,8 @@ from .rec_aug import BaseDataAugmentation as BDA
 from .rec_aug import PARSeqAug, PARSeqAugPIL, SVTRAug
 from .resize import (ABINetResize, CDistNetResize, LongResize, RecTVResize,
                      RobustScannerRecResizeImg, SliceResize, SliceTVResize,
-                     SRNRecResizeImg, SVTRResize, VisionLANResize)
+                     SRNRecResizeImg, SVTRResize, VisionLANResize,
+                     RecDynamicResize)
 from .smtr_label_encode import SMTRLabelEncode
 from .srn_label_encode import SRNLabelEncode
 from .visionlan_label_encode import VisionLANLabelEncode
@@ -49,16 +50,17 @@ def transform(data, ops=None):
 
 
 class Fasttext(object):
-    def __init__(self, path="None", **kwargs):
+
+    def __init__(self, path='None', **kwargs):
         # pip install fasttext==0.9.1
         import fasttext
 
         self.fast_model = fasttext.load_model(path)
 
     def __call__(self, data):
-        label = data["label"]
+        label = data['label']
         fast_label = self.fast_model[label]
-        data["fast_label"] = fast_label
+        data['fast_label'] = fast_label
         return data
 
 

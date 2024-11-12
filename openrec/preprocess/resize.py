@@ -267,6 +267,35 @@ class RecTVResizeRatio(object):
         return data
 
 
+class RecDynamicResize(object):
+
+    def __init__(self, image_shape=[32, 128], padding=True, **kwargs):
+        self.padding = padding
+        self.image_shape = image_shape
+        self.max_ratio = image_shape[1] * 1.0 / image_shape[0]
+
+    def __call__(self, data):
+        img = data['image']
+        imgH, imgW = self.image_shape
+        h, w, imgC = img.shape
+        ratio = w / float(h)
+        max_wh_ratio = max(ratio, self.max_ratio)
+        imgW = int(imgH * max_wh_ratio)
+        if math.ceil(imgH * ratio) > imgW:
+            resized_w = imgW
+        else:
+            resized_w = int(math.ceil(imgH * ratio))
+        resized_image = cv2.resize(img, (resized_w, imgH))
+        resized_image = resized_image.astype('float32')
+        resized_image = resized_image.transpose((2, 0, 1)) / 255
+        resized_image -= 0.5
+        resized_image /= 0.5
+        padding_im = np.zeros((imgC, imgH, imgW), dtype=np.float32)
+        padding_im[:, :, 0:resized_w] = resized_image
+        data['image'] = padding_im
+        return data
+
+
 def resize_norm_img_slice(
     img,
     image_shape,

@@ -125,8 +125,8 @@ def main(cfg_det, cfg_rec):
     text_sys = OpenOCRWithSingleDetector(cfg_det,
                                          cfg_rec,
                                          drop_score=drop_score)
-    is_visualize = True
-    font_path = '/home/dyk/data/PaddleOCR_bgpd_26_cppd_3reclayer/PaddleOCR_bgpd_26/doc/fonts/simfang.ttf'
+    is_visualize = False
+    font_path = '/path/doc/fonts/simfang.ttf'
     draw_img_save_dir = './testA_repvitdet_svtrv2_rec_parallel/'
     os.makedirs(draw_img_save_dir, exist_ok=True)
     save_results = []

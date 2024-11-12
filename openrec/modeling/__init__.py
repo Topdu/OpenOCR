@@ -7,5 +7,5 @@ __all__ = ['build_model']
 
 def build_model(config):
     config = copy.deepcopy(config)
-    str_model = BaseRecognizer(config)
-    return str_model
+    rec_model = BaseRecognizer(config)
+    return rec_model
