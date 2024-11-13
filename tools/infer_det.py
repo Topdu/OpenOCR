@@ -44,9 +44,9 @@ def draw_det_res(dt_boxes, config, img, img_name, save_path):
     logger.info('The detected Image saved in {}'.format(save_path))
 
 
-def set_device(device):
+def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
-        device = torch.device('cuda:0')
+        device = torch.device(f'cuda:{numId}')
     else:
         device = torch.device('cpu')
     return device
@@ -54,7 +54,7 @@ def set_device(device):
 
 class OpenDetector(object):
 
-    def __init__(self, config):
+    def __init__(self, config, numId=0):
         from opendet.modeling import build_model as build_det_model
         from opendet.postprocess import build_post_process
         from opendet.preprocess import create_operators, transform
@@ -66,7 +66,7 @@ class OpenDetector(object):
         self.model.eval()
         load_ckpt(self.model, config)
         replace_batchnorm(self.model.backbone)
-        self.device = set_device(config['Global']['device'])
+        self.device = set_device(config['Global']['device'], numId=numId)
         self.model.to(device=self.device)
 
         # create data ops
