@@ -23,16 +23,16 @@ from tools.engine import Config
 from tools.infer.utility import get_rotate_crop_image, get_minarea_rect_crop, draw_ocr_box_txt
 
 
-class OpenOCRWithSingleDetector:
+class OpenOCRParallel:
 
     def __init__(self,
                  cfg_det,
                  cfg_rec,
                  drop_score=0.5,
                  det_box_type='quad',
-                 max_rec_threads=4):
-        self.text_detector = OpenDetector(cfg_det)
-        self.text_recognizer = OpenRecognizer(cfg_rec)
+                 max_rec_threads=2):
+        self.text_detector = OpenDetector(cfg_det, numId=0)
+        self.text_recognizer = OpenRecognizer(cfg_rec, numId=0)
         self.det_box_type = det_box_type
         self.drop_score = drop_score
         self.queue = queue.Queue(
@@ -59,13 +59,16 @@ class OpenOCRWithSingleDetector:
                 continue
 
             dt_boxes = sorted_boxes(dt_boxes)
+            img_crop_list = []
             for box in dt_boxes:
                 tmp_box = np.array(box).astype(np.float32)
                 img_crop = (get_rotate_crop_image(ori_img, tmp_box)
                             if self.det_box_type == 'quad' else
                             get_minarea_rect_crop(ori_img, tmp_box))
-                self.queue.put(
-                    (image_id, box, img_crop)
+                # boxs.append(box)
+                img_crop_list.append(img_crop)
+            self.queue.put(
+                    (image_id, dt_boxes, img_crop_list)
                 )  # Put image ID, detected box, and cropped image in queue
 
         # Signal that no more items will be added to the queue
@@ -75,22 +78,20 @@ class OpenOCRWithSingleDetector:
         """Recognize text in each cropped image."""
         while not self.stop_signal.is_set() or not self.queue.empty():
             try:
-                image_id, box, img_crop = self.queue.get(timeout=5)
-                rec_result = self.text_recognizer(img_numpy_list=[img_crop])[0]
-                text, score = rec_result['text'], rec_result['score']
-                if score >= self.drop_score:
-                    with self.lock:
-                        # Ensure results dictionary has a list for each image ID
-                        if image_id not in self.results:
-                            self.results[image_id] = []
-                        self.results[image_id].append({
-                            'transcription':
-                            text,
-                            'points':
-                            np.array(box).tolist(),
-                            'score':
-                            score
-                        })
+                image_id, boxs, img_crop_list = self.queue.get(timeout=5)
+                rec_results = self.text_recognizer(img_numpy_list=img_crop_list, batch_num=6)
+                for rec_result, box in zip(rec_results, boxs):
+                    text, score = rec_result['text'], rec_result['score']
+                    if score >= self.drop_score:
+                        with self.lock:
+                            # Ensure results dictionary has a list for each image ID
+                            if image_id not in self.results:
+                                self.results[image_id] = []
+                            self.results[image_id].append({
+                                'transcription': text,
+                                'points': box.tolist(),
+                                'score': score
+                            })
                 self.queue.task_done()
             except queue.Empty:
                 continue
@@ -101,15 +102,19 @@ class OpenOCRWithSingleDetector:
         self.results = {i: [] for i in range(len(image_list))}
 
         # Start recognition threads
+        t_start_1 = time.time()
         self.start_recognition_threads()
 
         # Start detection in the main thread
+        t_start = time.time()
         self.detect_text(image_list)
+        print('det time:', time.time()-t_start)
 
         # Wait for recognition threads to finish
         for t in self.rec_threads:
             t.join()
-
+        self.stop_signal.clear()
+        print('all time:', time.time()- t_start_1)
         return self.results
 
 
@@ -122,14 +127,24 @@ def sorted_boxes(dt_boxes):
 def main(cfg_det, cfg_rec):
     image_file_list = get_image_file_list('./testA/')
     drop_score = 0.5
-    text_sys = OpenOCRWithSingleDetector(cfg_det,
-                                         cfg_rec,
-                                         drop_score=drop_score)
+    text_sys = OpenOCRParallel(cfg_det, cfg_rec, drop_score=drop_score)
     is_visualize = False
     font_path = '/path/doc/fonts/simfang.ttf'
     draw_img_save_dir = './testA_repvitdet_svtrv2_rec_parallel/'
     os.makedirs(draw_img_save_dir, exist_ok=True)
     save_results = []
+
+    images = []
+    t_start = time.time()
+    for image_file in image_file_list:
+        img, flag_gif, flag_pdf = check_and_read(image_file)
+        if not flag_gif and not flag_pdf:
+            img = cv2.imread(image_file)
+        if img is not None:
+            images.append((img, img.copy()))
+
+    results = text_sys.process_images(images)
+    print(f'time cost: {time.time() - t_start}')
 
     # Prepare images
     images = []

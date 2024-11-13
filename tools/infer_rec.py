@@ -79,9 +79,9 @@ def build_rec_process(cfg):
     return transforms, ratio_resize_flag
 
 
-def set_device(device):
+def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
-        device = torch.device('cuda:0')
+        device = torch.device(f'cuda:{numId}')
     else:
         device = torch.device('cpu')
     return device
@@ -89,7 +89,7 @@ def set_device(device):
 
 class OpenRecognizer(object):
 
-    def __init__(self, config):
+    def __init__(self, config, numId=0):
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -109,7 +109,7 @@ class OpenRecognizer(object):
         self.model = build_rec_model(config['Architecture'])
         load_ckpt(self.model, config)
         # exit(0)
-        self.device = set_device(global_config['device'])
+        self.device = set_device(global_config['device'], numId=numId)
         self.model.eval()
         self.model.to(device=self.device)
 
@@ -124,7 +124,7 @@ class OpenRecognizer(object):
                  img_path=None,
                  img_numpy_list=None,
                  img_numpy=None,
-                 batch_num=1):
+                 batch_num=6):
 
         if img_numpy is not None:
             img_numpy_list = [img_numpy]
@@ -137,24 +137,52 @@ class OpenRecognizer(object):
         else:
             raise Exception('No input image path or numpy array.')
         results = []
-        for img_idx in range(num_img):
-            if img_numpy_list is not None:
-                img = img_numpy_list[img_idx]
-                data = {'image': img}
-            elif img_path is not None:
-                file_name = img_path[img_idx]
-                with open(file_name, 'rb') as f:
-                    img = f.read()
+        for start_idx in range(0, num_img, batch_num):
+            batch_data = []
+            batch_others = []
+            batch_file_names = []
+
+            max_width, max_height = 0, 0
+            # Prepare batch data
+            for img_idx in range(start_idx, min(start_idx + batch_num, num_img)):
+                if img_numpy_list is not None:
+                    img = img_numpy_list[img_idx]
                     data = {'image': img}
-                data = self.transform(data, self.ops[:1])
-            batch = self.transform(data, self.ops[1:])
-            others = None
-            if self.cfg['Architecture']['algorithm'] in [
-                    'SAR', 'RobustScanner'
-            ]:
-                valid_ratio = np.expand_dims(batch[-1], axis=0)
-                others = [torch.from_numpy(valid_ratio).to(device=self.device)]
-            images = np.expand_dims(batch[0], axis=0)
+                elif img_path is not None:
+                    file_name = img_path[img_idx]
+                    with open(file_name, 'rb') as f:
+                        img = f.read()
+                        data = {'image': img}
+                    data = self.transform(data, self.ops[:1])
+                    batch_file_names.append(file_name)
+                batch = self.transform(data, self.ops[1:])
+                others = None
+                if self.cfg['Architecture']['algorithm'] in [
+                        'SAR', 'RobustScanner'
+                ]:
+                    valid_ratio = np.expand_dims(batch[-1], axis=0)
+                    batch_others.append(valid_ratio)
+                    # others = [torch.from_numpy(valid_ratio).to(device=self.device)]
+                resized_image = batch[0]
+                h, w = resized_image.shape[-2:]
+                max_width = max(max_width, w)
+                max_height = max(max_height, h)
+                batch_data.append(batch[0])
+
+            padded_batch_data = []
+            for resized_image in batch_data:
+                padded_image = np.zeros([1, 3, max_height, max_width], dtype=np.float32)
+                h, w = resized_image.shape[-2:]
+
+                # Apply padding (bottom-right padding)
+                padded_image[:, :, :h, :w] = resized_image  # 0 is typically used for padding
+                padded_batch_data.append(padded_image)
+
+            if batch_others:
+                others = np.concatenate(batch_others, axis=0)
+            else:
+                others = None
+            images = np.concatenate(padded_batch_data, axis=0)
             images = torch.from_numpy(images).to(device=self.device)
 
             with torch.no_grad():
@@ -162,23 +190,24 @@ class OpenRecognizer(object):
                 preds = self.model(images, others)
                 torch.cuda.synchronize()
                 t_cost = time.time() - t_start
-            post_result = self.post_process_class(preds)
+            post_results = self.post_process_class(preds)
 
-            if img_path is not None:
-                info = {
-                    'file': file_name,
-                    'text': post_result[0][0],
-                    'score': post_result[0][1],
-                    'latency': t_cost
-                }
-            else:
-                info = {
-                    'text': post_result[0][0],
-                    'score': post_result[0][1],
-                    'latency': t_cost
-                }
+            for i, post_result in enumerate(post_results):
+                if img_path is not None:
+                    info = {
+                        'file': batch_file_names[i],
+                        'text': post_result[0],
+                        'score': post_result[1],
+                        'latency': t_cost
+                    }
+                else:
+                    info = {
+                        'text': post_result[0],
+                        'score': post_result[1],
+                        'latency': t_cost
+                    }
+                results.append(info)
 
-            results.append(info)
         return results
 
 

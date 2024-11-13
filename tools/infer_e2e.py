@@ -76,7 +76,7 @@ class OpenOCR(object):
             img_crop_list.append(img_crop)
 
         start = time.time()
-        rec_res = self.text_recognizer(img_numpy_list=img_crop_list)
+        rec_res = self.text_recognizer(img_numpy_list=img_crop_list, batch_num=6)
         rec_time_cost = time.time() - start
 
         filter_boxes, filter_rec_res = [], []
@@ -164,6 +164,20 @@ def main(cfg_det, cfg_rec):
     draw_img_save_dir = './testA_repvitdet_svtrv2_rec/'
     os.makedirs(draw_img_save_dir, exist_ok=True)
     save_results = []
+
+    for idx, image_file in enumerate(image_file_list):
+        img, flag_gif, flag_pdf = check_and_read(image_file)
+        if not flag_gif and not flag_pdf:
+            img = cv2.imread(image_file)
+        if not flag_pdf:
+            if img is None:
+                return None
+            imgs = [img]
+        else:
+            imgs = img
+
+        res_list, time_dict = text_sys(img_numpy=imgs)
+
 
     t_start = time.time()
     for idx, image_file in enumerate(image_file_list):
