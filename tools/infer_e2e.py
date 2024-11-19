@@ -32,10 +32,41 @@ def set_device(device):
     return device
 
 
+def check_and_download_font(font_path):
+    if not os.path.exists(font_path):
+        print(f"Downloading '{font_path}' ...")
+        try:
+            import urllib.request
+            font_url = 'https://shuiche-shop.oss-cn-chengdu.aliyuncs.com/fonts/simfang.ttf'
+            urllib.request.urlretrieve(font_url, font_path)
+            print(f'Downloading font success: {font_path}')
+        except Exception as e:
+            print(f'Downloading font error: {e}')
+
+
 class OpenOCR(object):
 
-    def __init__(self, cfg_det, cfg_rec, drop_score=0.5, det_box_type='quad'):
+    def __init__(self, mode='mobile', drop_score=0.5, det_box_type='quad'):
+        """
+        初始化函数，用于初始化OCR引擎的相关配置和组件。
 
+        Args:
+            mode (str, optional): 运行模式，可选值为'mobile'或'server'。默认为'mobile'。
+            drop_score (float, optional): 检测框的置信度阈值，低于该阈值的检测框将被丢弃。默认为0.5。
+            det_box_type (str, optional): 检测框的类型，可选值为'quad' and 'poly'。默认为'quad'。
+
+        Returns:
+            无返回值。
+
+        """
+        cfg_det = Config(
+            './configs/det/dbnet/repvit_db.yml').cfg  # mobile model
+        if mode == 'server':
+            cfg_rec = Config(
+                './configs/det/svtrv2/svtrv2_ch.yml').cfg  # server model
+        else:
+            cfg_rec = Config(
+                './configs/rec/svtrv2/repsvtr_ch.yml').cfg  # mobile model
         self.text_detector = OpenDetector(cfg_det)
         self.text_recognizer = OpenRecognizer(cfg_rec)
         self.det_box_type = det_box_type
@@ -54,9 +85,17 @@ class OpenOCR(object):
             )
         self.crop_image_res_index += bbox_num
 
-    def infer_single_image(self, img_numpy, ori_img):
+    def infer_single_image(self,
+                           img_numpy,
+                           ori_img,
+                           crop_infer=False,
+                           rec_batch_num=6):
         start = time.time()
-        dt_boxes = self.text_detector(img_numpy=img_numpy)[0]['boxes']
+        if crop_infer:
+            dt_boxes = self.text_detector.crop_infer(
+                img_numpy=img_numpy)[0]['boxes']
+        else:
+            dt_boxes = self.text_detector(img_numpy=img_numpy)[0]['boxes']
         # print(dt_boxes)
         det_time_cost = time.time() - start
 
@@ -76,14 +115,15 @@ class OpenOCR(object):
             img_crop_list.append(img_crop)
 
         start = time.time()
-        rec_res = self.text_recognizer(img_numpy_list=img_crop_list, batch_num=6)
+        rec_res = self.text_recognizer(img_numpy_list=img_crop_list,
+                                       batch_num=rec_batch_num)
         rec_time_cost = time.time() - start
 
         filter_boxes, filter_rec_res = [], []
         rec_time_cost_sig = 0.0
         for box, rec_result in zip(dt_boxes, rec_res):
             text, score = rec_result['text'], rec_result['score']
-            rec_time_cost_sig += rec_result['latency']
+            rec_time_cost_sig += rec_result['elapse']
             if score >= self.drop_score:
                 filter_boxes.append(box)
                 filter_rec_res.append([text, score])
@@ -98,7 +138,26 @@ class OpenOCR(object):
             'avg_rec_time_cost': avg_rec_time_cost
         }
 
-    def __call__(self, img_numpy=None, img_path=None):
+    def __call__(self,
+                 img_path=None,
+                 img_numpy=None,
+                 rec_batch_num=6,
+                 crop_infer=False):
+        """
+        对输入的图像进行文本识别，并返回识别结果和时间信息。
+
+        Args:
+            img_path (str, optional): 输入图像的路径。默认为None。
+            img_numpy (numpy.ndarray, list[numpy.ndarray], optional): 输入的图像数据，以numpy数组的形式表示。默认为None。
+            crop_infer (bool, optional): 是否进行裁剪推理。默认为False。
+            rec_batch_num (int, optional): 识别模型批量推理时的批大小。默认为6。
+
+        Returns:
+            tuple: 返回一个元组，包含两个元素。
+                - list: 包含识别结果的列表，每个元素是一个字典，包含文本转录、文本框坐标点和得分。
+                - dict: 包含时间信息的字典。
+
+        """
 
         if img_numpy is None:
             img, flag_gif, flag_pdf = check_and_read(img_path)
@@ -120,7 +179,10 @@ class OpenOCR(object):
         for index, img_numpy in enumerate(imgs):
             ori_img = img_numpy.copy()
             dt_boxes, rec_res, time_dict = self.infer_single_image(
-                img_numpy=img_numpy, ori_img=ori_img)
+                img_numpy=img_numpy,
+                ori_img=ori_img,
+                crop_infer=crop_infer,
+                rec_batch_num=rec_batch_num)
 
             res = [{
                 'transcription': rec_res[i][0],
@@ -155,31 +217,21 @@ def sorted_boxes(dt_boxes):
     return _boxes
 
 
-def main(cfg_det, cfg_rec):
-    image_file_list = get_image_file_list('./testA/')
+def main():
+    img_path = './test_img/'
+    image_file_list = get_image_file_list(img_path)
     drop_score = 0.5
-    text_sys = OpenOCR(cfg_det, cfg_rec, drop_score=drop_score)
+    text_sys = OpenOCR(drop_score=drop_score,
+                       det_box_type='quad')  # det_box_type: 'quad' or 'poly'
     is_visualize = False
-    font_path = '/path/doc/fonts/simfang.ttf'
-    draw_img_save_dir = './testA_repvitdet_svtrv2_rec/'
+    if is_visualize:
+        font_path = './simfang.ttf'
+        check_and_download_font(font_path)
+    draw_img_save_dir = img_path + 'e2e_results/' if img_path[
+        -1] != '/' else img_path[:-1] + 'e2e_results/'
     os.makedirs(draw_img_save_dir, exist_ok=True)
     save_results = []
 
-    for idx, image_file in enumerate(image_file_list):
-        img, flag_gif, flag_pdf = check_and_read(image_file)
-        if not flag_gif and not flag_pdf:
-            img = cv2.imread(image_file)
-        if not flag_pdf:
-            if img is None:
-                return None
-            imgs = [img]
-        else:
-            imgs = img
-
-        res_list, time_dict = text_sys(img_numpy=imgs)
-
-
-    t_start = time.time()
     for idx, image_file in enumerate(image_file_list):
         img, flag_gif, flag_pdf = check_and_read(image_file)
         if not flag_gif and not flag_pdf:
@@ -211,7 +263,7 @@ def main(cfg_det, cfg_rec):
                 boxes = dt_boxes
                 txts = [rec_res[i] for i in range(len(rec_res))]
                 scores = [rec_score[i] for i in range(len(rec_res))]
-                # print(txts, scores)
+
                 draw_img = draw_ocr_box_txt(
                     image,
                     boxes,
@@ -232,8 +284,7 @@ def main(cfg_det, cfg_rec):
                                  os.path.basename(save_file)),
                     draw_img[:, :, ::-1],
                 )
-    t_end = time.time()
-    print('inference time: {}'.format(t_end - t_start))
+
     with open(os.path.join(draw_img_save_dir, 'system_results.txt'),
               'w',
               encoding='utf-8') as f:
@@ -241,6 +292,4 @@ def main(cfg_det, cfg_rec):
 
 
 if __name__ == '__main__':
-    cfg_det = Config('./configs/det/dbnet/repvit_db.yml')
-    cfg_rec = Config('./configs/rec/svtrv2/svtrv2_ch.yml')
-    main(cfg_det.cfg, cfg_rec.cfg)
+    main()
