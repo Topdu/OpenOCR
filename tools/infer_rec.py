@@ -16,6 +16,7 @@ from tools.utility import ArgsParser
 from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
+from tools.infer_det import replace_batchnorm
 
 
 class RatioRecTVReisze(object):
@@ -89,7 +90,30 @@ def set_device(device, numId=0):
 
 class OpenRecognizer(object):
 
-    def __init__(self, config, numId=0):
+    def __init__(self, config=None, mode='mobile', numId=0):
+        """
+        初始化方法。
+
+        Args:
+            config (dict, optional): 配置信息。默认为None。
+            mode (str, optional): 模式，'server' 或 'mobile'。默认为'mobile'。
+            numId (int, optional): 设备编号。默认为0。
+
+        Returns:
+            None
+
+        Raises:
+            无
+
+        """
+        if config is None:
+            if mode == 'server':
+                config = Config(
+                    './configs/det/svtrv2/svtrv2_ch.yml').cfg  # server model
+            else:
+                config = Config(
+                    './configs/rec/svtrv2/repsvtr_ch.yml').cfg  # mobile model
+
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -108,9 +132,11 @@ class OpenRecognizer(object):
         # print(char_num)
         self.model = build_rec_model(config['Architecture'])
         load_ckpt(self.model, config)
+
         # exit(0)
         self.device = set_device(global_config['device'], numId=numId)
         self.model.eval()
+        replace_batchnorm(self.model.encoder)
         self.model.to(device=self.device)
 
         transforms, ratio_resize_flag = build_rec_process(self.cfg)
@@ -124,7 +150,22 @@ class OpenRecognizer(object):
                  img_path=None,
                  img_numpy_list=None,
                  img_numpy=None,
-                 batch_num=6):
+                 batch_num=1):
+        """
+        调用函数，处理输入图像，并返回识别结果。
+
+        Args:
+            img_path (str, optional): 图像文件的路径。默认为 None。
+            img_numpy_list (list, optional): 包含多个图像 numpy 数组的列表。默认为 None。
+            img_numpy (numpy.ndarray, optional): 单个图像的 numpy 数组。默认为 None。
+            batch_num (int, optional): 每次处理的图像数量。默认为 1。
+
+        Returns:
+            list: 包含识别结果的列表，每个元素为一个字典，包含文件路径（如果有的话）、文本、分数和延迟时间。
+
+        Raises:
+            Exception: 如果没有提供图像路径或 numpy 数组，则引发异常。
+        """
 
         if img_numpy is not None:
             img_numpy_list = [img_numpy]
@@ -144,7 +185,8 @@ class OpenRecognizer(object):
 
             max_width, max_height = 0, 0
             # Prepare batch data
-            for img_idx in range(start_idx, min(start_idx + batch_num, num_img)):
+            for img_idx in range(start_idx, min(start_idx + batch_num,
+                                                num_img)):
                 if img_numpy_list is not None:
                     img = img_numpy_list[img_idx]
                     data = {'image': img}
@@ -171,11 +213,13 @@ class OpenRecognizer(object):
 
             padded_batch_data = []
             for resized_image in batch_data:
-                padded_image = np.zeros([1, 3, max_height, max_width], dtype=np.float32)
+                padded_image = np.zeros([1, 3, max_height, max_width],
+                                        dtype=np.float32)
                 h, w = resized_image.shape[-2:]
 
                 # Apply padding (bottom-right padding)
-                padded_image[:, :, :h, :w] = resized_image  # 0 is typically used for padding
+                padded_image[:, :, :h, :
+                             w] = resized_image  # 0 is typically used for padding
                 padded_batch_data.append(padded_image)
 
             if batch_others:
@@ -198,13 +242,13 @@ class OpenRecognizer(object):
                         'file': batch_file_names[i],
                         'text': post_result[0],
                         'score': post_result[1],
-                        'latency': t_cost
+                        'elapse': t_cost
                     }
                 else:
                     info = {
                         'text': post_result[0],
                         'score': post_result[1],
-                        'latency': t_cost
+                        'elapse': t_cost
                     }
                 results.append(info)
 
@@ -213,9 +257,11 @@ class OpenRecognizer(object):
 
 def main(cfg):
     logger = get_logger()
-    if cfg['Global']['infer_img'] is None:
-        cfg['Global']['infer_img'] = '../iiit5k_test_image'
     model = OpenRecognizer(cfg)
+
+    save_res_path = cfg['Global']['output_dir']
+    if not os.path.exists(save_res_path):
+        os.makedirs(save_res_path)
 
     t_sum = 0
     sample_num = 0
@@ -223,19 +269,24 @@ def main(cfg):
     text_len_time = [0 for _ in range(max_len)]
     text_len_num = [0 for _ in range(max_len)]
 
-    rec_result = model(img_path=cfg['Global']['infer_img'])
+    sample_num = 0
+    with open(save_res_path + '/rec_results.txt', 'wb') as fout:
+        for file in get_image_file_list(cfg['Global']['infer_img']):
 
-    for post_result in rec_result:
-        rec_text = post_result['text']
-        score = post_result['score']
-        t_cost = post_result['latency']
-        file = post_result['file']
-        info = rec_text + '\t' + str(score)
-        text_len_num[min(max_len - 1, len(rec_text))] += 1
-        text_len_time[min(max_len - 1, len(rec_text))] += t_cost
-        logger.info(f'{file}\t result: {info}, time cost: {t_cost}')
-        t_sum += t_cost
-        sample_num += 1
+            preds_result = model(img_path=file, batch_num=1)[0]
+
+            rec_text = preds_result['text']
+            score = preds_result['score']
+            t_cost = preds_result['elapse']
+            info = rec_text + '\t' + str(score)
+            text_len_num[min(max_len - 1, len(rec_text))] += 1
+            text_len_time[min(max_len - 1, len(rec_text))] += t_cost
+            logger.info(
+                f'{sample_num} {file}\t result: {info}, time cost: {t_cost}')
+            otstr = file + '\t' + info + '\n'
+            t_sum += t_cost
+            fout.write(otstr.encode())
+            sample_num += 1
 
     print(text_len_num)
     w_avg_t_cost = []
