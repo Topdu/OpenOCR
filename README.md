@@ -7,7 +7,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 ## Features
 
 - 🔥**OpenOCR: A general OCR system for accuracy and efficiency**
-  - ⚡\[[Quick Start](./docs/openocr.md#quick-start)\] \[[Demo](<>)\]
+  - ⚡\[[Quick Start](#quick-start)\] \[[Demo](<>)(TODO)\]
   - [Introduction](./docs/openocr.md)
     - A practical version of the model builds on SVTRv2.
     - Outperforming [PP-OCRv4](<>) released by [PaddleOCR](<>) by 4.5% on the [OCR competition leaderboard](<>).
@@ -42,7 +42,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 - **🔥 2024.11.23 release notes**:
   - **OpenOCR: A general OCR system for accuracy and efficiency**
-    - ⚡\[[Quick Start](./docs/openocr.md#quick-start)\] \[[Demo](<>)\]
+    - ⚡\[[Quick Start](#quick-start)\] \[[Demo](<>)(TODO)\]
     - [Introduction](./docs/openocr.md)
   - **SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
     - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
