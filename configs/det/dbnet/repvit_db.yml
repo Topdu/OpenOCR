@@ -10,7 +10,7 @@ Global:
   - 1000
   cal_metric_during_train: false
   checkpoints:
-  pretrained_model: paddle_to_openocr_det_repvit_ch.pth
+  pretrained_model: openocr_det_repvit_ch.pth
   save_inference_dir: null
   use_visualdl: false
   infer_img: ./testA
@@ -53,9 +53,10 @@ Architecture:
 PostProcess:
   name: DBPostProcess
   thresh: 0.3
-  box_thresh: 0.6
+  box_thresh: 0.4
   max_candidates: 1000
   unclip_ratio: 1.5
+  score_mode: 'slow'
 
 # Metric:
 #   name: DetMetric
@@ -144,8 +145,8 @@ Eval:
         # image_shape: [1280, 1280]
         # keep_ratio: True
         # padding: True
-        # limit_side_len: 1280
-        # limit_type: max
+        limit_side_len: 960
+        limit_type: max
     - NormalizeImage:
         scale: 1./255.
         mean:
