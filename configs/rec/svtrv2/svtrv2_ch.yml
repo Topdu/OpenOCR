@@ -9,7 +9,7 @@ Global:
   eval_epoch_step: [0, 1]
   eval_batch_step: [0, 500]
   cal_metric_during_train: True
-  pretrained_model: ./paddle_to_openocr_svtrv2_ch.pth
+  pretrained_model: ./openocr_svtrv2_ch.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
