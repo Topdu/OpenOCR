@@ -10,6 +10,7 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 os.environ['FLAGS_allocator_strategy'] = 'auto_growth'
+import argparse
 import numpy as np
 import copy
 import time
@@ -42,6 +43,30 @@ def check_and_download_font(font_path):
             print(f'Downloading font success: {font_path}')
         except Exception as e:
             print(f'Downloading font error: {e}')
+
+
+def sorted_boxes(dt_boxes):
+    """
+    Sort text boxes in order from top to bottom, left to right
+    args:
+        dt_boxes(array):detected text boxes with shape [4, 2]
+    return:
+        sorted boxes(array) with shape [4, 2]
+    """
+    num_boxes = dt_boxes.shape[0]
+    sorted_boxes = sorted(dt_boxes, key=lambda x: (x[0][1], x[0][0]))
+    _boxes = list(sorted_boxes)
+
+    for i in range(num_boxes - 1):
+        for j in range(i, -1, -1):
+            if abs(_boxes[j + 1][0][1] - _boxes[j][0][1]) < 10 and (
+                    _boxes[j + 1][0][0] < _boxes[j][0][0]):
+                tmp = _boxes[j]
+                _boxes[j] = _boxes[j + 1]
+                _boxes[j + 1] = tmp
+            else:
+                break
+    return _boxes
 
 
 class OpenOCR(object):
@@ -100,7 +125,7 @@ class OpenOCR(object):
         det_time_cost = time.time() - start
 
         if dt_boxes is None:
-            return None
+            return None, None, None
 
         img_crop_list = []
 
@@ -140,155 +165,208 @@ class OpenOCR(object):
 
     def __call__(self,
                  img_path=None,
+                 save_dir='e2e_results/',
+                 is_visualize=False,
                  img_numpy=None,
                  rec_batch_num=6,
                  crop_infer=False):
         """
-        对输入的图像进行文本识别，并返回识别结果和时间信息。
-
-        Args:
-            img_path (str, optional): 输入图像的路径。默认为None。
-            img_numpy (numpy.ndarray, list[numpy.ndarray], optional): 输入的图像数据，以numpy数组的形式表示。默认为None。
-            crop_infer (bool, optional): 是否进行裁剪推理。默认为False。
-            rec_batch_num (int, optional): 识别模型批量推理时的批大小。默认为6。
-
-        Returns:
-            tuple: 返回一个元组，包含两个元素。
-                - list: 包含识别结果的列表，每个元素是一个字典，包含文本转录、文本框坐标点和得分。
-                - dict: 包含时间信息的字典。
-
+        img_path: str, optional, default=None
+            Path to the directory containing images or the image filename.
+        save_dir: str, optional, default='e2e_results/'
+            Directory to save prediction and visualization results. Defaults to a subfolder in img_path.
+        is_visualize: bool, optional, default=False
+            Visualize the results.
+        img_numpy: numpy or list[numpy], optional, default=None
+            numpy of an image or List of numpy arrays representing images.
+        rec_batch_num: int, optional, default=6
+            Batch size for text recognition.
+        crop_infer: bool, optional, default=False
+            Whether to use crop inference.
         """
 
-        if img_numpy is None:
-            img, flag_gif, flag_pdf = check_and_read(img_path)
+        if img_numpy is None and img_path is None:
+            raise ValueError('img_path and img_numpy cannot be both None.')
+        if img_numpy is not None:
+            if not isinstance(img_numpy, list):
+                img_numpy = [img_numpy]
+            results = []
+            time_dicts = []
+            for index, img in enumerate(img_numpy):
+                ori_img = img.copy()
+                dt_boxes, rec_res, time_dict = self.infer_single_image(
+                    img_numpy=img,
+                    ori_img=ori_img,
+                    crop_infer=crop_infer,
+                    rec_batch_num=rec_batch_num)
+                if dt_boxes is None:
+                    results.append([])
+                    time_dicts.append({})
+                    continue
+                res = [{
+                    'transcription': rec_res[i][0],
+                    'points': np.array(dt_boxes[i]).tolist(),
+                    'score': rec_res[i][1],
+                } for i in range(len(dt_boxes))]
+                results.append(res)
+                time_dicts.append(time_dict)
+            return results, time_dicts
+
+        image_file_list = get_image_file_list(img_path)
+        save_results = []
+        time_dicts_return = []
+        for idx, image_file in enumerate(image_file_list):
+            img, flag_gif, flag_pdf = check_and_read(image_file)
             if not flag_gif and not flag_pdf:
-                img = cv2.imread(img_path)
+                img = cv2.imread(image_file)
             if not flag_pdf:
                 if img is None:
                     return None
                 imgs = [img]
             else:
                 imgs = img
+            print(f'Processing {idx+1}/{len(image_file_list)}: {image_file}')
+
+            res_list = []
+            time_dicts = []
+            for index, img_numpy in enumerate(imgs):
+                ori_img = img_numpy.copy()
+                dt_boxes, rec_res, time_dict = self.infer_single_image(
+                    img_numpy=img_numpy,
+                    ori_img=ori_img,
+                    crop_infer=crop_infer,
+                    rec_batch_num=rec_batch_num)
+                if dt_boxes is None:
+                    res_list.append([])
+                    time_dicts.append({})
+                    continue
+                res = [{
+                    'transcription': rec_res[i][0],
+                    'points': np.array(dt_boxes[i]).tolist(),
+                    'score': rec_res[i][1],
+                } for i in range(len(dt_boxes))]
+                res_list.append(res)
+                time_dicts.append(time_dict)
+
+            for index, (res, time_dict) in enumerate(zip(res_list,
+                                                         time_dicts)):
+
+                if len(res) > 0:
+                    print(f'Results: {res}.')
+                    print(f'Time cost: {time_dict}.')
+                else:
+                    print('No text detected.')
+
+                if len(res_list) > 1:
+                    save_pred = (os.path.basename(image_file) + '_' +
+                                 str(index) + '\t' +
+                                 json.dumps(res, ensure_ascii=False) + '\n')
+                else:
+                    if len(res) > 0:
+                        save_pred = (os.path.basename(image_file) + '\t' +
+                                     json.dumps(res, ensure_ascii=False) +
+                                     '\n')
+                    else:
+                        continue
+                save_results.append(save_pred)
+                time_dicts_return.append(time_dict)
+
+                if is_visualize and len(res) > 0:
+                    if idx == 0:
+                        font_path = './simfang.ttf'
+                        check_and_download_font(font_path)
+                        os.makedirs(save_dir, exist_ok=True)
+                        draw_img_save_dir = os.path.join(
+                            save_dir, 'vis_results/')
+                        os.makedirs(draw_img_save_dir, exist_ok=True)
+                        print(
+                            f'Visualized results will be saved to {draw_img_save_dir}.'
+                        )
+                    dt_boxes = [res[i]['points'] for i in range(len(res))]
+                    rec_res = [
+                        res[i]['transcription'] for i in range(len(res))
+                    ]
+                    rec_score = [res[i]['score'] for i in range(len(res))]
+                    image = Image.fromarray(
+                        cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+                    boxes = dt_boxes
+                    txts = [rec_res[i] for i in range(len(rec_res))]
+                    scores = [rec_score[i] for i in range(len(rec_res))]
+
+                    draw_img = draw_ocr_box_txt(
+                        image,
+                        boxes,
+                        txts,
+                        scores,
+                        drop_score=self.drop_score,
+                        font_path=font_path,
+                    )
+                    if flag_gif:
+                        save_file = image_file[:-3] + 'png'
+                    elif flag_pdf:
+                        save_file = image_file.replace(
+                            '.pdf', '_' + str(index) + '.png')
+                    else:
+                        save_file = image_file
+                    cv2.imwrite(
+                        os.path.join(draw_img_save_dir,
+                                     os.path.basename(save_file)),
+                        draw_img[:, :, ::-1],
+                    )
+
+        if save_results:
+            os.makedirs(save_dir, exist_ok=True)
+            with open(os.path.join(save_dir, 'system_results.txt'),
+                      'w',
+                      encoding='utf-8') as f:
+                f.writelines(save_results)
+            print(
+                f"Results saved to {os.path.join(save_dir, 'system_results.txt')}."
+            )
+            if is_visualize:
+                print(f'Visualized results saved to {draw_img_save_dir}.')
+            return save_results, time_dicts_return
         else:
-            if isinstance(img_numpy, list):
-                imgs = img_numpy
-            else:
-                imgs = [img_numpy]
-        # for img_numpy in imgs:
-        results = []
-        for index, img_numpy in enumerate(imgs):
-            ori_img = img_numpy.copy()
-            dt_boxes, rec_res, time_dict = self.infer_single_image(
-                img_numpy=img_numpy,
-                ori_img=ori_img,
-                crop_infer=crop_infer,
-                rec_batch_num=rec_batch_num)
-
-            res = [{
-                'transcription': rec_res[i][0],
-                'points': np.array(dt_boxes[i]).tolist(),
-                'score': rec_res[i][1],
-            } for i in range(len(dt_boxes))]
-            results.append(res)
-        return results, time_dict
-
-
-def sorted_boxes(dt_boxes):
-    """
-    Sort text boxes in order from top to bottom, left to right
-    args:
-        dt_boxes(array):detected text boxes with shape [4, 2]
-    return:
-        sorted boxes(array) with shape [4, 2]
-    """
-    num_boxes = dt_boxes.shape[0]
-    sorted_boxes = sorted(dt_boxes, key=lambda x: (x[0][1], x[0][0]))
-    _boxes = list(sorted_boxes)
-
-    for i in range(num_boxes - 1):
-        for j in range(i, -1, -1):
-            if abs(_boxes[j + 1][0][1] - _boxes[j][0][1]) < 10 and (
-                    _boxes[j + 1][0][0] < _boxes[j][0][0]):
-                tmp = _boxes[j]
-                _boxes[j] = _boxes[j + 1]
-                _boxes[j + 1] = tmp
-            else:
-                break
-    return _boxes
+            print('No text detected.')
+            return None, None
 
 
 def main():
-    img_path = './test_img/'
-    image_file_list = get_image_file_list(img_path)
-    drop_score = 0.5
-    text_sys = OpenOCR(drop_score=drop_score,
+    parser = argparse.ArgumentParser(description='OpenOCR system')
+    parser.add_argument(
+        '--img_path',
+        type=str,
+        help='Path to the directory containing images or the image filename.')
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default='mobile',
+        help="Mode of the OCR system, e.g., 'mobile' or 'server'.")
+    parser.add_argument(
+        '--save_dir',
+        type=str,
+        default='e2e_results/',
+        help='Directory to save prediction and visualization results. \
+            Defaults to ./e2e_results/.')
+    parser.add_argument('--is_vis',
+                        action='store_true',
+                        default=False,
+                        help='Visualize the results.')
+    parser.add_argument('--drop_score',
+                        type=float,
+                        default=0.5,
+                        help='Score threshold for text recognition.')
+    args = parser.parse_args()
+
+    img_path = args.img_path
+    mode = args.mode
+    save_dir = args.save_dir
+    is_visualize = args.is_vis
+    drop_score = args.drop_score
+
+    text_sys = OpenOCR(mode=mode, drop_score=drop_score,
                        det_box_type='quad')  # det_box_type: 'quad' or 'poly'
-    is_visualize = False
-    if is_visualize:
-        font_path = './simfang.ttf'
-        check_and_download_font(font_path)
-    draw_img_save_dir = img_path + 'e2e_results/' if img_path[
-        -1] != '/' else img_path[:-1] + 'e2e_results/'
-    os.makedirs(draw_img_save_dir, exist_ok=True)
-    save_results = []
-
-    for idx, image_file in enumerate(image_file_list):
-        img, flag_gif, flag_pdf = check_and_read(image_file)
-        if not flag_gif and not flag_pdf:
-            img = cv2.imread(image_file)
-        if not flag_pdf:
-            if img is None:
-                return None
-            imgs = [img]
-        else:
-            imgs = img
-
-        res_list, time_dict = text_sys(img_numpy=imgs)
-        print(time_dict)
-
-        for index, res in enumerate(res_list):
-
-            if len(res_list) > 1:
-                save_pred = (os.path.basename(image_file) + '_' + str(index) +
-                             '\t' + json.dumps(res, ensure_ascii=False) + '\n')
-            else:
-                save_pred = (os.path.basename(image_file) + '\t' +
-                             json.dumps(res, ensure_ascii=False) + '\n')
-            save_results.append(save_pred)
-            dt_boxes = [res[i]['points'] for i in range(len(res))]
-            rec_res = [res[i]['transcription'] for i in range(len(res))]
-            rec_score = [res[i]['score'] for i in range(len(res))]
-            if is_visualize:
-                image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-                boxes = dt_boxes
-                txts = [rec_res[i] for i in range(len(rec_res))]
-                scores = [rec_score[i] for i in range(len(rec_res))]
-
-                draw_img = draw_ocr_box_txt(
-                    image,
-                    boxes,
-                    txts,
-                    scores,
-                    drop_score=drop_score,
-                    font_path=font_path,
-                )
-                if flag_gif:
-                    save_file = image_file[:-3] + 'png'
-                elif flag_pdf:
-                    save_file = image_file.replace('.pdf',
-                                                   '_' + str(index) + '.png')
-                else:
-                    save_file = image_file
-                cv2.imwrite(
-                    os.path.join(draw_img_save_dir,
-                                 os.path.basename(save_file)),
-                    draw_img[:, :, ::-1],
-                )
-
-    with open(os.path.join(draw_img_save_dir, 'system_results.txt'),
-              'w',
-              encoding='utf-8') as f:
-        f.writelines(save_results)
+    text_sys(img_path=img_path, save_dir=save_dir, is_visualize=is_visualize)
 
 
 if __name__ == '__main__':
