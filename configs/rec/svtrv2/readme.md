@@ -38,29 +38,29 @@ Download all Configs, Models, and Logs from [Google Drive](https://drive.google.
 
 - Test on Common Benchmarks from [PARSeq](https://github.com/baudm/parseq):
 
-|  Model   |                Training Data                 | IC13<br/>857 | SVT  | IIIT5k<br/>3000 | IC15<br/>1811 | SVTP | CUTE80 |  Avg  |                                     Config&Model&Log                                      |
-| :------: | :------------------------------------------: | :----------: | :--: | :-------------: | :-----------: | :--: | :----: | :---: | :---------------------------------------------------------------------------------------: |
-| SVTRv2-B |          Synthetic datasets (MJ+ST)          |     97.7     | 94.0 |      97.3       |     88.1      | 91.2 |  95.8  | 94.02 |                                           TODO                                            |
-| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md) |     98.6     | 96.6 |      98.0       |     88.4      | 90.5 |  96.5  | 94.78 | [Google drive](https://drive.google.com/drive/folders/12ZUGkCS7tEhFhWa2RKKtyB0tPjhH4d9s?usp=drive_link) |
-| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md) |     99.0     | 98.3 |      98.5       |     89.5      | 92.9 |  98.6  | 96.13 | [Google drive](https://drive.google.com/drive/folders/1mOG3EUAOsmD16B-VIelVDYf_O64q0G3M?usp=drive_link) |
-| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md) |     99.2     | 98.0 |      98.7       |     91.1      | 93.5 |  99.0  | 96.57 | [Google drive](https://drive.google.com/drive/folders/11u11ptDzQ4BF9RRsOYdZnXl6ell2h4jN?usp=drive_link) |
+|  Model   |                        Training Data                         | IC13<br/>857 | SVT  | IIIT5k<br/>3000 | IC15<br/>1811 | SVTP | CUTE80 |  Avg  |                             Config&Model&Log                              |
+| :------: | :----------------------------------------------------------: | :----------: | :--: | :-------------: | :-----------: | :--: | :----: | :---: | :-----------------------------------------------------------------------: |
+| SVTRv2-B |                  Synthetic datasets (MJ+ST)                  |     97.7     | 94.0 |      97.3       |     88.1      | 91.2 |  95.8  | 94.02 |                                   TODO                                    |
+| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) |     98.6     | 96.6 |      98.0       |     88.4      | 90.5 |  96.5  | 94.78 | [Google drive](https://drive.google.com/drive/folders/12ZUGkCS7tEhFhWa2RKKtyB0tPjhH4d9s?usp=drive_link) |
+| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) |     99.0     | 98.3 |      98.5       |     89.5      | 92.9 |  98.6  | 96.13 | [Google drive](https://drive.google.com/drive/folders/1mOG3EUAOsmD16B-VIelVDYf_O64q0G3M?usp=drive_link) |
+| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) |     99.2     | 98.0 |      98.7       |     91.1      | 93.5 |  99.0  | 96.57 | [Google drive](https://drive.google.com/drive/folders/11u11ptDzQ4BF9RRsOYdZnXl6ell2h4jN?usp=drive_link) |
 
 - Test on Union14M-L benchmark from [Union14M](https://github.com/Mountchicken/Union14M/).
 
-|  Model   |                 Traing Data                  | Curve | Multi-<br/>Oriented | Artistic | Contextless | Salient | Multi-<br/>word | General |  Avg  |    Config&Model&Log     |
-| :------: | :------------------------------------------: | :---: | :-----------------: | :------: | :---------: | :-----: | :-------------: | :-----: | :---: | :---------------------: |
-| SVTRv2-B |          Synthetic datasets (MJ+ST)          | 74.6  |        25.2         |   57.6   |    69.7     |  77.9   |      68.0       |  66.9   | 62.83 | Same as the above table |
-| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md) | 83.6  |        76.0         |   71.2   |    82.4     |  77.2   |      82.3       |  80.7   | 79.05 | Same as the above table |
-| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md) | 88.3  |        84.6         |   76.5   |    84.3     |  83.3   |      85.4       |  83.5   | 83.70 | Same as the above table |
-| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md) | 90.6  |        89.0         |   79.3   |    86.1     |  86.2   |      86.7       |  85.1   | 86.14 | Same as the above table |
+|  Model   |                         Traing Data                          | Curve | Multi-<br/>Oriented | Artistic | Contextless | Salient | Multi-<br/>word | General |  Avg  |    Config&Model&Log     |
+| :------: | :----------------------------------------------------------: | :---: | :-----------------: | :------: | :---------: | :-----: | :-------------: | :-----: | :---: | :---------------------: |
+| SVTRv2-B |                  Synthetic datasets (MJ+ST)                  | 74.6  |        25.2         |   57.6   |    69.7     |  77.9   |      68.0       |  66.9   | 62.83 | Same as the above table |
+| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 83.6  |        76.0         |   71.2   |    82.4     |  77.2   |      82.3       |  80.7   | 79.05 | Same as the above table |
+| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 88.3  |        84.6         |   76.5   |    84.3     |  83.3   |      85.4       |  83.5   | 83.70 | Same as the above table |
+| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 90.6  |        89.0         |   79.3   |    86.1     |  86.2   |      86.7       |  85.1   | 86.14 | Same as the above table |
 
 - Test on [LTB](../smtr/readme.md) and [OST](https://github.com/wangyuxin87/VisionLAN).
 
-|  Model   |                 Traing Data                  |  LTB  | OST  |    Config&Model&Log     |
-| :------: | :------------------------------------------: | :---: | :--: | :---------------------: |
-| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md) | 47.83 | 71.4 | Same as the above table |
-| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md) | 47.57 | 78.0 | Same as the above table |
-| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md) | 50.23 | 80.0 | Same as the above table |
+|  Model   |                         Traing Data                          |  LTB  | OST  |    Config&Model&Log     |
+| :------: | :----------------------------------------------------------: | :---: | :--: | :---------------------: |
+| SVTRv2-T | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 47.83 | 71.4 | Same as the above table |
+| SVTRv2-S | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 47.57 | 78.0 | Same as the above table |
+| SVTRv2-B | [Union14M-L-Filter](../../../docs/svtrv2.md#dataset-details) | 50.23 | 80.0 | Same as the above table |
 
 - Training and test on Chinese dataset, from [Chinese Benckmark](https://github.com/FudanVI/benchmarking-chinese-text-recognition).
 
@@ -93,7 +93,7 @@ pip install -r requirements.txt
 
 ### Dataset Preparation
 
-Referring to [Downloading Datasets](https://github.com/Topdu/OpenOCR/tree/main/docs/svtrv2.md#downloading-datasets)
+Referring to [Downloading Datasets](../../../docs/svtrv2.md#downloading-datasets)
 
 ### Training
 

@@ -1,6 +1,6 @@
 # SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition
 
-\[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](../configs/rec/svtrv2/)\] \[[Config, Training and Inference](../configs/rec/svtrv2/)\]
+\[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
 
 ## Introduction
 
