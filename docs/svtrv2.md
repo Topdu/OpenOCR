@@ -1,6 +1,6 @@
 # SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition
 
-\[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
+\[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](#downloading-datasets)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](#results--configs--checkpoints)\]
 
 ## Introduction
 
@@ -242,23 +242,9 @@ Firstly, downloading the IIIT5K images from [Google Drive](https://drive.google.
 python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_rctc.yml --o Global.infer_img=../iiit5k_test_image
 ```
 
-## Results & Configs & Checkpoints:
+## Results (Benchmark) & Configs & Checkpoints:
 
 Downloading all model checkpoints from [Google Drive](<>) and [Baidu Yun](<>).
-
-<style type="text/css">
-.tg  {border-collapse:collapse;border-color:#9ABAD9;border-spacing:0;}
-.tg td{background-color:#EBF5FF;border-color:#9ABAD9;border-style:solid;border-width:1px;color:#444;
-  font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{background-color:#409cff;border-color:#9ABAD9;border-style:solid;border-width:1px;color:#fff;
-  font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-10jc{color:#F00;font-weight:bold;text-align:center;vertical-align:middle}
-.tg .tg-wn3b{background-color:#D2E4FC;text-align:center;vertical-align:middle}
-.tg .tg-c4ze{color:#000000;font-weight:bold;text-align:center;vertical-align:middle}
-.tg .tg-0f79{background-color:#D2E4FC;color:#000000;text-align:center;vertical-align:middle}
-.tg .tg-nrix{text-align:center;vertical-align:middle}
-.tg .tg-s1e0{background-color:#D2E4FC;color:#F00;font-weight:bold;text-align:center;vertical-align:middle}
-</style>
 
 <table class="tg"><thead>
   <tr>
@@ -997,21 +983,6 @@ Downloading all model checkpoints from [Google Drive](<>) and [Baidu Yun](<>).
 **Note**: TF$\_n$ denotes the $n$-layer Transformer block. $Size$ denotes the number of parameters ($M$). $Latency$ is measured on one NVIDIA 1080Ti GPU with Pytorch Dynamic mode.
 
 ## Results when trained on synthetic datasets ($ST$ + $MJ$).
-
-<style type="text/css">
-.tg  {border-collapse:collapse;border-color:#9ABAD9;border-spacing:0;}
-.tg td{background-color:#EBF5FF;border-color:#9ABAD9;border-style:solid;border-width:0px;color:#444;
-  font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{background-color:#409cff;border-color:#9ABAD9;border-style:solid;border-width:0px;color:#fff;
-  font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-10jc{color:#F00;font-weight:bold;text-align:center;vertical-align:middle}
-.tg .tg-wn3b{background-color:#D2E4FC;text-align:center;vertical-align:middle}
-.tg .tg-c4ze{color:#000000;font-weight:bold;text-align:center;vertical-align:middle}
-.tg .tg-sjbb{background-color:#D2E4FC;color:#F00;text-align:center;vertical-align:middle}
-.tg .tg-0f79{background-color:#D2E4FC;color:#000000;text-align:center;vertical-align:middle}
-.tg .tg-nrix{text-align:center;vertical-align:middle}
-.tg .tg-s1e0{background-color:#D2E4FC;color:#F00;font-weight:bold;text-align:center;vertical-align:middle}
-</style>
 
 <table class="tg"><thead>
   <tr>

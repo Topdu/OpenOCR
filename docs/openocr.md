@@ -100,18 +100,18 @@ TODO
 ### Det + Rec System results
 
 <div align="center">
-<img src=https://github.com/user-attachments/assets/4ad66441-28ad-4081-85b3-45532ccabf19 height=600 />
+<img src=https://github.com/user-attachments/assets/4df4bed2-180f-43bd-8ed6-25baf53edebd height=550 />
 </div>
 <div align="center">
-<img src=https://github.com/user-attachments/assets/ecdcd7a7-2c62-490d-847f-9d3d64def3ee height=400 />
+<img src=https://github.com/user-attachments/assets/f8d7acf3-052f-4047-885e-26a90935394d height=500 />
 </div>
 <div align="center">
-<img src=https://github.com/user-attachments/assets/1fdfb5bc-6eb7-4a83-b212-45bfbab1fc74 height=500 />
+<img src=https://github.com/user-attachments/assets/40a0e071-1e03-45bb-b087-67a0960a26bf height=550 />
 </div>
 
 ### **Detection Model Performance**
 
-In the examples provided in Detection results, OpenOCR's detection model generates bounding boxes that are more comprehensive and better aligned with the boundaries of text instances compared to PP-OCRv4. In addition, OpenOCR excels in distinguishing separate text instances, avoiding errors such as merging two distinct text instances into one or splitting a single instance into multiple parts. This indicates superior handling of **semantic completeness and spatial understanding**, making it particularly effective for complex layouts.
+In the examples provided, OpenOCR's detection model generates bounding boxes that are generally more comprehensive and better aligned with the boundaries of text instances compared to PP-OCRv4. In addition, OpenOCR excels in distinguishing separate text instances, avoiding errors such as merging two distinct text instances into one or splitting a single instance into multiple parts. This indicates superior handling of **semantic completeness and spatial understanding**, making it particularly effective for complex layouts.
 
 ### **Recognition Model Generalization**
 
@@ -120,10 +120,10 @@ OpenOCR's recognition model demonstrates enhanced generalization capabilities wh
 - Artistic or stylized fonts.
 - Handwritten text.
 - Blurry or low-resolution images.
-- Text with incomplete or occluded portions.
+- Incomplete or occluded text.
 
-Remarkably, the **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and optimization, making it a versatile solution across different hardware platforms.
+Remarkably, the **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and accuracy, making it a versatile solution across different hardware platforms.
 
 ### **System used in Real-World Scenarios**
 
-Finally, as shown in Det + Rec System results, OpenOCR demonstrates outstanding performance in practical scenarios, including documents, tables, invoices, and similar contexts. This underscores its potential as a **general-purpose OCR system**, capable of adapting to diverse use cases with high accuracy and reliability.
+As shown in Det + Rec System results, OpenOCR demonstrates outstanding performance in practical scenarios, including documents, tables, invoices, and similar contexts. This underscores its potential as a **general-purpose OCR system**. It is capable of adapting to diverse use cases with high accuracy and reliability.
