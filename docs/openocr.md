@@ -66,6 +66,15 @@ python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
 
+## Demo
+
+```shell
+pip install gradio==4.20.0
+
+# start demo
+python demo_gradio.py
+```
+
 ## Fine-tuning on a Custom dataset
 
 TODO

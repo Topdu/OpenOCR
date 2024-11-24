@@ -7,7 +7,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 ## Features
 
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
-  - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](<>)(TODO)\]
+  - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\]
   - [Introduction](./docs/openocr.md)
     - A practical OCR system building on SVTRv2.
     - Outperforming [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) released by [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard).
@@ -42,7 +42,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 - **🔥 2024.11.23 release notes**:
   - **OpenOCR: A general OCR system with accuracy and efficiency**
-    - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](<>)(TODO)\]
+    - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\]
     - [Introduction](./docs/openocr.md)
   - **SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
     - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
@@ -105,6 +105,15 @@ python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer
 
 # Rec model
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
+```
+
+## Demo
+
+```shell
+pip install gradio==4.20.0
+
+# start demo
+python demo_gradio.py
 ```
 
 ## Reproduction schedule:
