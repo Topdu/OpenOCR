@@ -1,6 +1,6 @@
 # OpenOCR
 
-We aim to establishing a unified benchmark for training and evaluating models for scene text detection and recognition. Based on this benchmark, we introduce an accurate and efficient general OCR system, OpenOCR. Additionally, this repository will serve as the official codebase for the OCR team from the [FVL](https://fvl.fudan.edu.cn) Laboratory, Fudan University.
+We aim to establish a unified benchmark for training and evaluating models in scene text detection and recognition. Building on this benchmark, we introduce **OpenOCR**, an accurate and efficient general OCR system. This repository also serves as the official codebase of the OCR team from the [FVL Laboratory](https://fvl.fudan.edu.cn) at Fudan University.
 
 We sincerely welcome the researcher to recommend OCR or relevant algorithms and point out any potential factual errors or bugs. Upon receiving the suggestions, we will promptly evaluate and critically reproduce them. We look forward to collaborating with you to advance the development of OpenOCR and continuously contribute to the OCR community!
 
@@ -10,19 +10,19 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
   - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\]
   - [Introduction](./docs/openocr.md)
     - A practical OCR system building on SVTRv2.
-    - Outperforming [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) released by [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard).
-    - [x] Supporting Chinese and English text detection and recognition.
-    - [x] Providing server model and mobile model.
-    - [ ] Fine-tuning OpenOCR on a custom dataset
-    - [ ] Exporting to ONNX engine
+    - Outperforms [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) released by [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard).
+    - [x] Supports Chinese and English text detection and recognition.
+    - [x] Provides server model and mobile model.
+    - [ ] Fine-tunes OpenOCR on a custom dataset.
+    - [ ] ONNX model export for wider compatibility.
 - 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
-  - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
+  - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
   - [Introduction](./docs/svtrv2.md)
-    - Developing a unified training and evaluation benchmark (on top of [Union14M](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset)) for Scene Text Recognition
-    - Supporting for 24 Scene Text Recognition methods trained from scratch on the large-scale real dataset [Union14M-L-Filter](./docs/svtrv2.md#dataset-details), and will continue to add the latest methods.
-    - Improving results by 20-30% compared to models trained based on synthetic datasets.
-    - Towarding Arbitrary-Shaped Text Recognition and Language modeling with a Single Visual Model.
-    - Surpassing Attention-based Encoder-Decoder Methods across challenging scenarios in terms of accuracy and speed
+    - A unified training and evaluation benchmark (on top of [Union14M](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset)) for Scene Text Recognition
+    - Supports 24 Scene Text Recognition methods trained from scratch on the large-scale real dataset [Union14M-L-Filter](./docs/svtrv2.md#dataset-details), and will continue to add the latest methods.
+    - Improves accuracy by 20-30% compared to models trained based on synthetic datasets.
+    - Towards Arbitrary-Shaped Text Recognition and Language modeling with a Single Visual Model.
+    - Surpasses Attention-based Encoder-Decoder Methods across challenging scenarios in terms of accuracy and speed
   - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SOTA Scene Text Recognition model from scratch.
 
 ## Ours STR algorithms
@@ -45,9 +45,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\]
     - [Introduction](./docs/openocr.md)
   - **SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
-    - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
+    - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results--configs--checkpoints)\]
     - [Introduction](./docs/svtrv2.md)
-    - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SoTA Scene Text Recognition model from scratch.
+    - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SOTA Scene Text Recognition model from scratch.
 
 ## ⚡[Quick Start](./docs/openocr.md#quick-start)
 
