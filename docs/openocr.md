@@ -122,7 +122,7 @@ OpenOCR's recognition model demonstrates enhanced generalization capabilities wh
 - Blurry or low-resolution images.
 - Text with incomplete or occluded portions.
 
-Remarkably, the **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and optimization, making it a versatile solution across different hardware platforms.
+Remarkably, **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and optimization, making it a versatile solution across different hardware platforms.
 
 ### **System used in Real-World Scenarios**
 
