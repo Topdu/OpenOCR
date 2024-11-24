@@ -6,31 +6,31 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Features
 
-- 🔥**OpenOCR: A general OCR system for accuracy and efficiency**
-  - ⚡\[[Quick Start](#quick-start)\] \[[Demo](<>)(TODO)\]
+- 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
+  - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](<>)(TODO)\]
   - [Introduction](./docs/openocr.md)
-    - A practical version of the model builds on SVTRv2.
-    - Outperforming [PP-OCRv4](<>) released by [PaddleOCR](<>) by 4.5% on the [OCR competition leaderboard](<>).
+    - A practical OCR system building on SVTRv2.
+    - Outperforming [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) released by [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard).
     - [x] Supporting Chinese and English text detection and recognition.
     - [x] Providing server model and mobile model.
     - [ ] Fine-tuning OpenOCR on a custom dataset
-    - [ ] Export to ONNX engine
+    - [ ] Exporting to ONNX engine
 - 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
   - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]
   - [Introduction](./docs/svtrv2.md)
-    - Developing a unified training and evaluation benchmark for Scene Text Recognition
-    - Supporting for 24 Scene Text Recognition methods trained from scratch on large-scale real datasets, and will continue to add the latest methods.
-    - Improving results by 20-30% compared to training on synthetic datasets.
-    - Towards Arbitrary-Shaped Text Recognition and Language modeling with a Single Visual Model.
-    - Surpasses Attention-based Decoder Methods across challenging scenarios in terms of accuracy and speed
-  - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SoTA Scene Text Recognition model from scratch.
+    - Developing a unified training and evaluation benchmark (on top of [Union14M](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset)) for Scene Text Recognition
+    - Supporting for 24 Scene Text Recognition methods trained from scratch on the large-scale real dataset [Union14M-L-Filter](./docs/svtrv2.md#dataset-details), and will continue to add the latest methods.
+    - Improving results by 20-30% compared to models trained based on synthetic datasets.
+    - Towarding Arbitrary-Shaped Text Recognition and Language modeling with a Single Visual Model.
+    - Surpassing Attention-based Encoder-Decoder Methods across challenging scenarios in terms of accuracy and speed
+  - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SOTA Scene Text Recognition model from scratch.
 
 ## Ours STR algorithms
 
 - [**DPTR**](<>) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [paper](https://arxiv.org/abs/2408.05706))
-- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* Under TPAMI minor revison 2024. [Doc](./configs/rec/igtr/readme.md), [paper](https://arxiv.org/abs/2401.17851))
-- [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* 2024. [paper](./configs/rec/svtrv2/SVTRv2.pdf))
-- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* 2024. [paper](https://arxiv.org/abs/2407.12317))
+- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* Under TPAMI minor revision 2024. [Doc](./configs/rec/igtr/readme.md), [paper](https://arxiv.org/abs/2401.17851))
+- [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* 2024. [Doc](./configs/rec/svtrv2/), [paper](./configs/rec/svtrv2/SVTRv2.pdf))
+- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* 2024. [Doc](./configs/rec/smtr/), [paper](https://arxiv.org/abs/2407.12317))
 - [**CDistNet**](./configs/rec/cdistnet/) (*Tianlun Zheng, Zhineng Chen\*, Shancheng Fang, Hongtao Xie, Yu-Gang Jiang. CDistNet: Perceiving Multi-Domain Character Distance for Robust Text Recognition,* IJCV 2024. [paper](https://link.springer.com/article/10.1007/s11263-023-01880-0))
 - **MRN** (*Tianlun Zheng, Zhineng Chen\*, Bingchen Huang, Wei Zhang, Yu-Gang Jiang. MRN: Multiplexed routing network for incremental multilingual text recognition,* ICCV 2023. [paper](https://openaccess.thecvf.com/content/ICCV2023/html/Zheng_MRN_Multiplexed_Routing_Network_for_Incremental_Multilingual_Text_Recognition_ICCV_2023_paper.html))
 - **TPS++** (*Tianlun Zheng, Zhineng Chen\*, Jinfeng Bai, Hongtao Xie, Yu-Gang Jiang. TPS++: Attention-Enhanced Thin-Plate Spline for Scene Text Recognition,* IJCAI 2023. [paper](https://arxiv.org/abs/2305.05322))
@@ -41,8 +41,8 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 ## Recent Updates
 
 - **🔥 2024.11.23 release notes**:
-  - **OpenOCR: A general OCR system for accuracy and efficiency**
-    - ⚡\[[Quick Start](#quick-start)\] \[[Demo](<>)(TODO)\]
+  - **OpenOCR: A general OCR system with accuracy and efficiency**
+    - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](<>)(TODO)\]
     - [Introduction](./docs/openocr.md)
   - **SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
     - \[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\]

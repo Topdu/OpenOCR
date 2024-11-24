@@ -290,7 +290,11 @@ class OpenDetector(object):
             results.append(info)
         return results
 
-    def __call__(self, img_path=None, img_numpy_list=None, img_numpy=None):
+    def __call__(self,
+                 img_path=None,
+                 img_numpy_list=None,
+                 img_numpy=None,
+                 return_mask=False):
         """
         对输入图像进行处理，并返回处理结果。
 
@@ -340,6 +344,12 @@ class OpenDetector(object):
             post_result = self.post_process_class(preds, shape_list)
 
             info = {'boxes': post_result[0]['points'], 'elapse': t_cost}
+            if return_mask:
+                if isinstance(preds['maps'], torch.Tensor):
+                    mask = preds['maps'].detach().cpu().numpy()
+                else:
+                    mask = preds['maps']
+                info['mask'] = mask
             results.append(info)
         return results
 
