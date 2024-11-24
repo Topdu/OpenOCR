@@ -111,7 +111,7 @@ TODO
 
 ### **Detection Model Performance**
 
-In the examples provided in Detection results, OpenOCR's detection model generates bounding boxes that are more comprehensive and better aligned with the boundaries of text instances compared to PP-OCRv4. In addition, OpenOCR excels in distinguishing separate text instances, avoiding errors such as merging two distinct text instances into one or splitting a single instance into multiple parts. This indicates superior handling of **semantic completeness and spatial understanding**, making it particularly effective for complex layouts.
+In the examples provided, OpenOCR's detection model generates bounding boxes that are generally more comprehensive and better aligned with the boundaries of text instances compared to PP-OCRv4. In addition, OpenOCR excels in distinguishing separate text instances, avoiding errors such as merging two distinct text instances into one or splitting a single instance into multiple parts. This indicates superior handling of **semantic completeness and spatial understanding**, making it particularly effective for complex layouts.
 
 ### **Recognition Model Generalization**
 
@@ -120,10 +120,10 @@ OpenOCR's recognition model demonstrates enhanced generalization capabilities wh
 - Artistic or stylized fonts.
 - Handwritten text.
 - Blurry or low-resolution images.
-- Text with incomplete or occluded portions.
+- Incomplete or occluded text.
 
-Remarkably, **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and optimization, making it a versatile solution across different hardware platforms.
+Remarkably, the **OpenOCR mobile recognition model** delivers results comparable to the larger and more resource-intensive **PP-OCRv4 server model**. This highlights OpenOCR's efficiency and accuracy, making it a versatile solution across different hardware platforms.
 
 ### **System used in Real-World Scenarios**
 
-Finally, as shown in Det + Rec System results, OpenOCR demonstrates outstanding performance in practical scenarios, including documents, tables, invoices, and similar contexts. This underscores its potential as a **general-purpose OCR system**, capable of adapting to diverse use cases with high accuracy and reliability.
+As shown in Det + Rec System results, OpenOCR demonstrates outstanding performance in practical scenarios, including documents, tables, invoices, and similar contexts. This underscores its potential as a **general-purpose OCR system**. It is capable of adapting to diverse use cases with high accuracy and reliability.
