@@ -114,8 +114,6 @@ NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.laun
 ```shell
 # short text: Common, Union14M-Benchmark, OST
 python tools/eval_rec_all_ratio.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
-# long text
-python tools/eval_rec_all_long_simple.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
 ```
 
 After a successful run, the results are saved in a csv file in `output_dir` in the config file.
@@ -139,7 +137,7 @@ python tools/infer_rec.py --c configs/rec/SVTRv2/svtrv2_rctc.yml --o Global.infe
 ```bibtex
 @article{Du2024SVTRv4,
   title     = {SVTRv2: Scene Text Recognition with a Single Visual Model},
-  author    = {Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang},
+  author    = {Yongkun Du, Zhineng Chen*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang},
   year      = {2024}
 }
 ```
