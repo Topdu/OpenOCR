@@ -100,13 +100,13 @@ TODO
 ### Det + Rec System results
 
 <div align="center">
-<img src=https://github.com/user-attachments/assets/4ad66441-28ad-4081-85b3-45532ccabf19 height=600 />
+<img src=https://github.com/user-attachments/assets/4ad66441-28ad-4081-85b3-45532ccabf19 height=700 />
 </div>
 <div align="center">
-<img src=https://github.com/user-attachments/assets/ecdcd7a7-2c62-490d-847f-9d3d64def3ee height=400 />
+<img src=https://github.com/user-attachments/assets/ecdcd7a7-2c62-490d-847f-9d3d64def3ee height=500 />
 </div>
 <div align="center">
-<img src=https://github.com/user-attachments/assets/1fdfb5bc-6eb7-4a83-b212-45bfbab1fc74 height=500 />
+<img src=https://github.com/user-attachments/assets/1fdfb5bc-6eb7-4a83-b212-45bfbab1fc74 height=700 />
 </div>
 
 ### **Detection Model Performance**
