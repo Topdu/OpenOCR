@@ -21,7 +21,6 @@ check_and_download_font(font_path)
 
 
 def main(input_image):
-    # for idx, image_file in enumerate(image_file_list):
     img = input_image[:, :, ::-1]
     starttime = time.time()
     results, time_dict, mask = text_sys(img_numpy=img, return_mask=True)
@@ -55,17 +54,13 @@ def get_all_file_names_including_subdirs(dir_path):
 
 
 def list_image_paths(directory):
-    # 定义支持的图片扩展名
     image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff')
 
-    # 列表来存储图片的相对路径
     image_paths = []
 
-    # 遍历文件夹及其子文件夹
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.lower().endswith(image_extensions):
-                # 获取相对路径
                 relative_path = os.path.relpath(os.path.join(root, file),
                                                 directory)
                 full_path = os.path.join(directory, relative_path)
@@ -103,24 +98,10 @@ if __name__ == '__main__':
                 input_image = gr.Image(label='Input image',
                                        elem_classes=['image-container'])
 
-                # examples = gr.Examples(examples=rec_img_example,
-                #     inputs=input_image,label = "文本识别示例图片")
-
                 examples = gr.Examples(examples=e2e_img_example,
                                        inputs=input_image,
-                                       label='示例图片')
-
-                # OCR_type = gr.Radio(['STR', 'STD', 'E2E'], label='模型类别')
-
-                # Model_type = gr.Dropdown(choices=yml_Config, label='现有模型配置文件')
-
+                                       label='Examples')
                 downstream = gr.Button('Run')
-
-                # OCR_type.change(
-                #     fn=update_examples,
-                #     inputs=OCR_type,
-                #     outputs=examples,
-                # )
 
             with gr.Column(scale=1):
                 img_mask = gr.Image(label='mask',
@@ -130,21 +111,18 @@ if __name__ == '__main__':
                                       interactive=False,
                                       elem_classes=['image-container'])
 
-                output = gr.Textbox(label='识别结果')
-                confidence = gr.Textbox(label='耗时')
+                output = gr.Textbox(label='Result')
+                confidence = gr.Textbox(label='Latency')
 
-            downstream.click(
-                fn=main,
-                inputs=[
-                    input_image,
-                    # Model_type,
-                    # OCR_type,
-                ],
-                outputs=[
-                    output,
-                    confidence,
-                    img_output,
-                    img_mask,
-                ])
+            downstream.click(fn=main,
+                             inputs=[
+                                 input_image,
+                             ],
+                             outputs=[
+                                 output,
+                                 confidence,
+                                 img_output,
+                                 img_mask,
+                             ])
 
     demo.launch(share=True)
