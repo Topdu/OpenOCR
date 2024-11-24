@@ -114,13 +114,16 @@ class OpenOCR(object):
                            img_numpy,
                            ori_img,
                            crop_infer=False,
-                           rec_batch_num=6):
+                           rec_batch_num=6,
+                           return_mask=False):
         start = time.time()
         if crop_infer:
             dt_boxes = self.text_detector.crop_infer(
                 img_numpy=img_numpy)[0]['boxes']
         else:
-            dt_boxes = self.text_detector(img_numpy=img_numpy)[0]['boxes']
+            det_res = self.text_detector(img_numpy=img_numpy,
+                                         return_mask=return_mask)[0]
+            dt_boxes = det_res['boxes']
         # print(dt_boxes)
         det_time_cost = time.time() - start
 
@@ -155,6 +158,13 @@ class OpenOCR(object):
 
         avg_rec_time_cost = rec_time_cost_sig / len(dt_boxes) if len(
             dt_boxes) > 0 else 0.0
+        if return_mask:
+            return filter_boxes, filter_rec_res, {
+                'time_cost': det_time_cost + rec_time_cost,
+                'detection_time': det_time_cost,
+                'recognition_time': rec_time_cost,
+                'avg_rec_time_cost': avg_rec_time_cost
+            }, det_res['mask']
 
         return filter_boxes, filter_rec_res, {
             'time_cost': det_time_cost + rec_time_cost,
@@ -169,7 +179,8 @@ class OpenOCR(object):
                  is_visualize=False,
                  img_numpy=None,
                  rec_batch_num=6,
-                 crop_infer=False):
+                 crop_infer=False,
+                 return_mask=False):
         """
         img_path: str, optional, default=None
             Path to the directory containing images or the image filename.
@@ -194,11 +205,19 @@ class OpenOCR(object):
             time_dicts = []
             for index, img in enumerate(img_numpy):
                 ori_img = img.copy()
-                dt_boxes, rec_res, time_dict = self.infer_single_image(
-                    img_numpy=img,
-                    ori_img=ori_img,
-                    crop_infer=crop_infer,
-                    rec_batch_num=rec_batch_num)
+                if return_mask:
+                    dt_boxes, rec_res, time_dict, mask = self.infer_single_image(
+                        img_numpy=img,
+                        ori_img=ori_img,
+                        crop_infer=crop_infer,
+                        rec_batch_num=rec_batch_num,
+                        return_mask=return_mask)
+                else:
+                    dt_boxes, rec_res, time_dict = self.infer_single_image(
+                        img_numpy=img,
+                        ori_img=ori_img,
+                        crop_infer=crop_infer,
+                        rec_batch_num=rec_batch_num)
                 if dt_boxes is None:
                     results.append([])
                     time_dicts.append({})
@@ -210,6 +229,8 @@ class OpenOCR(object):
                 } for i in range(len(dt_boxes))]
                 results.append(res)
                 time_dicts.append(time_dict)
+            if return_mask:
+                return results, time_dicts, mask
             return results, time_dicts
 
         image_file_list = get_image_file_list(img_path)
