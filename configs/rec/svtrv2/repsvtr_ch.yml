@@ -53,6 +53,7 @@ Loss:
 
 PostProcess:
   name: CTCLabelDecode
+  character_dict_path: *character_dict_path
 
 Metric:
   name: RecMetric
