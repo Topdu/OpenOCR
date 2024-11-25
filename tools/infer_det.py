@@ -238,6 +238,8 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
+
+        if not os.path.exists(config['Global']['pretrained_model']):
             config['Global']['pretrained_model'] = check_and_download_model(
                 MODEL_NAME_DET, DOWNLOAD_URL_DET)
 
@@ -328,11 +330,10 @@ class OpenDetector(object):
             images = np.array(image_list)
             shape_list = np.array(shape_list)
             images = torch.from_numpy(images).to(device=self.device)
-
-            t_start = time.time()
-            preds = self.model(images)
-            torch.cuda.synchronize()
-            t_cost = time.time() - t_start
+            with torch.no_grad():
+                t_start = time.time()
+                preds = self.model(images)
+                t_cost = time.time() - t_start
 
             preds['maps'] = restore_preds(preds['maps'], crop_positions,
                                           (img_height, img_width))
@@ -410,13 +411,12 @@ def main(cfg):
     is_visualize = cfg['Global'].get('is_visualize', False)
     model = OpenDetector(cfg)
 
-    save_res_path = cfg['Global']['output_dir']
+    save_res_path = './det_results/'
     if not os.path.exists(save_res_path):
         os.makedirs(save_res_path)
     sample_num = 0
     with open(save_res_path + '/det_results.txt', 'wb') as fout:
         for file in get_image_file_list(cfg['Global']['infer_img']):
-
             preds_result = model(img_path=file)[0]
             logger.info('{} infer_img: {}, time cost: {}'.format(
                 sample_num, file, preds_result['elapse']))
@@ -428,14 +428,16 @@ def main(cfg):
                 dt_boxes_json.append(tmp_json)
             if is_visualize:
                 src_img = cv2.imread(file)
-                save_det_path = save_res_path + '/det_results/'
-                draw_det_res(boxes, src_img, file, save_det_path)
+                draw_det_res(boxes, src_img, file, save_res_path)
                 logger.info('The detected Image saved in {}'.format(
-                    os.path.join(save_det_path, os.path.basename(file))))
+                    os.path.join(save_res_path, os.path.basename(file))))
             otstr = file + '\t' + json.dumps(dt_boxes_json) + '\n'
             logger.info('results: {}'.format(json.dumps(dt_boxes_json)))
             fout.write(otstr.encode())
             sample_num += 1
+        logger.info(
+            f"Results saved to {os.path.join(save_res_path, 'det_results.txt')}.)"
+        )
 
     logger.info('success!')
 
