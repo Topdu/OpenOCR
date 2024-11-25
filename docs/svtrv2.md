@@ -980,7 +980,7 @@ Downloading all model checkpoints from [Google Drive](<>) and [Baidu Yun](<>).
   </tr>
 </tbody></table>
 
-**Note**: TF$\_n$ denotes the $n$-layer Transformer block. $Size$ denotes the number of parameters ($M$). $Latency$ is measured on one NVIDIA 1080Ti GPU with Pytorch Dynamic mode.
+**Note**: TF$\_n$ denotes the $n$-layer Transformer block. $Size$ denotes the number of parameters ($M$). $Latency$ is measured on one NVIDIA 1080Ti GPU with Pytorch dynamic graph mode.
 
 ## Results when trained on synthetic datasets ($ST$ + $MJ$).
 
