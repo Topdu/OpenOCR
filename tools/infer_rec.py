@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import time
 
@@ -17,6 +18,11 @@ from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
 from tools.infer_det import replace_batchnorm
+
+root_dir = Path(__file__).resolve().parent
+DEFAULT_CFG_PATH_REC_SERVER = root_dir / '../configs/det/svtrv2/svtrv2_ch.yml'
+DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
+DEFAULT_DICT_PATH_REC = root_dir / './utils/ppocr_keys_v1.txt'
 
 
 class RatioRecTVReisze(object):
@@ -109,11 +115,10 @@ class OpenRecognizer(object):
         if config is None:
             if mode == 'server':
                 config = Config(
-                    './configs/det/svtrv2/svtrv2_ch.yml').cfg  # server model
+                    DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
             else:
-                config = Config(
-                    './configs/rec/svtrv2/repsvtr_ch.yml').cfg  # mobile model
-
+                config = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
+        config['Global']['character_dict_path'] = str(DEFAULT_DICT_PATH_REC)
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:

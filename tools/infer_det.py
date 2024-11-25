@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from pathlib import Path
 import time
 
 import numpy as np
@@ -22,6 +23,9 @@ from tools.utility import ArgsParser
 from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
+
+root_dir = Path(__file__).resolve().parent
+DEFAULT_CFG_PATH_DET = root_dir / '../configs/det/dbnet/repvit_db.yml'
 
 
 def replace_batchnorm(net):
@@ -184,7 +188,7 @@ class OpenDetector(object):
         """
 
         if config is None:
-            config = Config('./configs/det/dbnet/repvit_db.yml').cfg
+            config = Config(DEFAULT_CFG_PATH_DET).cfg
 
         from opendet.modeling import build_model as build_det_model
         from opendet.postprocess import build_post_process
