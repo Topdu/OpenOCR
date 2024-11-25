@@ -93,12 +93,14 @@ def check_and_download_model(model_name: str, url: str):
 
 def check_and_download_font(font_path):
     if not os.path.exists(font_path):
+        cache_dir = Path.home() / '.cache' / 'openocr'
+        font_path = str(cache_dir / font_path)
+        if os.path.exists(font_path):
+            return font_path
         logger.info(f"Downloading '{font_path}' ...")
         try:
             import urllib.request
             font_url = 'https://shuiche-shop.oss-cn-chengdu.aliyuncs.com/fonts/simfang.ttf'
-            cache_dir = Path.home() / '.cache' / 'openocr'
-            font_path = str(cache_dir / font_path)
             urllib.request.urlretrieve(font_url, font_path)
             logger.info(f'Downloading font success: {font_path}')
         except Exception as e:
