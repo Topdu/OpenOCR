@@ -191,11 +191,13 @@ class OpenRecognizer(object):
                     config['Global'][
                         'pretrained_model'] = check_and_download_model(
                             MODEL_NAME_REC, DOWNLOAD_URL_REC)
+                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
             elif config['Architecture']['algorithm'] == 'SVTRv2_server':
                 if not os.path.exists(config['Global']['pretrained_model']):
                     config['Global'][
                         'pretrained_model'] = check_and_download_model(
                             MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
+                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
