@@ -24,8 +24,53 @@ from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
 
+logger = get_logger()
+
 root_dir = Path(__file__).resolve().parent
 DEFAULT_CFG_PATH_DET = root_dir / '../configs/det/dbnet/repvit_db.yml'
+
+MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
+
+
+def check_and_download_model(model_name: str, url: str):
+    """
+    检查预训练模型是否存在，若不存在则从指定 URL 下载到固定缓存目录。
+
+    Args:
+        model_name (str): 模型文件的名称，例如 "model.pt"
+        url (str): 模型文件的下载地址
+
+    Returns:
+        str: 模型文件的完整路径
+    """
+    # 固定缓存路径为用户主目录下的 ".cache/openocr"
+    cache_dir = Path.home() / '.cache' / 'openocr'
+    model_path = cache_dir / model_name
+
+    # 如果模型文件已存在，直接返回路径
+    if model_path.exists():
+        logger.info(f'Model already exists at: {model_path}')
+        return str(model_path)
+
+    # 如果文件不存在，下载模型
+    logger.info(f'Model not found. Downloading from {url}...')
+
+    # 创建缓存目录（如果不存在）
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 下载文件
+        import urllib.request
+        with urllib.request.urlopen(url) as response, open(model_path,
+                                                           'wb') as out_file:
+            out_file.write(response.read())
+        logger.info(f'Model downloaded and saved at: {model_path}')
+        return str(model_path)
+
+    except Exception as e:
+        logger.info(f'Error downloading the model: {e}')
+        raise
 
 
 def replace_batchnorm(net):
@@ -189,6 +234,8 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
+            config['Global']['pretrained_model'] = check_and_download_model(
+                MODEL_NAME_DET, DOWNLOAD_URL_DET)
 
         from opendet.modeling import build_model as build_det_model
         from opendet.postprocess import build_post_process
@@ -360,7 +407,6 @@ class OpenDetector(object):
 
 @torch.no_grad()
 def main(cfg):
-    logger = get_logger()
     is_visualize = cfg['Global'].get('is_visualize', False)
     model = OpenDetector(cfg)
 

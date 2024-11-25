@@ -33,6 +33,56 @@ DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
 
 logger = get_logger()
 
+MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
+MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
+MODEL_NAME_REC_SERVER = './openocr_svtrv2_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_REC_SERVER = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth'  # 模型文件 URL
+
+
+def check_and_download_model(model_name: str, url: str):
+    """
+    检查预训练模型是否存在，若不存在则从指定 URL 下载到固定缓存目录。
+
+    Args:
+        model_name (str): 模型文件的名称，例如 "model.pt"
+        url (str): 模型文件的下载地址
+
+    Returns:
+        str: 模型文件的完整路径
+    """
+    if model_name.exists():
+        return str(model_name)
+
+    # 固定缓存路径为用户主目录下的 ".cache/openocr"
+    cache_dir = Path.home() / '.cache' / 'openocr'
+    model_path = cache_dir / model_name
+
+    # 如果模型文件已存在，直接返回路径
+    if model_path.exists():
+        logger.info(f'Model already exists at: {model_path}')
+        return str(model_path)
+
+    # 如果文件不存在，下载模型
+    logger.info(f'Model not found. Downloading from {url}...')
+
+    # 创建缓存目录（如果不存在）
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 下载文件
+        import urllib.request
+        with urllib.request.urlopen(url) as response, open(model_path,
+                                                           'wb') as out_file:
+            out_file.write(response.read())
+        logger.info(f'Model downloaded and saved at: {model_path}')
+        return str(model_path)
+
+    except Exception as e:
+        logger.info(f'Error downloading the model: {e}')
+        raise
+
 
 def set_device(device):
     if device == 'gpu' and torch.cuda.is_available():
@@ -48,10 +98,13 @@ def check_and_download_font(font_path):
         try:
             import urllib.request
             font_url = 'https://shuiche-shop.oss-cn-chengdu.aliyuncs.com/fonts/simfang.ttf'
+            cache_dir = Path.home() / '.cache' / 'openocr'
+            font_path = cache_dir / font_path
             urllib.request.urlretrieve(font_url, font_path)
             logger.info(f'Downloading font success: {font_path}')
         except Exception as e:
             logger.info(f'Downloading font error: {e}')
+    return font_path
 
 
 def sorted_boxes(dt_boxes):
@@ -94,10 +147,17 @@ class OpenOCR(object):
 
         """
         cfg_det = Config(DEFAULT_CFG_PATH_DET).cfg  # mobile model
+        model_dir = check_and_download_model(MODEL_NAME_DET, DOWNLOAD_URL_DET)
+        cfg_det['Global']['pretrained_model'] = model_dir
         if mode == 'server':
             cfg_rec = Config(DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
+            model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
+                                                 DOWNLOAD_URL_REC_SERVER)
         else:
             cfg_rec = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
+            model_dir = check_and_download_model(MODEL_NAME_REC,
+                                                 DOWNLOAD_URL_REC)
+        cfg_rec['Global']['pretrained_model'] = model_dir
         self.text_detector = OpenDetector(cfg_det)
         self.text_recognizer = OpenRecognizer(cfg_rec)
         self.det_box_type = det_box_type
@@ -302,7 +362,7 @@ class OpenOCR(object):
                 if is_visualize and len(res) > 0:
                     if idx == 0:
                         font_path = './simfang.ttf'
-                        check_and_download_font(font_path)
+                        font_path = check_and_download_font(font_path)
                         os.makedirs(save_dir, exist_ok=True)
                         draw_img_save_dir = os.path.join(
                             save_dir, 'vis_results/')
