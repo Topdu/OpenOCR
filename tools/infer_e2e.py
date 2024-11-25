@@ -18,7 +18,6 @@ import time
 import cv2
 import json
 from PIL import Image
-import torch
 from tools.utils.utility import get_image_file_list, check_and_read
 from tools.infer_rec import OpenRecognizer
 from tools.infer_det import OpenDetector
@@ -27,9 +26,10 @@ from tools.infer.utility import get_rotate_crop_image, get_minarea_rect_crop, dr
 from tools.utils.logging import get_logger
 
 root_dir = Path(__file__).resolve().parent
-DEFAULT_CFG_PATH_DET = root_dir / '../configs/det/dbnet/repvit_db.yml'
-DEFAULT_CFG_PATH_REC_SERVER = root_dir / '../configs/det/svtrv2/svtrv2_ch.yml'
-DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
+DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
+DEFAULT_CFG_PATH_REC_SERVER = str(root_dir /
+                                  '../configs/det/svtrv2/svtrv2_ch.yml')
+DEFAULT_CFG_PATH_REC = str(root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml')
 
 logger = get_logger()
 
@@ -80,26 +80,27 @@ def check_and_download_model(model_name: str, url: str):
         return str(model_path)
 
     except Exception as e:
-        logger.info(f'Error downloading the model: {e}')
-        raise
-
-
-def set_device(device):
-    if device == 'gpu' and torch.cuda.is_available():
-        device = torch.device('cuda:0')
-    else:
-        device = torch.device('cpu')
-    return device
+        logger.error(f'Error downloading the model: {e}')
+        # 提示用户手动下载
+        logger.error(
+            f'Unable to download the model automatically. '
+            f'Please download the model manually from the following URL:\n{url}\n'
+            f'and save it to: {model_name} or {model_path}')
+        raise RuntimeError(
+            f'Failed to download the model. Please download it manually from {url} '
+            f'and save it to {model_path}') from e
 
 
 def check_and_download_font(font_path):
     if not os.path.exists(font_path):
+        cache_dir = Path.home() / '.cache' / 'openocr'
+        font_path = str(cache_dir / font_path)
+        if os.path.exists(font_path):
+            return font_path
         logger.info(f"Downloading '{font_path}' ...")
         try:
             import urllib.request
             font_url = 'https://shuiche-shop.oss-cn-chengdu.aliyuncs.com/fonts/simfang.ttf'
-            cache_dir = Path.home() / '.cache' / 'openocr'
-            font_path = cache_dir / font_path
             urllib.request.urlretrieve(font_url, font_path)
             logger.info(f'Downloading font success: {font_path}')
         except Exception as e:

@@ -1,6 +1,6 @@
 # OpenOCR: A general OCR system with accuracy and efficiency
 
-⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\] \[[PaddleOCR Implementation](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
+⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\] \[[Local Demo](#local-demo)\]  \[[PaddleOCR Implementation](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
 
 We proposed strategies to comprehensively enhance CTC-based STR models and developed a novel CTC-based method, [SVTRv2](../configs/rec/svtrv2/). SVTRv2 can outperform previous attention-based STR methods in terms of accuracy while maintaining the advantages of CTC, such as fast inference and robust recognition of long text. These features make SVTRv2 particularly well-suited for practical applications. To this end, building on SVTRv2, we develop a practical version of the model from scratch on publicly available Chinese and English datasets. Combined with a detection model, this forms a general OCR system with accuracy and efficiency, **OpenOCR**. Comparing with [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) baseline in the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard), OpenOCR (mobile) achieve a 4.5% improvement in terms of accuracy, while preserving quite similar inference speed on NVIDIA 1080Ti GPU.
 
@@ -40,11 +40,9 @@ engine = OpenOCR()
 
 img_path = '/path/img_path or /path/img_file'
 result, elapse = engine(img_path)
-print(result)
-print(elapse)
 
 # Server mode
-engine = OpenOCR(mode='server')
+# engine = OpenOCR(mode='server')
 ```
 
 ### 2. Clone this repository:
@@ -72,7 +70,7 @@ python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
 
-#### Demo
+#### Local Demo
 
 ```shell
 pip install gradio==4.20.0
