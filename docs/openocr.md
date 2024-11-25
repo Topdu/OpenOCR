@@ -12,7 +12,7 @@ We proposed strategies to comprehensively enhance CTC-based STR models and devel
 
 ## Quick Start
 
-#### Dependencies:
+### Dependencies:
 
 - [PyTorch](http://pytorch.org/) version >= 1.13.0
 - Python version >= 3.7
@@ -25,15 +25,7 @@ conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
 
-Firstly, downloading the model:
-
-```shell
-wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth
-wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth
-wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth
-```
-
-#### 1. Python Modules
+### 1. Python Modules
 
 ```shell
 pip install openocr-python
@@ -55,12 +47,15 @@ print(elapse)
 engine = OpenOCR(mode='server')
 ```
 
-#### 2. Clone this repository:
+### 2. Clone this repository:
 
 ```shell
 git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 pip install -r requirements.txt
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth
 ```
 
 **Usage**:
@@ -76,7 +71,7 @@ python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
 
-## Demo
+#### Demo
 
 ```shell
 pip install gradio==4.20.0
