@@ -72,8 +72,15 @@ def check_and_download_model(model_name: str, url: str):
         return str(model_path)
 
     except Exception as e:
-        logger.info(f'Error downloading the model: {e}')
-        raise
+        logger.error(f'Error downloading the model: {e}')
+        # 提示用户手动下载
+        logger.error(
+            f'Unable to download the model automatically. '
+            f'Please download the model manually from the following URL:\n{url}\n'
+            f'and save it to: {model_name} or {model_path}')
+        raise RuntimeError(
+            f'Failed to download the model. Please download it manually from {url} '
+            f'and save it to {model_path}') from e
 
 
 def replace_batchnorm(net):

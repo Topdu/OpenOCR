@@ -72,8 +72,15 @@ def check_and_download_model(model_name: str, url: str):
         return str(model_path)
 
     except Exception as e:
-        logger.info(f'Error downloading the model: {e}')
-        raise
+        logger.error(f'Error downloading the model: {e}')
+        # 提示用户手动下载
+        logger.error(
+            f'Unable to download the model automatically. '
+            f'Please download the model manually from the following URL:\n{url}\n'
+            f'and save it to: {model_name} or {model_path}')
+        raise RuntimeError(
+            f'Failed to download the model. Please download it manually from {url} '
+            f'and save it to {model_path}') from e
 
 
 class RatioRecTVReisze(object):
@@ -176,12 +183,19 @@ class OpenRecognizer(object):
                 if not os.path.exists(config['Global']['pretrained_model']):
                     model_dir = check_and_download_model(
                         MODEL_NAME_REC, DOWNLOAD_URL_REC)
+            config['Global']['pretrained_model'] = model_dir
+            config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         else:
-            if not os.path.exists(config['Global']['pretrained_model']):
-                model_dir = check_and_download_model(MODEL_NAME_REC,
-                                                     DOWNLOAD_URL_REC)
-        config['Global']['pretrained_model'] = model_dir
-        config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
+            if config['Architecture']['algorithm'] == 'SVTRv2_mobile':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_REC, DOWNLOAD_URL_REC)
+            elif config['Architecture']['algorithm'] == 'SVTRv2_server':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -194,7 +208,6 @@ class OpenRecognizer(object):
         self.transform = transform
         self.post_process_class = build_post_process(config['PostProcess'],
                                                      global_config)
-
         char_num = self.post_process_class.get_character_num()
         config['Architecture']['Decoder']['out_channels'] = char_num
         # print(char_num)
