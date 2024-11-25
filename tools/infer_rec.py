@@ -168,13 +168,19 @@ class OpenRecognizer(object):
             if mode == 'server':
                 config = Config(
                     DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
-                model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
-                                                     DOWNLOAD_URL_REC_SERVER)
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    model_dir = check_and_download_model(
+                        MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
             else:
                 config = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    model_dir = check_and_download_model(
+                        MODEL_NAME_REC, DOWNLOAD_URL_REC)
+        else:
+            if not os.path.exists(config['Global']['pretrained_model']):
                 model_dir = check_and_download_model(MODEL_NAME_REC,
                                                      DOWNLOAD_URL_REC)
-            config['Global']['pretrained_model'] = model_dir
+        config['Global']['pretrained_model'] = model_dir
         config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         global_config = config['Global']
         self.cfg = config
@@ -294,7 +300,6 @@ class OpenRecognizer(object):
             with torch.no_grad():
                 t_start = time.time()
                 preds = self.model(images, others)
-                torch.cuda.synchronize()
                 t_cost = time.time() - t_start
             post_results = self.post_process_class(preds)
 
