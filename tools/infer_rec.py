@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import time
 
@@ -17,6 +18,61 @@ from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
 from tools.infer_det import replace_batchnorm
+
+logger = get_logger()
+
+root_dir = Path(__file__).resolve().parent
+DEFAULT_CFG_PATH_REC_SERVER = root_dir / '../configs/det/svtrv2/svtrv2_ch.yml'
+DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
+DEFAULT_DICT_PATH_REC = root_dir / './utils/ppocr_keys_v1.txt'
+
+MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
+MODEL_NAME_REC_SERVER = './openocr_svtrv2_ch.pth'  # 模型文件名称
+DOWNLOAD_URL_REC_SERVER = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth'  # 模型文件 URL
+
+
+def check_and_download_model(model_name: str, url: str):
+    """
+    检查预训练模型是否存在，若不存在则从指定 URL 下载到固定缓存目录。
+
+    Args:
+        model_name (str): 模型文件的名称，例如 "model.pt"
+        url (str): 模型文件的下载地址
+
+    Returns:
+        str: 模型文件的完整路径
+    """
+    if os.path.exists(model_name):
+        return model_name
+
+    # 固定缓存路径为用户主目录下的 ".cache/openocr"
+    cache_dir = Path.home() / '.cache' / 'openocr'
+    model_path = cache_dir / model_name
+
+    # 如果模型文件已存在，直接返回路径
+    if model_path.exists():
+        logger.info(f'Model already exists at: {model_path}')
+        return str(model_path)
+
+    # 如果文件不存在，下载模型
+    logger.info(f'Model not found. Downloading from {url}...')
+
+    # 创建缓存目录（如果不存在）
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 下载文件
+        import urllib.request
+        with urllib.request.urlopen(url) as response, open(model_path,
+                                                           'wb') as out_file:
+            out_file.write(response.read())
+        logger.info(f'Model downloaded and saved at: {model_path}')
+        return str(model_path)
+
+    except Exception as e:
+        logger.info(f'Error downloading the model: {e}')
+        raise
 
 
 class RatioRecTVReisze(object):
@@ -109,11 +165,15 @@ class OpenRecognizer(object):
         if config is None:
             if mode == 'server':
                 config = Config(
-                    './configs/det/svtrv2/svtrv2_ch.yml').cfg  # server model
+                    DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
+                model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
+                                                     DOWNLOAD_URL_REC_SERVER)
             else:
-                config = Config(
-                    './configs/rec/svtrv2/repsvtr_ch.yml').cfg  # mobile model
-
+                config = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
+                model_dir = check_and_download_model(MODEL_NAME_REC,
+                                                     DOWNLOAD_URL_REC)
+            config['Global']['pretrained_model'] = model_dir
+        config['Global']['character_dict_path'] = str(DEFAULT_DICT_PATH_REC)
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -256,7 +316,6 @@ class OpenRecognizer(object):
 
 
 def main(cfg):
-    logger = get_logger()
     model = OpenRecognizer(cfg)
 
     save_res_path = cfg['Global']['output_dir']
