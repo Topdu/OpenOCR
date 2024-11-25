@@ -49,7 +49,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - [Introduction](./docs/svtrv2.md)
     - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SOTA Scene Text Recognition model from scratch.
 
-## ⚡[Quick Start](./docs/openocr.md#quick-start)
+## ⚡Quick Start
 
 #### Dependencies:
 

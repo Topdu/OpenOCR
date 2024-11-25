@@ -244,7 +244,7 @@ python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_rctc.yml --o Global.infe
 
 ## Results (Benchmark) & Configs & Checkpoints:
 
-Downloading all model checkpoints from [Google Drive](<>) and [Baidu Yun](<>).
+(TODO) Downloading all model checkpoints from [Google Drive](<>) and [Baidu Yun](<>).
 
 <table class="tg"><thead>
   <tr>
