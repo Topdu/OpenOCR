@@ -22,9 +22,10 @@ from tools.infer_det import replace_batchnorm
 logger = get_logger()
 
 root_dir = Path(__file__).resolve().parent
-DEFAULT_CFG_PATH_REC_SERVER = root_dir / '../configs/det/svtrv2/svtrv2_ch.yml'
-DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
-DEFAULT_DICT_PATH_REC = root_dir / './utils/ppocr_keys_v1.txt'
+DEFAULT_CFG_PATH_REC_SERVER = str(root_dir /
+                                  '../configs/det/svtrv2/svtrv2_ch.yml')
+DEFAULT_CFG_PATH_REC = str(root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml')
+DEFAULT_DICT_PATH_REC = str(root_dir / './utils/ppocr_keys_v1.txt')
 
 MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
@@ -71,8 +72,15 @@ def check_and_download_model(model_name: str, url: str):
         return str(model_path)
 
     except Exception as e:
-        logger.info(f'Error downloading the model: {e}')
-        raise
+        logger.error(f'Error downloading the model: {e}')
+        # 提示用户手动下载
+        logger.error(
+            f'Unable to download the model automatically. '
+            f'Please download the model manually from the following URL:\n{url}\n'
+            f'and save it to: {model_name} or {model_path}')
+        raise RuntimeError(
+            f'Failed to download the model. Please download it manually from {url} '
+            f'and save it to {model_path}') from e
 
 
 class RatioRecTVReisze(object):
@@ -140,6 +148,7 @@ def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
     else:
+        logger.info('GPU is not available, using CPU.')
         device = torch.device('cpu')
     return device
 
@@ -166,14 +175,29 @@ class OpenRecognizer(object):
             if mode == 'server':
                 config = Config(
                     DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
-                model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
-                                                     DOWNLOAD_URL_REC_SERVER)
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    model_dir = check_and_download_model(
+                        MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
             else:
                 config = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
-                model_dir = check_and_download_model(MODEL_NAME_REC,
-                                                     DOWNLOAD_URL_REC)
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    model_dir = check_and_download_model(
+                        MODEL_NAME_REC, DOWNLOAD_URL_REC)
             config['Global']['pretrained_model'] = model_dir
-        config['Global']['character_dict_path'] = str(DEFAULT_DICT_PATH_REC)
+            config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
+        else:
+            if config['Architecture']['algorithm'] == 'SVTRv2_mobile':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_REC, DOWNLOAD_URL_REC)
+                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
+            elif config['Architecture']['algorithm'] == 'SVTRv2_server':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
+                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -186,7 +210,6 @@ class OpenRecognizer(object):
         self.transform = transform
         self.post_process_class = build_post_process(config['PostProcess'],
                                                      global_config)
-
         char_num = self.post_process_class.get_character_num()
         config['Architecture']['Decoder']['out_channels'] = char_num
         # print(char_num)
@@ -292,7 +315,6 @@ class OpenRecognizer(object):
             with torch.no_grad():
                 t_start = time.time()
                 preds = self.model(images, others)
-                torch.cuda.synchronize()
                 t_cost = time.time() - t_start
             post_results = self.post_process_class(preds)
 

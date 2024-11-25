@@ -27,7 +27,7 @@ from tools.utils.utility import get_image_file_list
 logger = get_logger()
 
 root_dir = Path(__file__).resolve().parent
-DEFAULT_CFG_PATH_DET = root_dir / '../configs/det/dbnet/repvit_db.yml'
+DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
 
 MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
@@ -72,8 +72,15 @@ def check_and_download_model(model_name: str, url: str):
         return str(model_path)
 
     except Exception as e:
-        logger.info(f'Error downloading the model: {e}')
-        raise
+        logger.error(f'Error downloading the model: {e}')
+        # 提示用户手动下载
+        logger.error(
+            f'Unable to download the model automatically. '
+            f'Please download the model manually from the following URL:\n{url}\n'
+            f'and save it to: {model_name} or {model_path}')
+        raise RuntimeError(
+            f'Failed to download the model. Please download it manually from {url} '
+            f'and save it to {model_path}') from e
 
 
 def replace_batchnorm(net):
@@ -214,6 +221,7 @@ def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
     else:
+        logger.info('GPU is not available, using CPU.')
         device = torch.device('cpu')
     return device
 
@@ -237,6 +245,8 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
+
+        if not os.path.exists(config['Global']['pretrained_model']):
             config['Global']['pretrained_model'] = check_and_download_model(
                 MODEL_NAME_DET, DOWNLOAD_URL_DET)
 
@@ -327,11 +337,10 @@ class OpenDetector(object):
             images = np.array(image_list)
             shape_list = np.array(shape_list)
             images = torch.from_numpy(images).to(device=self.device)
-
-            t_start = time.time()
-            preds = self.model(images)
-            torch.cuda.synchronize()
-            t_cost = time.time() - t_start
+            with torch.no_grad():
+                t_start = time.time()
+                preds = self.model(images)
+                t_cost = time.time() - t_start
 
             preds['maps'] = restore_preds(preds['maps'], crop_positions,
                                           (img_height, img_width))
@@ -409,13 +418,12 @@ def main(cfg):
     is_visualize = cfg['Global'].get('is_visualize', False)
     model = OpenDetector(cfg)
 
-    save_res_path = cfg['Global']['output_dir']
+    save_res_path = './det_results/'
     if not os.path.exists(save_res_path):
         os.makedirs(save_res_path)
     sample_num = 0
     with open(save_res_path + '/det_results.txt', 'wb') as fout:
         for file in get_image_file_list(cfg['Global']['infer_img']):
-
             preds_result = model(img_path=file)[0]
             logger.info('{} infer_img: {}, time cost: {}'.format(
                 sample_num, file, preds_result['elapse']))
@@ -427,14 +435,16 @@ def main(cfg):
                 dt_boxes_json.append(tmp_json)
             if is_visualize:
                 src_img = cv2.imread(file)
-                save_det_path = save_res_path + '/det_results/'
-                draw_det_res(boxes, src_img, file, save_det_path)
+                draw_det_res(boxes, src_img, file, save_res_path)
                 logger.info('The detected Image saved in {}'.format(
-                    os.path.join(save_det_path, os.path.basename(file))))
+                    os.path.join(save_res_path, os.path.basename(file))))
             otstr = file + '\t' + json.dumps(dt_boxes_json) + '\n'
             logger.info('results: {}'.format(json.dumps(dt_boxes_json)))
             fout.write(otstr.encode())
             sample_num += 1
+        logger.info(
+            f"Results saved to {os.path.join(save_res_path, 'det_results.txt')}.)"
+        )
 
     logger.info('success!')
 

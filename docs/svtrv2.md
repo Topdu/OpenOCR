@@ -211,9 +211,9 @@ If you have downloaded Union14M-L, you can use [the filtered list of images](htt
 
 ```shell
 # Multi GPU training
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc_maxratio12.yml
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
 # For Multi RTX 4090
-NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc_maxratio12.yml
+NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
 # 20epoch runs for about 6 hours
 ```
 
@@ -222,8 +222,6 @@ NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.laun
 ```shell
 # short text: Common, Union14M-Benchmark, OST
 python tools/eval_rec_all_ratio.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
-# long text
-python tools/eval_rec_all_long_simple.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
 ```
 
 After a successful run, the results are saved in a csv file in `output_dir` in the config file.
