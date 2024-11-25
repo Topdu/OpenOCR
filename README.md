@@ -10,7 +10,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
   - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[Demo](#demo)\] \[[PaddleOCR Implementation](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
   - [Introduction](./docs/openocr.md)
     - A practical OCR system building on SVTRv2.
-    - Outperforms [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) released by [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard).
+    - Outperforms [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) baseline by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard) in terms of accuracy, while preserving quite similar inference speed.
     - [x] Supports Chinese and English text detection and recognition.
     - [x] Provides server model and mobile model.
     - [ ] Fine-tunes OpenOCR on a custom dataset.
@@ -79,11 +79,9 @@ engine = OpenOCR()
 
 img_path = '/path/img_path or /path/img_file'
 result, elapse = engine(img_path)
-print(result)
-print(elapse)
 
 # Server mode
-engine = OpenOCR(mode='server')
+# engine = OpenOCR(mode='server')
 ```
 
 ### 2. Clone this repository:
