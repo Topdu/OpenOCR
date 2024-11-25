@@ -43,6 +43,9 @@ def check_and_download_model(model_name: str, url: str):
     Returns:
         str: 模型文件的完整路径
     """
+    if os.path.exists(model_name):
+        return model_name
+
     # 固定缓存路径为用户主目录下的 ".cache/openocr"
     cache_dir = Path.home() / '.cache' / 'openocr'
     model_path = cache_dir / model_name
