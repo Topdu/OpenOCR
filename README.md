@@ -64,6 +64,14 @@ conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
 
+Firstly, downloading the model:
+
+```shell
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth
+```
+
 #### 1. Python Modules
 
 ```shell
@@ -111,7 +119,8 @@ python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.inf
 
 ```shell
 pip install gradio==4.20.0
-
+wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/OCR_e2e_img.tar
+tar xf OCR_e2e_img.tar
 # start demo
 python demo_gradio.py
 ```
