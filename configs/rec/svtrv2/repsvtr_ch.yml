@@ -34,7 +34,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: SVTRv2
+  algorithm: SVTRv2_mobile
   Transform:
   Encoder:
     name: RepSVTREncoder
