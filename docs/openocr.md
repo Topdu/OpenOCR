@@ -40,11 +40,9 @@ engine = OpenOCR()
 
 img_path = '/path/img_path or /path/img_file'
 result, elapse = engine(img_path)
-print(result)
-print(elapse)
 
 # Server mode
-engine = OpenOCR(mode='server')
+# engine = OpenOCR(mode='server')
 ```
 
 ### 2. Clone this repository:

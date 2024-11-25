@@ -22,9 +22,10 @@ from tools.infer_det import replace_batchnorm
 logger = get_logger()
 
 root_dir = Path(__file__).resolve().parent
-DEFAULT_CFG_PATH_REC_SERVER = root_dir / '../configs/det/svtrv2/svtrv2_ch.yml'
-DEFAULT_CFG_PATH_REC = root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml'
-DEFAULT_DICT_PATH_REC = root_dir / './utils/ppocr_keys_v1.txt'
+DEFAULT_CFG_PATH_REC_SERVER = str(root_dir /
+                                  '../configs/det/svtrv2/svtrv2_ch.yml')
+DEFAULT_CFG_PATH_REC = str(root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml')
+DEFAULT_DICT_PATH_REC = str(root_dir / './utils/ppocr_keys_v1.txt')
 
 MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
@@ -140,6 +141,7 @@ def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
     else:
+        logger.info('GPU is not available, using CPU.')
         device = torch.device('cpu')
     return device
 
@@ -173,7 +175,7 @@ class OpenRecognizer(object):
                 model_dir = check_and_download_model(MODEL_NAME_REC,
                                                      DOWNLOAD_URL_REC)
             config['Global']['pretrained_model'] = model_dir
-        config['Global']['character_dict_path'] = str(DEFAULT_DICT_PATH_REC)
+        config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:

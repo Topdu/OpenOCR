@@ -27,7 +27,7 @@ from tools.utils.utility import get_image_file_list
 logger = get_logger()
 
 root_dir = Path(__file__).resolve().parent
-DEFAULT_CFG_PATH_DET = root_dir / '../configs/det/dbnet/repvit_db.yml'
+DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
 
 MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
@@ -214,6 +214,7 @@ def set_device(device, numId=0):
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
     else:
+        logger.info('GPU is not available, using CPU.')
         device = torch.device('cpu')
     return device
 
