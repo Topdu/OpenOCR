@@ -18,7 +18,7 @@
 
 Paper:
 
-> [SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition](./SVTRv2.pdf)
+> [SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition](https://arxiv.org/abs/2411.15858)
 > Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang
 
 <a name="model"></a>
