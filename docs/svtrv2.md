@@ -1,6 +1,6 @@
 # SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition
 
-\[[Paper](../configs/rec/svtrv2/SVTRv2.pdf)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](#downloading-datasets)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](#results--configs--checkpoints)\]
+\[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](#downloading-datasets)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](#results--configs--checkpoints)\]
 
 ## Introduction
 
@@ -1647,10 +1647,17 @@ python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_rctc.yml --o Global.infe
 
 ## Citation
 
+If you find our method useful for your reserach, please cite:
+
 ```bibtex
-@article{Du2024SVTRv4,
-  title     = {SVTRv2: Scene Text Recognition with a Single Visual Model},
-  author    = {Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang},
-  year      = {2024}
+@article{Du2024SVTRv2,
+      title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
+      author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
+      journal={CoRR},
+      volume={abs/2411.15858},
+      eprinttype={arXiv},
+      year={2024},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2411.15858}
 }
 ```
