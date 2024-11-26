@@ -169,6 +169,8 @@ python tools/eval_rec_all_ch.py --c configs/rec/smtr/focalsvtr_smtr_ch.yml
 
 ## Citation
 
+If you find our method useful for your reserach, please cite:
+
 ```bibtex
 @article{Du2024SMTR,
   title     = {Out of Length Text Recognition with Sub-String Matching},

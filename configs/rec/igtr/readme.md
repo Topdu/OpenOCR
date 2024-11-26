@@ -175,6 +175,8 @@ python tools/eval_rec_all_ch.py --c PATH/svtr_base_igtr_ch_aug.yml
 
 ## Citation
 
+If you find our method useful for your reserach, please cite:
+
 ```bibtex
 @article{Du2024IGTR,
   title     = {Instruction-Guided Scene Text Recognition},

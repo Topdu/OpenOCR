@@ -132,3 +132,20 @@ Remarkably, the **OpenOCR mobile recognition model** delivers results comparable
 ### **System used in Real-World Scenarios**
 
 As shown in Det + Rec System results, OpenOCR demonstrates outstanding performance in practical scenarios, including documents, tables, invoices, and similar contexts. This underscores its potential as a **general-purpose OCR system**. It is capable of adapting to diverse use cases with high accuracy and reliability.
+
+## Citation
+
+If you find our method useful for your reserach, please cite:
+
+```bibtex
+@article{Du2024SVTRv2,
+      title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
+      author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
+      journal={CoRR},
+      volume={abs/2411.15858},
+      eprinttype={arXiv},
+      year={2024},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2411.15858}
+}
+```
