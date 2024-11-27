@@ -99,6 +99,7 @@ def createDataset(data_list, outputPath, checkValid=True):
 
 if __name__ == '__main__':
     data_dir = './Union14M-L/'
+    # downloading the filtered_label_list from https://drive.google.com/drive/folders/1x1LC8C_W-Frl3sGV9i9_i_OD-bqNdodJ?usp=drive_link
     label_file_list = [
         './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_challenging.jsonl.txt',
         './Union14M-L/train_annos/filter_jsonl_mmocr0.x/filter_train_easy.jsonl.txt',
