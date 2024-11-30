@@ -5,6 +5,7 @@ import numpy as np
 import importlib.util
 import sys
 import subprocess
+import lmdb
 
 
 def get_check_global_params(mode):
@@ -48,6 +49,29 @@ def get_image_file_list(img_file):
     imgs_lists = sorted(imgs_lists)
     return imgs_lists
 
+def lmdb_image_generator(lmdb_path, transform):
+    env = lmdb.open(lmdb_path, readonly=True)
+    with env.begin(write=False) as txn:
+        num_samples = int(txn.get('num-samples'.encode()))
+        for i in range(num_samples):
+            index = i + 1
+            label_key = f'label-{index:09d}'
+            label = txn.get(label_key.encode())
+            if label is None:
+                continue
+            label = label.decode('utf-8')
+            
+            img_key = f'image-{index:09d}'
+            imgbuf = txn.get(img_key.encode())
+            img = transform({'image': imgbuf})['image']
+            
+            yield img_key, label, img
+
+def file_list_image_generator(file_list, transform):
+    for file in file_list:
+        with open(file, 'rb') as f:
+            img = f.read()
+            yield file, None, transform({'image': img})['image']
 
 def binarize_img(img):
     if len(img.shape) == 3 and img.shape[2] == 3:
