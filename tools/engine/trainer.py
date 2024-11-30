@@ -245,7 +245,7 @@ class Trainer(object):
                 train_reader_cost += time.time() - reader_start
                 # use amp
                 if self.scaler:
-                    with torch.cuda.amp.autocast():
+                    with torch.cuda.amp.autocast(enabled=self.device.type == 'cuda'):
                         preds = self.model(batch[0], data=batch[1:])
                         loss = self.loss_class(preds, batch)
                     self.scaler.scale(loss['loss']).backward()
@@ -543,7 +543,7 @@ class Trainer(object):
                 batch = [t.to(self.device) for t in batch]
                 start = time.time()
                 if self.scaler:
-                    with torch.cuda.amp.autocast():
+                    with torch.cuda.amp.autocast(enabled=self.device.type == 'cuda'):
                         preds = self.model(batch[0], data=batch[1:])
                 else:
                     preds = self.model(batch[0], data=batch[1:])
@@ -581,7 +581,7 @@ class Trainer(object):
                 batch = [t.to(self.device) for t in batch]
                 start = time.time()
                 if self.scaler:
-                    with torch.cuda.amp.autocast():
+                    with torch.cuda.amp.autocast(enabled=self.device.type == 'cuda'):
                         preds = self.ema_model(batch[0], data=batch[1:])
                 else:
                     preds = self.ema_model(batch[0], data=batch[1:])
