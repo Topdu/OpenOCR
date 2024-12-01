@@ -1,6 +1,6 @@
 # SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition
 
-\[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](#downloading-datasets)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](#results--configs--checkpoints)\]
+\[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](../configs/rec/svtrv2/)\] \[[Model](../configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](#downloading-datasets)\] \[[Config, Training and Inference](../configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](#results-benchmark--configs--checkpoints)\]
 
 ## Introduction
 
@@ -190,7 +190,7 @@ Union14M-L-LMDB-Filtered # lmdb format Union14M-L-Filtered
 | Union14M-L-Filter | [LMDB archives](https://drive.google.com/drive/folders/1OlDWJZgvd6s4S09S3IGeAI90jI0i7AB_?usp=sharing)    |           |
 | Evaluation        | [LMDB archives](https://drive.google.com/drive/folders/1EW0_YvmRSdpVOkR2guTQFrGz7KNqNc66?usp=drive_link) |           |
 
-If you have downloaded Union14M-L, you can use [the filtered list of images](https://drive.google.com/drive/folders/1x1LC8C_W-Frl3sGV9i9_i_OD-bqNdodJ?usp=drive_link) to create an LMDB of the training set Union14M-L-Filter.
+If you have downloaded Union14M-L, you can use [the filtered list of images](https://drive.google.com/drive/folders/1x1LC8C_W-Frl3sGV9i9_i_OD-bqNdodJ?usp=drive_link) to create an LMDB of the training set Union14M-L-Filter (detailed in [create_lmdb_dataset.py](../tools/create_lmdb_dataset.py)).
 
 #### **Test Set**
 
