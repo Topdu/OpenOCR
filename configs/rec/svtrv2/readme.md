@@ -30,11 +30,11 @@ The accuracy (%) and model files of SVTRv2 on the public dataset of scene text r
 
 Download all Configs, Models, and Logs from [Google Drive](https://drive.google.com/drive/folders/1i2EZVT-oxfDIDdhwQRm9E6Fk8s6qD3C1?usp=sharing).
 
-|  Model   | Model size | FPS |
-| :------: | :--------: | :-: |
-| SVTRv2-T |    5.13    | 5.0 |
-| SVTRv2-S |   11.25    | 5.3 |
-| SVTRv2-B |   19.76    | 7.0 |
+|  Model   | Model size | Latency |
+| :------: | :--------: | :-----: |
+| SVTRv2-T |    5.13    |   5.0   |
+| SVTRv2-S |   11.25    |   5.3   |
+| SVTRv2-B |   19.76    |   7.0   |
 
 - Test on Common Benchmarks from [PARSeq](https://github.com/baudm/parseq):
 
@@ -113,7 +113,10 @@ NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.laun
 
 ```shell
 # short text: Common, Union14M-Benchmark, OST
-python tools/eval_rec_all_ratio.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
+python tools/eval_rec_all_ratio.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc_infer.yml
+
+# long text: LTB
+python tools/eval_rec_all_long.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc_infer.yml --o Eval.loader.max_ratio=20
 ```
 
 After a successful run, the results are saved in a csv file in `output_dir` in the config file.
@@ -121,7 +124,7 @@ After a successful run, the results are saved in a csv file in `output_dir` in t
 ### Inference
 
 ```shell
-python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml --o Global.infer_img=/path/img_fold or /path/img_file
+python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc_infer.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
 
 ### Latency Measurement
@@ -129,7 +132,7 @@ python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml --o Gl
 Firstly, downloading the IIIT5K images from [Google Drive](https://drive.google.com/drive/folders/1Po1LSBQb87DxGJuAgLNxhsJ-pdXxpIfS?usp=drive_link). Then, running the following command:
 
 ```shell
-python tools/infer_rec.py --c configs/rec/SVTRv2/svtrv2_rctc.yml --o Global.infer_img=../iiit5k_test_image
+python tools/infer_rec.py --c configs/rec/SVTRv2/svtrv2_smtr_gtc_rctc_infer.yml --o Global.infer_img=../iiit5k_test_image
 ```
 
 ## Citation

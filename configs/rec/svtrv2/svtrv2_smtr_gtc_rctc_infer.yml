@@ -51,7 +51,7 @@ Architecture:
     feat2d: True
   Decoder:
     name: GTCDecoder
-    infer_gtc: True
+    infer_gtc: False
     detach: False
     gtc_decoder:
       name: SMTRDecoder
@@ -64,21 +64,16 @@ Architecture:
       name: RCTCDecoder
 
 Loss:
-  name: GTCLoss
-  ctc_weight: 0.1
-  gtc_loss:
-    name: SMTRLoss
+  name: CTCLoss
+  zero_infinity: True
 
 PostProcess:
-  name: GTCLabelDecode
-  gtc_label_decode:
-    name: SMTRLabelDecode
-    next_mode: *next
+  name: CTCLabelDecode
   character_dict_path: *character_dict_path
   use_space_char: *use_space_char
 
 Metric:
-  name: RecGTCMetric
+  name: RecMetric
   main_indicator: acc
   is_filter: True
 
@@ -97,16 +92,12 @@ Train:
       - DecodeImagePIL: # load image
           img_mode: RGB
       - PARSeqAugPIL:
-      - GTCLabelEncode: # Class handling label
-          gtc_label_encode:
-            name: SMTRLabelEncode
-            sub_str_len: *subsl
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'label_subs', 'label_next', 'length_subs',
-          'label_subs_pre', 'label_next_pre', 'length_subs_pre', 'length', 'ctc_label', 'ctc_length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
@@ -138,14 +129,12 @@ Eval:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - GTCLabelEncode: # Class handling label
-          gtc_label_encode:
-            name: ARLabelEncode
+      - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'length', 'ctc_label', 'ctc_length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   sampler:
     name: RatioSampler
     scales: [[128, 32]] # w, h
