@@ -463,7 +463,9 @@ class SVTRv2LNConvTwo33(nn.Module):
                 out_dim=dims[i_stage + 1] if i_stage < num_stages - 1 else 0,
                 depth=depths[i_stage],
                 mixer=mixer[i_stage],
-                kernel_sizes=kernel_sizes[i_stage],
+                kernel_sizes=kernel_sizes[i_stage]
+                if len(kernel_sizes[i_stage]) == len(mixer[i_stage]) else [3] *
+                len(mixer[i_stage]),
                 sub_k=sub_k[i_stage],
                 num_heads=num_heads[i_stage],
                 mlp_ratio=mlp_ratio,
