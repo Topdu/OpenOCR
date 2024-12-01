@@ -1,0 +1,27 @@
+root: ../OpenVINO
+task: str
+download_links:
+  # train_1
+  - https://drive.usercontent.google.com/download?id=1q23QAIRTyG0t-bBm4aAwRwiqB6VUfphw&authuser=0&confirm=
+  # train_2
+  - https://drive.usercontent.google.com/download?id=1AtbaJljM68cbZqi5lcM92d9VkQUCbSqI&authuser=0&confirm=
+  # train_5
+  - https://drive.usercontent.google.com/download?id=1dejstYnJ8_sESuO_uvwi__jT1B8gPxf3&authuser=0&confirm=t
+  # train_f
+  - https://drive.usercontent.google.com/download?id=1C4akchTc7-yi1OS_sJ3KP693UKcnecke&authuser=0&confirm=t
+  # validation
+  - https://drive.usercontent.google.com/download?id=17TRzSQhuK_juAxAv3KmX0y13pQP2cz6R&authuser=0&confirm=t
+filenames:
+  # train_1
+  - ../OpenVINO/train_1.zip
+  # train_2
+  - ../OpenVINO/train_2.zip
+  # train_5
+  - ../OpenVINO/train_5.zip
+  # train_f
+  - ../OpenVINO/train_f.zip
+  # validation
+  - ../OpenVINO/validation.zip
+processor:
+  - null
+check_validity: true
