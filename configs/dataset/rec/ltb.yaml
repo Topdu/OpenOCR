@@ -1,0 +1,11 @@
+root: ../ltb
+task: str
+download_links:
+  - https://drive.usercontent.google.com/download?id=16AEA1YGTsyVB44uEjKi4ZUV1snjCYBr4&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1xU4OStrOaI23bPG4flWAPWn2YrQe2bmY&authuser=0&confirm=t
+filenames:
+  - ../ltb/data.mdb
+  - ../ltb/lock.mdb
+processor:
+  - null
+check_validity: true

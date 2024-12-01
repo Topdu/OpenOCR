@@ -1,0 +1,49 @@
+root: ../u14m
+task: str
+download_links:
+  # artistic
+  - https://drive.usercontent.google.com/download?id=1Je2DTuFHnkXDI99yDnm9Anl5naWaCQwd&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1xtT_Q0juBJUIvAG55qBxoVNNTECd2usZ&authuser=0&confirm=t
+  # contextless
+  - https://drive.usercontent.google.com/download?id=1_0OzyzWhZOmGrHkayFTVrzhrQrNRDRPR&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1PPgC42y3xoM9bR0HQFbDYbcT3PzMdD_y&authuser=0&confirm=t
+  # salient
+  - https://drive.usercontent.google.com/download?id=1tHLMYBmTqRnxvFOTT3dfLfQiundqFWfd&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=13NQgpAtCK0kh9M5E2pAUmKKEp6Qu5Xwj&authuser=0&confirm=t
+  # multi_words
+  - https://drive.usercontent.google.com/download?id=1IlnDKX3V_Vp9gsDGFB0xoqsVLH1vtxUI&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1mFFjC7C0CwevvkwFU9YeVbZBdps_3Qpb&authuser=0&confirm=t
+  # curve
+  - https://drive.usercontent.google.com/download?id=1MxhMd85cmhUtI2lmtXhZQuFk7lav0_fw&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1N03g-4e-kJG2mRvlM0c5TrwWAkd-iG-Q&authuser=0&confirm=t
+  # general
+  - https://drive.usercontent.google.com/download?id=1Oqt7OaycP466NWoDmoJ3FqS8YP3YRgvu&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1K0MrX5eYNt8IIGFHXCwg0_oI5OF5PPFO&authuser=0&confirm=t
+  # multi_oriented
+  - https://drive.usercontent.google.com/download?id=1TKZFcZPVk0ThqfF-AGhJk_OCLg0ykKbv&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1PAoLMUWuR7O2-7XRoKkNzQcSiznErQzD&authuser=0&confirm=t
+filenames:
+  # artistic
+  - ../u14m/artistic/data.mdb
+  - ../u14m/artistic/lock.mdb
+  # contextless
+  - ../u14m/contextless/data.mdb
+  - ../u14m/contextless/lock.mdb
+  # salient
+  - ../u14m/salient/data.mdb
+  - ../u14m/salient/lock.mdb
+  # multi_words
+  - ../u14m/multi_words/data.mdb
+  - ../u14m/multi_words/lock.mdb
+  # curve
+  - ../u14m/curve/data.mdb
+  - ../u14m/curve/lock.mdb
+  # general
+  - ../u14m/general/data.mdb
+  - ../u14m/general/lock.mdb
+  # multi_oriented
+  - ../u14m/multi_oriented/data.mdb
+  - ../u14m/multi_oriented/lock.mdb
+processor:
+  - null
+check_validity: true

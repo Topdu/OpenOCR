@@ -1,8 +1,0 @@
-root: datasets
-dataset_name: val
-task: str
-download_links:
-  - https://drive.usercontent.google.com/download?id=1k37Xvk40F0U6DEGPhNurltOvkkaO6hAK&authuser=0&confirm=t
-filenames:
-  - data.zip
-check_validity: true
