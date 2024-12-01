@@ -4,26 +4,50 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .abinet_label_encode import ABINetLabelEncode
-from .ar_label_encode import ARLabelEncode
-from .ce_label_encode import CELabelEncode
-from .char_label_encode import CharLabelEncode
-from .cppd_label_encode import CPPDLabelEncode
-from .ctc_label_encode import CTCLabelEncode
-from .ep_label_encode import EPLabelEncode
-from .igtr_label_encode import IGTRLabelEncode
-from .mgp_label_encode import MGPLabelEncode
-from .rec_aug import ABINetAug
-from .rec_aug import BaseDataAugmentation as BDA
-from .rec_aug import PARSeqAug, PARSeqAugPIL, SVTRAug
-from .resize import (ABINetResize, CDistNetResize, LongResize, RecTVResize,
-                     RobustScannerRecResizeImg, SliceResize, SliceTVResize,
-                     SRNRecResizeImg, SVTRResize, VisionLANResize,
-                     RecDynamicResize)
-from .smtr_label_encode import SMTRLabelEncode
-from .srn_label_encode import SRNLabelEncode
-from .visionlan_label_encode import VisionLANLabelEncode
-from .cam_label_encode import CAMLabelEncode
+from .db_resize_for_test import DetResizeForTest
+
+
+class NormalizeImage(object):
+    """normalize image such as substract mean, divide std"""
+
+    def __init__(self, scale=None, mean=None, std=None, order='chw', **kwargs):
+        if isinstance(scale, str):
+            scale = eval(scale)
+        self.scale = np.float32(scale if scale is not None else 1.0 / 255.0)
+        mean = mean if mean is not None else [0.485, 0.456, 0.406]
+        std = std if std is not None else [0.229, 0.224, 0.225]
+
+        shape = (3, 1, 1) if order == 'chw' else (1, 1, 3)
+        self.mean = np.array(mean).reshape(shape).astype('float32')
+        self.std = np.array(std).reshape(shape).astype('float32')
+
+    def __call__(self, data):
+        img = data['image']
+        from PIL import Image
+
+        if isinstance(img, Image.Image):
+            img = np.array(img)
+        assert isinstance(img,
+                          np.ndarray), "invalid input 'img' in NormalizeImage"
+        data['image'] = (img.astype('float32') * self.scale -
+                         self.mean) / self.std
+        return data
+
+
+class ToCHWImage(object):
+    """convert hwc image to chw image"""
+
+    def __init__(self, **kwargs):
+        pass
+
+    def __call__(self, data):
+        img = data['image']
+        from PIL import Image
+
+        if isinstance(img, Image.Image):
+            img = np.array(img)
+        data['image'] = img.transpose((2, 0, 1))
+        return data
 
 
 class KeepKeys(object):
@@ -47,21 +71,6 @@ def transform(data, ops=None):
         if data is None:
             return None
     return data
-
-
-class Fasttext(object):
-
-    def __init__(self, path='None', **kwargs):
-        # pip install fasttext==0.9.1
-        import fasttext
-
-        self.fast_model = fasttext.load_model(path)
-
-    def __call__(self, data):
-        label = data['label']
-        fast_label = self.fast_model[label]
-        data['fast_label'] = fast_label
-        return data
 
 
 class DecodeImage(object):
@@ -143,31 +152,3 @@ def create_operators(op_param_list, global_config=None):
         op = eval(op_name)(**param)
         ops.append(op)
     return ops
-
-
-class GTCLabelEncode():
-    """Convert between text-label and text-index."""
-
-    def __init__(self,
-                 gtc_label_encode,
-                 max_text_length,
-                 character_dict_path=None,
-                 use_space_char=False,
-                 **kwargs):
-        self.gtc_label_encode = eval(gtc_label_encode['name'])(
-            max_text_length=max_text_length,
-            character_dict_path=character_dict_path,
-            use_space_char=use_space_char,
-            **gtc_label_encode)
-        self.ctc_label_encode = CTCLabelEncode(max_text_length,
-                                               character_dict_path,
-                                               use_space_char)
-
-    def __call__(self, data):
-        data_ctc = self.ctc_label_encode({'label': data['label']})
-        data = self.gtc_label_encode(data)
-        if data_ctc is None or data is None:
-            return None
-        data['ctc_label'] = data_ctc['label']
-        data['ctc_length'] = data_ctc['length']
-        return data
