@@ -15,7 +15,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..', '..')))
 
 from engine import Config
 from utility import ArgsParser
-from download.utils import preprocess
 
 """ a modified version of CRNN torch repository https://github.com/bgshih/crnn/blob/master/tool/create_dataset.py """
 
@@ -80,10 +79,14 @@ def createDataset(data_list, outputPath, checkValid=True):
     cnt = 1
     for imagePath, label in tqdm(data_list,
                                  desc=f'make dataset, save to {outputPath}'):
-        with open(imagePath, 'rb') as f:
-            imageBin = f.read()
-            buf = io.BytesIO(imageBin)
-            w, h = Image.open(buf).size
+
+        if isinstance(imagePath, bytes):
+            imageBin = imagePath
+        else:
+            with open(imagePath, 'rb') as f:
+                imageBin = f.read()
+        buf = io.BytesIO(imageBin)
+        w, h = Image.open(buf).size
         if checkValid:
             try:
                 if not checkImageIsValid(imageBin):
@@ -115,10 +118,8 @@ def main():
     opt = FLAGS.pop('opt')
     cfg.merge_dict(FLAGS)
     cfg.merge_dict(opt)
-    data = preprocess(cfg.cfg)
     dataset_dir = os.path.join(cfg.cfg["root"], cfg.cfg["dataset_name"])
     os.makedirs(dataset_dir, exist_ok=True)
-    createDataset(data, dataset_dir)
 
 if __name__ == '__main__':
     main()

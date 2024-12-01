@@ -1,0 +1,67 @@
+root: data
+task: str
+download_links:
+  # Mix of multiple datasets
+  - https://drive.usercontent.google.com/download?id=1DnWLcHgdD6xLE_l606pcUhKj07bAKC4S&authuser=0&confirm=t
+  # MJSynth
+  - https://drive.usercontent.google.com/download?id=1FIoplSFZ-BKQoRDHDXsVMKa844e-K8PD&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1eckTvaeRtlTZvbO2orrVz-cIuIk6i87K&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1PBXTf-2PnmEvJBsqzJqxxRwzhAZGTiMG&authuser=0&confirm=t
+  # SynthText
+  - https://drive.usercontent.google.com/download?id=1T-enqkq6_l2HqrsV3da_h0oJ7CUKu_oc&authuser=0&confirm=t
+  # OpenVINO
+  - https://drive.usercontent.google.com/download?id=1q23QAIRTyG0t-bBm4aAwRwiqB6VUfphw&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1dejstYnJ8_sESuO_uvwi__jT1B8gPxf3&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=17TRzSQhuK_juAxAv3KmX0y13pQP2cz6R&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1C4akchTc7-yi1OS_sJ3KP693UKcnecke&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1AtbaJljM68cbZqi5lcM92d9VkQUCbSqI&authuser=0&confirm=t
+  # TextOCR
+  - https://drive.usercontent.google.com/download?id=1jVjJFno4pnsU0Cp_kn4MIXQrChmELy92&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1ubIRu01MXIek6OvInu-XjaIbw6277-vw&authuser=0&confirm=t
+  - https://github.com/baudm/Case-Sensitive-Scene-Text-Recognition-Datasets/archive/refs/heads/master.zip
+  # COCOTextv2
+  - https://github.com/bgshih/cocotext/releases/download/dl/cocotext.v2.zip
+  - http://images.cocodataset.org/zips/train2014.zip
+filenames:
+  - data.zip
+  - MJ_train.zip
+  - MJ_test.zip
+  - MJ_val.zip
+  - ST.zip
+  - OpenVINO/train1.zip
+  - OpenVINO/train5.zip
+  - OpenVINO/val.zip
+  - OpenVINO/train_f.zip
+  - OpenVINO/train_5.zip
+  - TextOCR/train.zip
+  - TextOCR/val.zip
+  - data_imgs_labels.zip
+  - COCOText_v2_labels.zip
+  - COCOText_v2.zip
+processors:
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - process_case_sensitive_str_datasets_converter:
+    mapping:
+      cute80_test: data/test/CUTE80_test
+      iiit5k_test: data/test/IIIT5k_test
+      iiit5k_train: data/val/IIIT5k_train
+      svt_test: data/test/SVT_test
+      svt_train: data/val/SVT_train
+      svtp_test: data/test/SVTP_test
+  - null
+  - coco_text_converter:
+    ann_file: cocotext.v2.json
+    output_dir: data/train/real/COCOv2.0
+    use_split_naming: true
+check_validity: true
