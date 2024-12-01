@@ -1,9 +1,0 @@
-root: datasets
-dataset_name: svt
-task: str
-download_links:
-  - http://www.iapr-tc11.org/dataset/SVT/svt.zip
-filenames:
-  - data.zip
-check_validity: true
-max_len: 800

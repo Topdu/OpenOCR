@@ -1,9 +1,9 @@
-root: datasets
-dataset_name: synthtext
+root: ../synth
 task: str
 download_links:
-  - https://academictorrents.com/download/2dba9518166cbd141534cbf381aa3e99a087e83c.torrent
+  - https://drive.usercontent.google.com/download?id=1T-enqkq6_l2HqrsV3da_h0oJ7CUKu_oc&authuser=0&confirm=t
 filenames:
-  - synthtext.torrent
+  - ../synth/ST.zip
+processor:
+  - null
 check_validity: true
-max_len: 800

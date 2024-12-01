@@ -1,9 +1,0 @@
-root: datasets
-dataset_name: svtp
-task: str
-download_links:
-  - https://github.com/Jyouhou/Case-Sensitive-Scene-Text-Recognition-Datasets/archive/refs/heads/master.zip
-filenames:
-  - data.zip
-check_validity: true
-max_len: 800

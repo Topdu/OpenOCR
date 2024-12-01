@@ -1,9 +1,13 @@
-root: datasets
-dataset_name: mjsynth
+root: ../synth
 task: str
 download_links:
-  - https://academictorrents.com/download/3d0b4f09080703d2a9c6be50715b46389fdb3af1.torrent
+  - https://drive.usercontent.google.com/download?id=1FIoplSFZ-BKQoRDHDXsVMKa844e-K8PD&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1eckTvaeRtlTZvbO2orrVz-cIuIk6i87K&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1PBXTf-2PnmEvJBsqzJqxxRwzhAZGTiMG&authuser=0&confirm=t
 filenames:
-  - mjsynth.torrent
+  - ../synth/MJ_train.zip
+  - ../synth/MJ_val.zip
+  - ../synth/MJ_test.zip
+processor:
+  - null
 check_validity: true
-max_len: 800

@@ -79,14 +79,10 @@ def createDataset(data_list, outputPath, checkValid=True):
     cnt = 1
     for imagePath, label in tqdm(data_list,
                                  desc=f'make dataset, save to {outputPath}'):
-
-        if isinstance(imagePath, bytes):
-            imageBin = imagePath
-        else:
-            with open(imagePath, 'rb') as f:
-                imageBin = f.read()
-        buf = io.BytesIO(imageBin)
-        w, h = Image.open(buf).size
+        with open(imagePath, 'rb') as f:
+            imageBin = f.read()
+            buf = io.BytesIO(imageBin)
+            w, h = Image.open(buf).size
         if checkValid:
             try:
                 if not checkImageIsValid(imageBin):
