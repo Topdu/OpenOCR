@@ -8,6 +8,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
+import lmdb
 import numpy as np
 import torch
 from torchvision import transforms as T
@@ -16,8 +17,9 @@ from tools.engine import Config
 from tools.utility import ArgsParser
 from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
-from tools.utils.utility import get_image_file_list
+from tools.utils.utility import get_image_file_list, lmdb_image_generator, file_list_image_generator
 from tools.infer_det import replace_batchnorm
+from openrec.preprocess import DecodeImagePIL
 
 logger = get_logger()
 
@@ -336,6 +338,13 @@ class OpenRecognizer(object):
 
         return results
 
+def create_image_generator(infer_img_path):
+    is_lmdb = os.path.isdir(infer_img_path) and os.path.exists(infer_img_path + '/data.mdb')
+    image_transform = DecodeImagePIL()
+    if is_lmdb:
+        return lmdb_image_generator(infer_img_path, image_transform)
+    else:
+        return file_list_image_generator(get_image_file_list(infer_img_path), image_transform)
 
 def main(cfg):
     model = OpenRecognizer(cfg)
@@ -352,9 +361,10 @@ def main(cfg):
 
     sample_num = 0
     with open(save_res_path + '/rec_results.txt', 'wb') as fout:
-        for file in get_image_file_list(cfg['Global']['infer_img']):
-
-            preds_result = model(img_path=file, batch_num=1)[0]
+        infer_img_path = cfg['Global']['infer_img']
+        image_generator = create_image_generator(infer_img_path)
+        for (key_or_file, label, img) in image_generator:
+            preds_result = model(img_numpy=img, batch_num=1)[0]
 
             rec_text = preds_result['text']
             score = preds_result['score']
@@ -362,9 +372,10 @@ def main(cfg):
             info = rec_text + '\t' + str(score)
             text_len_num[min(max_len - 1, len(rec_text))] += 1
             text_len_time[min(max_len - 1, len(rec_text))] += t_cost
+            label = label if label is not None else "None"
             logger.info(
-                f'{sample_num} {file}\t result: {info}, time cost: {t_cost}')
-            otstr = file + '\t' + info + '\n'
+                f'{sample_num} {key_or_file}\t label: {label}\t result: {info}, time cost: {t_cost}')
+            otstr = key_or_file + "\t" + label + '\t' + info + '\n'
             t_sum += t_cost
             fout.write(otstr.encode())
             sample_num += 1
