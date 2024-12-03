@@ -7,7 +7,7 @@ import torch
 from torch import Tensor
 from torch.nn.utils.rnn import pad_sequence
 import unicodedata
-from ..modeling.clip.clip import tokenize
+from ..modeling.decoders.dptr_parseq_clip_b_decoder import tokenize
 
 class CharsetAdapter:
     """Transforms labels according to the target charset."""
