@@ -353,7 +353,8 @@ class OpenDetector(object):
                  img_path=None,
                  img_numpy_list=None,
                  img_numpy=None,
-                 return_mask=False):
+                 return_mask=False,
+                 **kwargs):
         """
         对输入图像进行处理，并返回处理结果。
 
@@ -400,7 +401,7 @@ class OpenDetector(object):
                 t_start = time.time()
                 preds = self.model(images)
                 t_cost = time.time() - t_start
-            post_result = self.post_process_class(preds, shape_list)
+            post_result = self.post_process_class(preds, shape_list, **kwargs)
 
             info = {'boxes': post_result[0]['points'], 'elapse': t_cost}
             if return_mask:

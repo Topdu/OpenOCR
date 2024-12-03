@@ -20,7 +20,10 @@ We proposed strategies to comprehensively enhance CTC-based STR models and devel
 ```shell
 conda create -n openocr python==3.8
 conda activate openocr
+# install gpu version torch
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+# or cpu version
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
@@ -62,10 +65,8 @@ wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_rep
 ```shell
 # OpenOCR system: Det + Rec model
 python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file
-
 # Det model
 python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer_img=/path/img_fold or /path/img_file
-
 # Rec model
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
