@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 # @Author: OpenOCR
 # @Contact: 784990967@qq.com
 import os
@@ -116,37 +117,36 @@ if __name__ == '__main__':
                             1.0,
                             value=0.01,
                             step=0.01,
-                            label='Recognition Drop Score',
-                            info='识别置信度阈值，默认值为0.01。低于该阈值的识别结果和对应的文本框被丢弃。')
+                            label="Recognition Drop Score",
+                            info="识别置信度阈值，默认值为0.01。低于该阈值的识别结果和对应的文本框被丢弃。")
                         mask_thresh_slider = gr.Slider(
                             0.0,
                             1.0,
                             value=0.3,
                             step=0.01,
-                            label='Mask Threshold',
-                            info='Mask 阈值，用于二值化 mask，默认值为0.3。如果存在文本截断时，请调低该值。')
+                            label="Mask Threshold",
+                            info="Mask 阈值，用于二值化 mask，默认值为0.3。如果存在文本截断时，请调低该值。")
                     with gr.Column():
                         box_thresh_slider = gr.Slider(
                             0.0,
                             1.0,
                             value=0.6,
                             step=0.01,
-                            label='Box Threshold',
-                            info='文本框置信度阈值，默认值为0.3。如果存在文本被漏检时，请调低该值。')
+                            label="Box Threshold",
+                            info="文本框置信度阈值，默认值为0.3。如果存在文本被漏检时，请调低该值。")
                         unclip_ratio_slider = gr.Slider(
                             1.5,
                             2.0,
                             value=1.5,
                             step=0.05,
-                            label='Unclip Ratio',
-                            info='文本框解析时的膨胀系数，默认值为1.5。值越大文本框越大。')
+                            label="Unclip Ratio",
+                            info="文本框解析时的膨胀系数，默认值为1.5。值越大文本框越大。")
 
                 det_score_mode_dropdown = gr.Dropdown(
-                    ['slow', 'fast'],
-                    value='slow',
-                    label='Det Score Mode',
-                    info=
-                    '文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
+                    ["slow", "fast"],
+                    value="slow",
+                    label="Det Score Mode",
+                    info="文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。"
                 )
 
             with gr.Column(scale=1):
