@@ -340,7 +340,7 @@ class OpenRecognizer(object):
 def main(cfg):
     model = OpenRecognizer(cfg)
 
-    save_res_path = cfg['Global']['output_dir']
+    save_res_path = './rec_results/'
     if not os.path.exists(save_res_path):
         os.makedirs(save_res_path)
 
@@ -353,9 +353,7 @@ def main(cfg):
     sample_num = 0
     with open(save_res_path + '/rec_results.txt', 'wb') as fout:
         for file in get_image_file_list(cfg['Global']['infer_img']):
-
             preds_result = model(img_path=file, batch_num=1)[0]
-
             rec_text = preds_result['text']
             score = preds_result['score']
             t_cost = preds_result['elapse']
@@ -368,6 +366,9 @@ def main(cfg):
             t_sum += t_cost
             fout.write(otstr.encode())
             sample_num += 1
+        logger.info(
+            f"Results saved to {os.path.join(save_res_path, 'rec_results.txt')}.)"
+        )
 
     print(text_len_num)
     w_avg_t_cost = []

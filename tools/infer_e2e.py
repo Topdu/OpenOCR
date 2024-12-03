@@ -182,14 +182,16 @@ class OpenOCR(object):
                            ori_img,
                            crop_infer=False,
                            rec_batch_num=6,
-                           return_mask=False):
+                           return_mask=False,
+                           **kwargs):
         start = time.time()
         if crop_infer:
             dt_boxes = self.text_detector.crop_infer(
                 img_numpy=img_numpy)[0]['boxes']
         else:
             det_res = self.text_detector(img_numpy=img_numpy,
-                                         return_mask=return_mask)[0]
+                                         return_mask=return_mask,
+                                         **kwargs)[0]
             dt_boxes = det_res['boxes']
         # logger.info(dt_boxes)
         det_time_cost = time.time() - start
@@ -247,7 +249,8 @@ class OpenOCR(object):
                  img_numpy=None,
                  rec_batch_num=6,
                  crop_infer=False,
-                 return_mask=False):
+                 return_mask=False,
+                 **kwargs):
         """
         img_path: str, optional, default=None
             Path to the directory containing images or the image filename.
@@ -278,13 +281,15 @@ class OpenOCR(object):
                         ori_img=ori_img,
                         crop_infer=crop_infer,
                         rec_batch_num=rec_batch_num,
-                        return_mask=return_mask)
+                        return_mask=return_mask,
+                        **kwargs)
                 else:
                     dt_boxes, rec_res, time_dict = self.infer_single_image(
                         img_numpy=img,
                         ori_img=ori_img,
                         crop_infer=crop_infer,
-                        rec_batch_num=rec_batch_num)
+                        rec_batch_num=rec_batch_num,
+                        **kwargs)
                 if dt_boxes is None:
                     results.append([])
                     time_dicts.append({})
@@ -324,7 +329,8 @@ class OpenOCR(object):
                     img_numpy=img_numpy,
                     ori_img=ori_img,
                     crop_infer=crop_infer,
-                    rec_batch_num=rec_batch_num)
+                    rec_batch_num=rec_batch_num,
+                    **kwargs)
                 if dt_boxes is None:
                     res_list.append([])
                     time_dicts.append({})

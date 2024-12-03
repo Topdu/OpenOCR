@@ -62,7 +62,10 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 ```shell
 conda create -n openocr python==3.8
 conda activate openocr
+# install gpu version torch
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+# or cpu version
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
@@ -104,10 +107,8 @@ wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_rep
 ```shell
 # OpenOCR system: Det + Rec model
 python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file
-
 # Det model
 python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer_img=/path/img_fold or /path/img_file
-
 # Rec model
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
@@ -156,7 +157,7 @@ python demo_gradio.py
 | [OTE](./configs/rec/ote/)                     | [CVPR 2024](https://openaccess.thecvf.com/content/CVPR2024/html/Xu_OTE_Exploring_Accurate_Scene_Text_Recognition_Using_One_Token_CVPR_2024_paper.html) | ✅       | ✅         |                                             |
 | E$^2$STR                                      | [CVPR 2024](https://openaccess.thecvf.com/content/CVPR2024/html/Zhao_Multi-modal_In-Context_Learning_Makes_an_Ego-evolving_Scene_Text_Recognizer_CVPR_2024_paper.html) |          |            | TODO                                        |
 | CFF                                           | [IJCAI 2024](https://arxiv.org/abs/2407.05562)                                                 |          |            | TODO                                        |
-| DPTR                                          | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | TODO                                        |
+| [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | [fd-zs](https://github.com/fd-zs)           |
 | VIPTR                                         | [ACM CIKM 2024](https://arxiv.org/abs/2401.10110)                                              |          |            | TODO                                        |
 | [IGTR](./configs/rec/igtr/)                   | [2024](https://arxiv.org/abs/2401.17851)                                                       | ✅       | ✅         |                                             |
 | [SMTR](./configs/rec/smtr/)                   | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
@@ -169,7 +170,7 @@ python demo_gradio.py
 
 ______________________________________________________________________
 
-Yiming Lei ([pretto0](https://github.com/pretto0)) and Xingsong Ye ([YesianRohn](https://github.com/YesianRohn)) from the [FVL](https://fvl.fudan.edu.cn) Laboratory, Fudan University, with guidance from Dr. Zhineng Chen ([Homepage](https://zhinchenfd.github.io/)), completed the majority work of the algorithm reproduction. Grateful for their outstanding contributions.
+Yiming Lei ([pretto0](https://github.com/pretto0)), Xingsong Ye ([YesianRohn](https://github.com/YesianRohn)), and Shuai Zhao ([fd-zs](https://github.com/fd-zs)) from the [FVL Laboratory](https://fvl.fudan.edu.cn), Fudan University, with guidance from Dr. Zhineng Chen ([Homepage](https://zhinchenfd.github.io/)), completed the majority work of the algorithm reproduction. Grateful for their outstanding contributions.
 
 ### Scene Text Detection (STD)
 
