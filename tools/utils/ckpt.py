@@ -71,13 +71,17 @@ def load_ckpt(model, cfg, optimizer=None, lr_scheduler=None, logger=None):
         status["epoch"] = checkpoint["epoch"] + 1
         status["metrics"] = checkpoint["metrics"]
     elif pretrained_model and os.path.exists(pretrained_model):
-        load_pretrained_params(model, pretrained_model)
+        load_pretrained_params(model, pretrained_model, logger)
         logger.info(f"finetune from checkpoint {pretrained_model}")
     else:
         logger.info("train from scratch")
     return status
 
 
-def load_pretrained_params(model, pretrained_model):
+def load_pretrained_params(model, pretrained_model, logger):
     checkpoint = torch.load(pretrained_model, map_location=torch.device("cpu"))
     model.load_state_dict(checkpoint["state_dict"], strict=False)
+    for name in model.state_dict().keys():
+        if name not in checkpoint["state_dict"]:
+            logger.info(f"{name} is not in pretrained model")
+

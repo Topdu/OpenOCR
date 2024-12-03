@@ -155,12 +155,14 @@ class ConvBlock(nn.Module):
         norm_layer=nn.LayerNorm,
         eps=1e-6,
         num_conv=2,
+        kernel_size=3,
     ):
         super().__init__()
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.norm1 = norm_layer(dim, eps=eps)
         self.mixer = nn.Sequential(*[
-            nn.Conv2d(dim, dim, 3, 1, 1, groups=num_heads)
+            nn.Conv2d(
+                dim, dim, kernel_size, 1, kernel_size // 2, groups=num_heads)
             for i in range(num_conv)
         ])
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else Identity()
@@ -250,6 +252,7 @@ class SVTRStage(nn.Module):
                  out_dim=256,
                  depth=3,
                  mixer=['Local'] * 3,
+                 kernel_sizes=[3] * 3,
                  sub_k=[2, 1],
                  num_heads=2,
                  mlp_ratio=4,
@@ -272,6 +275,7 @@ class SVTRStage(nn.Module):
             if mixer[i] == 'Conv':
                 self.blocks.append(
                     ConvBlock(dim=dim,
+                              kernel_size=kernel_sizes[i],
                               num_heads=num_heads,
                               mlp_ratio=mlp_ratio,
                               drop=drop_rate,
@@ -346,7 +350,8 @@ class POPatchEmbed(nn.Module):
                  feat_max_size=[8, 32],
                  embed_dim=768,
                  use_pos_embed=False,
-                 flatten=False):
+                 flatten=False,
+                 bias=False):
         super().__init__()
         self.patch_embed = nn.Sequential(
             ConvBNLayer(
@@ -356,7 +361,7 @@ class POPatchEmbed(nn.Module):
                 stride=2,
                 padding=1,
                 act=nn.GELU,
-                bias=None,
+                bias=bias,
             ),
             ConvBNLayer(
                 in_channels=embed_dim // 2,
@@ -365,7 +370,7 @@ class POPatchEmbed(nn.Module):
                 stride=2,
                 padding=1,
                 act=nn.GELU,
-                bias=None,
+                bias=bias,
             ),
         )
         if use_pos_embed:
@@ -433,6 +438,8 @@ class SVTRv2LNConvTwo33(nn.Module):
                  feat2d=False,
                  eps=1e-6,
                  num_convs=[[2] * 3, [2] * 3 + [3] * 3, [3] * 3],
+                 kernel_sizes=[[3] * 3, [3] * 3 + [3] * 3, [3] * 3],
+                 pope_bias=False,
                  **kwargs):
         super().__init__()
         num_stages = len(depths)
@@ -443,7 +450,8 @@ class SVTRv2LNConvTwo33(nn.Module):
                                  feat_max_size=feat_max_size,
                                  embed_dim=dims[0],
                                  use_pos_embed=use_pos_embed,
-                                 flatten=mixer[0][0] != 'Conv')
+                                 flatten=mixer[0][0] != 'Conv',
+                                 bias=pope_bias)
 
         dpr = np.linspace(0, drop_path_rate,
                           sum(depths))  # stochastic depth decay rule
@@ -455,6 +463,9 @@ class SVTRv2LNConvTwo33(nn.Module):
                 out_dim=dims[i_stage + 1] if i_stage < num_stages - 1 else 0,
                 depth=depths[i_stage],
                 mixer=mixer[i_stage],
+                kernel_sizes=kernel_sizes[i_stage]
+                if len(kernel_sizes[i_stage]) == len(mixer[i_stage]) else [3] *
+                len(mixer[i_stage]),
                 sub_k=sub_k[i_stage],
                 num_heads=num_heads[i_stage],
                 mlp_ratio=mlp_ratio,

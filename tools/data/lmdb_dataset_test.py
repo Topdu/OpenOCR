@@ -62,7 +62,19 @@ class LMDBDataSetTest(Dataset):
         self.min_image_dim = min_image_dim
         self.filter_label = dataset_config.get('filter_label',
                                                True)  #'data_dir']filter_label
-        char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
+        character_dict_path = global_config.get('character_dict_path', None)
+        use_space_char = global_config.get('use_space_char', False)
+        if character_dict_path is None:
+            char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
+        else:
+            char_test = ''
+            with open(character_dict_path, 'rb') as fin:
+                lines = fin.readlines()
+                for line in lines:
+                    line = line.decode('utf-8').strip('\n').strip('\r\n')
+                    char_test += line
+            if use_space_char:
+                char_test += ' '
         self.ops = create_operators(dataset_config['transforms'],
                                     global_config)
         self.num_samples = self._preprocess_labels(char_test,

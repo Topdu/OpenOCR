@@ -48,7 +48,8 @@ class VisionLANLabelDecode(BaseRecLabelDecode):
     def __call__(self, preds, batch=None, *args, **kwargs):
         if len(preds) == 2:  # eval mode
             net_out, length = preds
-            label = batch[1]
+            if batch is not None:
+                label = batch[1]
 
         else:  # train mode
             net_out = preds[0]
@@ -74,7 +75,7 @@ class VisionLANLabelDecode(BaseRecLabelDecode):
             preds_prob = torch.exp(
                 torch.log(preds_prob).sum() / (preds_prob.shape[0] + 1e-6))
             text.append((preds_text, float(preds_prob)))
-        if label is None:
+        if batch is None:
             return text
         label = self.decode(label.detach().cpu().numpy())
         return text, label

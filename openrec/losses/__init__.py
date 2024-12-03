@@ -18,12 +18,13 @@ from .smtr_loss import SMTRLoss
 from .srn_loss import SRNLoss
 from .visionlan_loss import VisionLANLoss
 from .cam_loss import CAMLoss
+from .seed_loss import SEEDLoss
 
 support_dict = [
     'CTCLoss', 'ARLoss', 'CELoss', 'CPPDLoss', 'ABINetLoss', 'CDistNetLoss',
     'VisionLANLoss', 'PARSeqLoss', 'IGTRLoss', 'SMTRLoss', 'LPVLoss',
     'RobustScannerLoss', 'SRNLoss', 'LISTERLoss', 'GTCLoss', 'MGPLoss',
-    'CAMLoss'
+    'CAMLoss', 'SEEDLoss'
 ]
 
 

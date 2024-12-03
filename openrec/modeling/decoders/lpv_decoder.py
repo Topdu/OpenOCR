@@ -2,7 +2,7 @@ import copy
 
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 from .abinet_decoder import PositionAttention
 from .nrtr_decoder import PositionalEncoding, TransformerBlock
 
@@ -71,6 +71,7 @@ class LPVDecoder(nn.Module):
                  trans_layer=2):
         super().__init__()
         self.use_mask = use_mask
+        self.max_len = max_len
         attn_layer = PositionAttention(max_length=max_len + 1,
                                        mode='nearest',
                                        in_channels=in_channels,
@@ -87,7 +88,10 @@ class LPVDecoder(nn.Module):
         self.cls = _get_clones(cls_layer, num_layer)
 
     def forward(self, x, data=None):
-        max_len = data[1].max()
+        if data is not None:
+            max_len = data[1].max()
+        else:
+            max_len = self.max_len
         features = x  # (N, E, H, W)
 
         attn_vecs, attn_scores_map = self.attention[0](features)
@@ -99,7 +103,7 @@ class LPVDecoder(nn.Module):
                                                    use_mask=self.use_mask)
                 attn_vecs, attn_scores_map = self.attention[i](
                     features, attn_vecs)  # (N, T, E), (N, T, H, W)
-            return self.cls[-1](attn_vecs)
+            return F.softmax(self.cls[-1](attn_vecs), -1)
         else:
             logits = []
             logit = self.cls[0](attn_vecs)  # (N, T, C)

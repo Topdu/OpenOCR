@@ -127,6 +127,7 @@ class DANDecoder(nn.Module):
         super(DANDecoder, self).__init__()
         self.eos = 0
         self.bos = out_channels - 2
+        self.ignore_index = out_channels - 1
         nchannel = in_channels
         self.nchannel = in_channels
         self.use_cam = use_cam
@@ -184,11 +185,19 @@ class DANDecoder(nn.Module):
             prev_emb = self.char_embeddings(
                 torch.zeros(nB, dtype=torch.int64, device=feature.device) +
                 self.bos)
+            dec_seq = torch.full((nB, nT),
+                                self.ignore_index,
+                                dtype=torch.int64,
+                                device=feature.get_device())
+            
             for i in range(0, nT):
                 hidden = self.rnn(torch.cat((C[i, :, :], prev_emb), dim=1),
                                   hidden)
                 gru_res[i, :, :] = hidden
                 mid_res = self.generator(hidden).argmax(-1)
+                dec_seq[:, i] = mid_res.squeeze(0)
+                if (dec_seq == self.eos).any(dim=-1).all():
+                    break
                 prev_emb = self.char_embeddings(mid_res)
             gru_res = self.generator(gru_res)
-            return gru_res.transpose(1, 0)
+            return F.softmax(gru_res.transpose(1, 0), -1)

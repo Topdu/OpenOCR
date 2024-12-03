@@ -5,7 +5,7 @@ from openrec.modeling.decoders import build_decoder
 from openrec.modeling.encoders import build_encoder
 from openrec.modeling.transforms import build_transform
 
-__all__ = ['BaseModel']
+__all__ = ['BaseRecognizer']
 
 
 class BaseRecognizer(nn.Module):
@@ -18,6 +18,7 @@ class BaseRecognizer(nn.Module):
         """
         super(BaseRecognizer, self).__init__()
         in_channels = config.get('in_channels', 3)
+        self.use_wd = config.get('use_wd', True)
         # build transfrom,
         # for rec, transfrom can be TPS,None
         if 'Transform' not in config or config['Transform'] is None:
@@ -37,7 +38,7 @@ class BaseRecognizer(nn.Module):
             self.encoder = build_encoder(config['Encoder'])
             in_channels = self.encoder.out_channels
 
-        # build head
+        # build decoder
         if 'Decoder' not in config or config['Decoder'] is None:
             self.use_decoder = False
         else:
@@ -45,17 +46,18 @@ class BaseRecognizer(nn.Module):
             config['Decoder']['in_channels'] = in_channels
             self.decoder = build_decoder(config['Decoder'])
 
-        self.return_all_feats = config.get('return_all_feats', False)
-
     @torch.jit.ignore
     def no_weight_decay(self):
-        if hasattr(self.encoder, 'no_weight_decay'):
-            no_weight_decay = self.encoder.no_weight_decay()
+        if self.use_wd:
+            if hasattr(self.encoder, 'no_weight_decay'):
+                no_weight_decay = self.encoder.no_weight_decay()
+            else:
+                no_weight_decay = {}
+            if hasattr(self.decoder, 'no_weight_decay'):
+                no_weight_decay.update(self.decoder.no_weight_decay())
+            return no_weight_decay
         else:
-            no_weight_decay = {}
-        if hasattr(self.decoder, 'no_weight_decay'):
-            no_weight_decay.update(self.decoder.no_weight_decay())
-        return no_weight_decay
+            return {}
 
     def forward(self, x, data=None):
         if self.use_transform:

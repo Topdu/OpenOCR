@@ -240,26 +240,26 @@ class SMTRDecoder(nn.Module):
             next_id = torch.full([1, self.sub_str_len],
                                  self.bos_next,
                                  dtype=torch.long,
-                                 device=x.get_device())
+                                 device=x.device)
             pre_id = torch.full([1, self.sub_str_len],
                                 self.bos_pre,
                                 dtype=torch.long,
-                                device=x.get_device())
+                                device=x.device)
             # prompt_next_bos = self.char_embed(prompt_id)
-            # pred_prob_list = torch.full([bs, self.sub_str_len], self.ignore_index, dtype=torch.long, device=x.get_device())
+            # pred_prob_list = torch.full([bs, self.sub_str_len], self.ignore_index, dtype=torch.long, device=x.device)
             next_pred_id_list = torch.full([1, self.max_len],
                                            self.ignore_index,
                                            dtype=torch.long,
-                                           device=x.get_device())
+                                           device=x.device)
             pre_pred_id_list = torch.full([1, self.max_len],
                                           self.ignore_index,
                                           dtype=torch.long,
-                                          device=x.get_device())
+                                          device=x.device)
             next_logits_all = []
             pre_logits_all = []
             mask_pad = torch.zeros([bs, 1],
                                    dtype=torch.float32,
-                                   device=x.get_device())
+                                   device=x.device)
             for j in range(0, min(70, self.max_len - 1)):
 
                 prompt_char_next = torch.concat([
@@ -317,7 +317,7 @@ class SMTRDecoder(nn.Module):
                 ques_next = self.next_token.tile([1, 1, 1, 1]).squeeze(1)
                 mask_pad = torch.zeros([1, 1],
                                        dtype=torch.float32,
-                                       device=x.get_device())
+                                       device=x.device)
                 for j in range(0, min(70, self.max_len - 1)):
 
                     prompt_next = torch.concat([
@@ -371,17 +371,17 @@ class SMTRDecoder(nn.Module):
             prompt_next_embed = self.prompt_next_embed.squeeze(1)
             prompt_pre_embed = self.prompt_pre_embed.squeeze(1)
 
-            next_id = torch.full([1, self.sub_str_len], self.bos_next, dtype=torch.long, device=x.get_device())
-            pre_id = torch.full([1, self.sub_str_len], self.bos_pre, dtype=torch.long, device=x.get_device())
+            next_id = torch.full([1, self.sub_str_len], self.bos_next, dtype=torch.long, device=x.device)
+            pre_id = torch.full([1, self.sub_str_len], self.bos_pre, dtype=torch.long, device=x.device)
             # prompt_next_bos = self.char_embed(prompt_id)
-            # pred_prob_list = torch.full([bs, self.sub_str_len], self.ignore_index, dtype=torch.long, device=x.get_device())
-            next_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.get_device())
-            pre_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.get_device())
+            # pred_prob_list = torch.full([bs, self.sub_str_len], self.ignore_index, dtype=torch.long, device=x.device)
+            next_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.device)
+            pre_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.device)
             next_logits_all = []
             pre_logits_all = []
             attn_map_next = []
             attn_map_pre = []
-            mask_pad = torch.zeros([bs, 1], dtype=torch.float32, device=x.get_device())
+            mask_pad = torch.zeros([bs, 1], dtype=torch.float32, device=x.device)
             for j in range(0, min(70, self.max_len-1)):
                 
                 prompt_char_next = torch.concat([prompt_next_embed[:, :1, :], prompt_next_embed[:, 1:, :] + self.char_embed(next_id)], 1) # b, sub_l, dim
@@ -428,7 +428,7 @@ class SMTRDecoder(nn.Module):
                 next_logits_all_mid = []
                 attn_map_next_mid = []
                 ques_next = self.next_token.tile([1, 1, 1, 1]).squeeze(1)
-                mask_pad = torch.zeros([1, 1], dtype=torch.float32, device=x.get_device())
+                mask_pad = torch.zeros([1, 1], dtype=torch.float32, device=x.device)
                 for j in range(0, min(70, self.max_len-1)):
                     
                     prompt_next = torch.concat([prompt_next_embed[:, :1, :], prompt_next_embed[:, 1:, :] + self.char_embed(next_id)], 1) # b, sub_l, dim
@@ -474,15 +474,15 @@ class SMTRDecoder(nn.Module):
             prompt_id = torch.full([bs, self.sub_str_len],
                                    self.bos_next,
                                    dtype=torch.long,
-                                   device=x.get_device())
+                                   device=x.device)
             pred_id_list = torch.full([bs, self.max_len],
                                       self.ignore_index,
                                       dtype=torch.long,
-                                      device=x.get_device())
+                                      device=x.device)
             logits_all = []
             mask_pad = torch.zeros([bs, 1],
                                    dtype=torch.float32,
-                                   device=x.get_device())
+                                   device=x.device)
             for j in range(0, self.max_len - 1):
 
                 prompt_next = torch.concat([
@@ -522,15 +522,15 @@ class SMTRDecoder(nn.Module):
             prompt_id = torch.full([bs, self.sub_str_len],
                                    self.bos_pre,
                                    dtype=torch.long,
-                                   device=x.get_device())
+                                   device=x.device)
             pred_id_list = torch.full([bs, self.max_len],
                                       self.ignore_index,
                                       dtype=torch.long,
-                                      device=x.get_device())
+                                      device=x.device)
             logits_all = []
             mask_pad = torch.zeros([bs, 1],
                                    dtype=torch.float32,
-                                   device=x.get_device())
+                                   device=x.device)
             for j in range(0, self.max_len - 1):
 
                 prompt_next = torch.concat([
@@ -599,7 +599,7 @@ class SMTRDecoder(nn.Module):
 
         mask_pad = torch.zeros([bs * (max_len_curr + max_len_curr_pre), 1],
                                dtype=torch.float32,
-                               device=x.get_device())
+                               device=x.device)
         mask = torch.concat([mask_next, mask_pre], 1).flatten(0, 1)
         mask = torch.concat([mask_pad, mask], 1)
         next_pre = next_pre.flatten(0, 1)

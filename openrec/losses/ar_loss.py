@@ -9,7 +9,7 @@ class ARLoss(nn.Module):
         self.label_smoothing = label_smoothing
 
     def forward(self, pred, batch):
-        max_len = batch[-1].max()
+        max_len = batch[2].max()
         tgt = batch[1][:, 1:2 + max_len]
         pred = pred.flatten(0, 1)
         tgt = tgt.reshape([-1])

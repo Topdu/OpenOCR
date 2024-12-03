@@ -8,6 +8,9 @@ class RecMPGMetric(object):
                  is_filter=False,
                  ignore_space=True,
                  stream=False,
+                 with_ratio=False,
+                 max_len=25,
+                 max_ratio=4,
                  **kwargs):
         self.main_indicator = main_indicator
         self.is_filter = is_filter
@@ -16,27 +19,52 @@ class RecMPGMetric(object):
         self.char_metric = RecMetric(main_indicator=main_indicator,
                                      is_filter=is_filter,
                                      ignore_space=ignore_space,
-                                     stream=stream)
+                                     stream=stream,
+                                     with_ratio=with_ratio,
+                                     max_len=max_len,
+                                     max_ratio=max_ratio)
         self.bpe_metric = RecMetric(main_indicator=main_indicator,
                                     is_filter=is_filter,
                                     ignore_space=ignore_space,
-                                    stream=stream)
+                                    stream=stream,
+                                    with_ratio=with_ratio,
+                                    max_len=max_len,
+                                    max_ratio=max_ratio)
 
         self.wp_metric = RecMetric(main_indicator=main_indicator,
                                    is_filter=is_filter,
                                    ignore_space=ignore_space,
-                                   stream=stream)
+                                   stream=stream,
+                                   with_ratio=with_ratio,
+                                   max_len=max_len,
+                                   max_ratio=max_ratio)
         self.final_metric = RecMetric(main_indicator=main_indicator,
                                       is_filter=is_filter,
                                       ignore_space=ignore_space,
-                                      stream=stream)
+                                      stream=stream,
+                                      with_ratio=with_ratio,
+                                      max_len=max_len,
+                                      max_ratio=max_ratio)
 
-    def __call__(self, pred_label, *args, **kwargs):
+    def __call__(self,
+                 pred_label,
+                 batch=None,
+                 training=False,
+                 *args,
+                 **kwargs):
 
-        char_metric = self.char_metric((pred_label[0], pred_label[-1]))
-        bpe_metric = self.bpe_metric((pred_label[1], pred_label[-1]))
-        wp_metric = self.wp_metric((pred_label[2], pred_label[-1]))
-        final_metric = self.final_metric((pred_label[3], pred_label[-1]))
+        char_metric = self.char_metric((pred_label[0], pred_label[-1]),
+                                       batch,
+                                       training=training)
+        bpe_metric = self.bpe_metric((pred_label[1], pred_label[-1]),
+                                     batch,
+                                     training=training)
+        wp_metric = self.wp_metric((pred_label[2], pred_label[-1]),
+                                   batch,
+                                   training=training)
+        final_metric = self.final_metric((pred_label[3], pred_label[-1]),
+                                         batch,
+                                         training=training)
         final_metric['char_acc'] = char_metric['acc']
         final_metric['char_norm_edit_dis'] = char_metric['norm_edit_dis']
         final_metric['bpe_acc'] = bpe_metric['acc']

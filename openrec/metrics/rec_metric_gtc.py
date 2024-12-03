@@ -8,6 +8,9 @@ class RecGTCMetric(object):
                  is_filter=False,
                  ignore_space=True,
                  stream=False,
+                 with_ratio=False,
+                 max_len=25,
+                 max_ratio=4,
                  **kwargs):
         self.main_indicator = main_indicator
         self.is_filter = is_filter
@@ -16,16 +19,27 @@ class RecGTCMetric(object):
         self.gtc_metric = RecMetric(main_indicator=main_indicator,
                                     is_filter=is_filter,
                                     ignore_space=ignore_space,
-                                    stream=stream)
+                                    stream=stream,
+                                    with_ratio=with_ratio,
+                                    max_len=max_len,
+                                    max_ratio=max_ratio)
         self.ctc_metric = RecMetric(main_indicator=main_indicator,
                                     is_filter=is_filter,
                                     ignore_space=ignore_space,
-                                    stream=stream)
+                                    stream=stream,
+                                    with_ratio=with_ratio,
+                                    max_len=max_len,
+                                    max_ratio=max_ratio)
 
-    def __call__(self, pred_label, *args, **kwargs):
+    def __call__(self,
+                 pred_label,
+                 batch=None,
+                 training=False,
+                 *args,
+                 **kwargs):
 
-        ctc_metric = self.ctc_metric(pred_label[1])
-        gtc_metric = self.gtc_metric(pred_label[0])
+        ctc_metric = self.ctc_metric(pred_label[1], batch, training=training)
+        gtc_metric = self.gtc_metric(pred_label[0], batch, training=training)
         ctc_metric['gtc_acc'] = gtc_metric['acc']
         ctc_metric['gtc_norm_edit_dis'] = gtc_metric['norm_edit_dis']
         return ctc_metric

@@ -131,7 +131,7 @@ class ARDecoder(nn.Module):
             logits.append(word_prob)
             if len_dec_seq < self.max_len:
                 # greedy decode. add the next token index to the target input
-                dec_seq[:, len_dec_seq + 1] = word_prob.squeeze().argmax(-1)
+                dec_seq[:, len_dec_seq + 1] = word_prob.squeeze(1).argmax(-1)
                 # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
                 if (dec_seq == self.eos).any(dim=-1).all():
                     break
