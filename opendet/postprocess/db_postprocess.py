@@ -208,7 +208,12 @@ class DBPostProcess(object):
         cv2.fillPoly(mask, contour.reshape(1, -1, 2).astype('int32'), 1)
         return cv2.mean(bitmap[ymin:ymax + 1, xmin:xmax + 1], mask)[0]
 
-    def __call__(self, outs_dict, shape_list):
+    def __call__(self, outs_dict, shape_list, **kwargs):
+        self.thresh = kwargs.get('mask_thresh', self.thresh)
+        self.box_thresh = kwargs.get('box_thresh', self.box_thresh)
+        self.unclip_ratio = kwargs.get('unclip_ratio', self.unclip_ratio)
+        self.box_type = kwargs.get('box_type', self.box_type)
+        self.score_mode = kwargs.get('score_mode', self.score_mode)
         pred = outs_dict['maps']
         if isinstance(pred, torch.Tensor):
             pred = pred.detach().cpu().numpy()
