@@ -59,7 +59,21 @@ class RatioDataSetTest(Dataset):
             logger.info('Initialize indexs of datasets:%s' % data_dir)
         self.logger = logger
         data_idx_order_list = self.dataset_traversal()
-        wh_ratio, data_idx_order_list = self.get_wh_ratio(data_idx_order_list)
+        character_dict_path = global_config.get('character_dict_path', None)
+        use_space_char = global_config.get('use_space_char', False)
+        if character_dict_path is None:
+            char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
+        else:
+            char_test = ''
+            with open(character_dict_path, 'rb') as fin:
+                lines = fin.readlines()
+                for line in lines:
+                    line = line.decode('utf-8').strip('\n').strip('\r\n')
+                    char_test += line
+            if use_space_char:
+                char_test += ' '
+        wh_ratio, data_idx_order_list = self.get_wh_ratio(
+            data_idx_order_list, char_test)
         self.data_idx_order_list = np.array(data_idx_order_list)
         wh_ratio = np.around(np.array(wh_ratio))
         self.wh_ratio = np.clip(wh_ratio, a_min=min_ratio, a_max=max_ratio)
@@ -75,11 +89,10 @@ class RatioDataSetTest(Dataset):
             'base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
         self.base_h = 32
 
-    def get_wh_ratio(self, data_idx_order_list):
+    def get_wh_ratio(self, data_idx_order_list, char_test):
         wh_ratio = []
         wh_ratio_len = [[0 for _ in range(26)] for _ in range(11)]
         data_idx_order_list_filter = []
-        char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
         charset_adapter = CharsetAdapter(char_test)
 
         for idx in range(data_idx_order_list.shape[0]):
@@ -212,7 +225,7 @@ class RatioDataSetTest(Dataset):
         data['image'] = padding_im
         data['valid_ratio'] = valid_ratio
         data['gen_ratio'] = imgW // imgH
-        data['real_ratio'] = w // h
+        data['real_ratio'] = max(1, round(w / h))
         return data
 
     def get_lmdb_sample_info(self, txn, index):

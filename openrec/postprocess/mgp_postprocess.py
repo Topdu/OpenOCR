@@ -1,5 +1,3 @@
-import numpy as np
-
 from .ctc_postprocess import BaseRecLabelDecode
 
 
@@ -13,12 +11,10 @@ class MPGLabelDecode(BaseRecLabelDecode):
                  character_dict_path=None,
                  use_space_char=False,
                  only_char=False,
-                 lower=True,
                  **kwargs):
         super(MPGLabelDecode, self).__init__(character_dict_path,
                                              use_space_char)
         self.only_char = only_char
-        self.lower = lower
         self.EOS = '[s]'
         self.PAD = '[GO]'
         if not only_char:
@@ -46,15 +42,15 @@ class MPGLabelDecode(BaseRecLabelDecode):
             return char_text, label
         else:
             bpe_preds = preds[1].detach().cpu().numpy()
-            wp_preds = preds[2].detach().cpu().numpy()
+            wp_preds = preds[2]
 
             bpe_preds_idx = bpe_preds.argmax(axis=2)
             bpe_preds_prob = bpe_preds.max(axis=2)
             bpe_text = self.bpe_decode(bpe_preds_idx[:, 1:],
                                        bpe_preds_prob[:, 1:])
 
-            wp_preds_idx = wp_preds.argmax(axis=2)
-            wp_preds_prob = wp_preds.max(axis=2)
+            wp_preds = wp_preds.detach()  #.cpu().numpy()
+            wp_preds_prob, wp_preds_idx = wp_preds.max(-1)
             wp_text = self.wp_decode(wp_preds_idx[:, 1:], wp_preds_prob[:, 1:])
 
             final_text = self.final_decode(char_text, bpe_text, wp_text)
@@ -87,24 +83,23 @@ class MPGLabelDecode(BaseRecLabelDecode):
         batch_size = len(text_index)
         for batch_idx in range(batch_size):
             char_list = []
-            conf_list = []
+            conf_list = 1.0
             for idx in range(len(text_index[batch_idx])):
                 try:
                     char_idx = self.character[int(text_index[batch_idx][idx])]
                 except:
                     continue
+                if text_prob is not None:
+                    conf_list *= text_prob[batch_idx][idx]
+
                 if char_idx == self.EOS:  # end
                     break
                 if char_idx == self.PAD:
                     continue
                 char_list.append(char_idx)
-                if text_prob is not None:
-                    conf_list.append(text_prob[batch_idx][idx])
-                else:
-                    conf_list.append(1)
+
             text = ''.join(char_list)
-            result_list.append(
-                (text if self.lower else text, np.mean(conf_list).tolist()))
+            result_list.append((text, conf_list))
         return result_list
 
     def bpe_decode(self, text_index, text_prob):
@@ -112,33 +107,37 @@ class MPGLabelDecode(BaseRecLabelDecode):
         result_list = []
         for text, probs in zip(text_index, text_prob):
             text_decoded = []
-            conf_list = []
+            conf_list = 1.0
             for bpeindx, prob in zip(text, probs):
                 tokenstr = self.bpe_tokenizer.decode([bpeindx])
                 if tokenstr == '#':
                     break
                 text_decoded.append(tokenstr)
-                conf_list.append(prob)
+                conf_list *= prob
             text = ''.join(text_decoded)
-            result_list.append(
-                (text if self.lower else text, np.mean(conf_list).tolist()))
+            result_list.append((text, conf_list))
         return result_list
 
-    def wp_decode(self, text_index, text_prob):
+    def wp_decode(self, text_index, text_prob=None):
         """ convert text-index into text-label. """
         result_list = []
-        for text, probs in zip(text_index, text_prob):
-            text_decoded = []
-            conf_list = []
-            for bpeindx, prob in zip(text, probs):
-                tokenstr = self.wp_tokenizer.decode([bpeindx])
-                if tokenstr == '[SEP]':
-                    break
-                if tokenstr == '[CLS]':
-                    continue
-                text_decoded.append(tokenstr)
-                conf_list.append(prob)
-            text = ''.join(text_decoded)
-            result_list.append(
-                (text if self.lower else text, np.mean(conf_list).tolist()))
+        for batch_idx, text in enumerate(text_index):
+            wp_pred = self.wp_tokenizer.decode(text)
+            wp_pred_EOS = wp_pred.find('[SEP]')
+            wp_pred = wp_pred[:wp_pred_EOS]
+            if text_prob is not None:
+                try:
+                    # print(text.cpu().tolist())
+                    wp_pred_EOS_index = text.cpu().tolist().index(102) + 1
+                except:
+                    wp_pred_EOS_index = -1
+                wp_pred_max_prob = text_prob[batch_idx][:wp_pred_EOS_index]
+                try:
+                    wp_confidence_score = wp_pred_max_prob.cumprod(
+                        dim=0)[-1].cpu().numpy().sum()
+                except:
+                    wp_confidence_score = 0.0
+            else:
+                wp_confidence_score = 1.0
+            result_list.append((wp_pred, wp_confidence_score))
         return result_list

@@ -9,7 +9,8 @@ Global:
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]
   cal_metric_during_train: True
-  pretrained_model: ./open_ocr_vit_small_params.pth
+  pretrained_model:
+  # ./open_ocr_vit_small_params.pth
   checkpoints:
   use_tensorboard: false
   infer_img:
@@ -20,6 +21,7 @@ Global:
   use_space_char: &use_space_char False
   save_res_path: ./output/rec/u14m_filter/predicts_vit_nrtr_ft_mae.txt
   use_amp: True
+  project_name: maerec
 
 Optimizer:
   name: AdamW
@@ -56,7 +58,7 @@ Architecture:
     max_len: *max_text_length
 
 Loss:
-  name: NRTRLoss
+  name: ARLoss
 
 PostProcess:
   name: ARLabelDecode

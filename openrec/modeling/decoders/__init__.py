@@ -4,7 +4,7 @@ __all__ = ['build_decoder']
 
 
 def build_decoder(config):
-    # rec head
+    # rec decoder
     from .abinet_decoder import ABINetDecoder
     from .aster_decoder import ASTERDecoder
     from .cdistnet_decoder import CDistNetDecoder
@@ -41,7 +41,7 @@ def build_decoder(config):
 
     module_name = config.pop('name')
     assert module_name in support_dict, Exception(
-        'head only support {}'.format(support_dict))
+        'decoder only support {}'.format(support_dict))
     module_class = eval(module_name)(**config)
     return module_class
 

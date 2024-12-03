@@ -31,7 +31,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: robustscanner
+  algorithm: RobustScanner
   in_channels: 3
   Transform:
   Encoder:
@@ -73,7 +73,7 @@ Train:
           width_downsample_ratio: 0.25
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'valid_ratio', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length', 'valid_ratio'] # dataloader will return list in this order
   loader:
     shuffle: True
     batch_size_per_card: 256
@@ -94,7 +94,7 @@ Eval:
           width_downsample_ratio: 0.25
           max_text_length: *max_text_length
       - KeepKeys:
-          keep_keys: ['image', 'label', 'valid_ratio', 'length'] # dataloader will return list in this order
+          keep_keys: ['image', 'label', 'length', 'valid_ratio'] # dataloader will return list in this order
   loader:
     shuffle: False
     drop_last: False

@@ -24,9 +24,9 @@ class RatioDataSet(Dataset):
         syn = dataset_config.get('syn', False)
         if syn:
             data_dir_list = []
-            data_dir = "../training_aug_lmdb_noerror/ep" + str(epoch)
+            data_dir = '../training_aug_lmdb_noerror/ep' + str(epoch)
             for dir_syn in os.listdir(data_dir):
-                data_dir_list.append(data_dir+'/'+dir_syn)
+                data_dir_list.append(data_dir + '/' + dir_syn)
         else:
             data_dir_list = dataset_config['data_dir_list']
         self.padding = dataset_config.get('padding', True)
@@ -170,6 +170,7 @@ class RatioDataSet(Dataset):
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = padding_im
         data['valid_ratio'] = valid_ratio
+        data['real_ratio'] = round(w / h)
         return data
 
     def get_lmdb_sample_info(self, txn, index):

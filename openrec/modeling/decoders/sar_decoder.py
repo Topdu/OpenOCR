@@ -58,7 +58,7 @@ class SARDecoder(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 max_seq_len=25,
+                 max_len=25,
                  enc_bi_rnn=False,
                  enc_drop_rnn=0.1,
                  dec_bi_rnn=False,
@@ -74,7 +74,7 @@ class SARDecoder(nn.Module):
         self.start_idx = out_channels - 2
         self.padding_idx = out_channels - 1
         self.end_idx = 0
-        self.max_seq_len = max_seq_len + 1
+        self.max_seq_len = max_len + 1
         self.pred_concat = pred_concat
         self.mask = mask
         enc_dim = in_channels
@@ -138,7 +138,7 @@ class SARDecoder(nn.Module):
         _, T, h, w, c = attn_weight.size()
 
         if self.mask:
-            valid_ratios = data[1]
+            valid_ratios = data[-1]
             # cal mask of attention weight
             attn_mask = torch.zeros_like(attn_weight)
             for i, valid_ratio in enumerate(valid_ratios):
@@ -160,7 +160,7 @@ class SARDecoder(nn.Module):
 
     def forward_train(self, feat, holistic_feat, data):
 
-        max_len = data[-1].max()
+        max_len = data[1].max()
         label = data[0][:, :1 + max_len]  # label
         label_embedding = self.embedding(label)
         holistic_feat = holistic_feat.unsqueeze(1)

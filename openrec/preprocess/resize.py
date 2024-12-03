@@ -36,9 +36,12 @@ class ABINetResize(object):
 
     def __call__(self, data):
         img = data['image']
+        h, w = img.shape[:2]
         norm_img, valid_ratio = resize_norm_img_abinet(img, self.image_shape)
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = max(1, round(r))
         return data
 
 
@@ -70,11 +73,13 @@ class SVTRResize(object):
 
     def __call__(self, data):
         img = data['image']
-
+        h, w = img.shape[:2]
         norm_img, valid_ratio = resize_norm_img(img, self.image_shape,
                                                 self.padding)
         data['image'] = norm_img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = max(1, round(r))
         return data
 
 
@@ -111,6 +116,8 @@ class RecTVResize(object):
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = img
         data['valid_ratio'] = valid_ratio
+        r = float(w) / float(h)
+        data['real_ratio'] = max(1, round(r))
         return data
 
 
@@ -257,6 +264,35 @@ class RecTVResizeRatio(object):
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = img
         data['valid_ratio'] = valid_ratio
+        return data
+
+
+class RecDynamicResize(object):
+
+    def __init__(self, image_shape=[32, 128], padding=True, **kwargs):
+        self.padding = padding
+        self.image_shape = image_shape
+        self.max_ratio = image_shape[1] * 1.0 / image_shape[0]
+
+    def __call__(self, data):
+        img = data['image']
+        imgH, imgW = self.image_shape
+        h, w, imgC = img.shape
+        ratio = w / float(h)
+        max_wh_ratio = max(ratio, self.max_ratio)
+        imgW = int(imgH * max_wh_ratio)
+        if math.ceil(imgH * ratio) > imgW:
+            resized_w = imgW
+        else:
+            resized_w = int(math.ceil(imgH * ratio))
+        resized_image = cv2.resize(img, (resized_w, imgH))
+        resized_image = resized_image.astype('float32')
+        resized_image = resized_image.transpose((2, 0, 1)) / 255
+        resized_image -= 0.5
+        resized_image /= 0.5
+        padding_im = np.zeros((imgC, imgH, imgW), dtype=np.float32)
+        padding_im[:, :, 0:resized_w] = resized_image
+        data['image'] = padding_im
         return data
 
 
@@ -408,10 +444,7 @@ class VisionLANResize(object):
 
 class RobustScannerRecResizeImg(object):
 
-    def __init__(self,
-                 image_shape,
-                 width_downsample_ratio=0.25,
-                 **kwargs):
+    def __init__(self, image_shape, width_downsample_ratio=0.25, **kwargs):
         self.image_shape = image_shape
         self.width_downsample_ratio = width_downsample_ratio
 

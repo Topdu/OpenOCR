@@ -38,7 +38,7 @@ Architecture:
     name: ViT
   Decoder:
     name: PARSeqDecoder
-    decode_ar: False
+    decode_ar: True
     refine_iters: 1
 
 Loss:

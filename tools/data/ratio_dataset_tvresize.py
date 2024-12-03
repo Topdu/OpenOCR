@@ -54,7 +54,7 @@ class RatioDataSetTVResize(Dataset):
         self.error = 0
         self.base_shape = dataset_config.get(
             'base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
-        self.base_h = 32
+        self.base_h = dataset_config.get('base_h', 32)
         self.interpolation = T.InterpolationMode.BICUBIC
         transforms = []
         transforms.extend([

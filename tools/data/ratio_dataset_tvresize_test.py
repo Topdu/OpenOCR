@@ -61,7 +61,21 @@ class RatioDataSetTVResizeTest(Dataset):
             logger.info('Initialize indexs of datasets:%s' % data_dir)
         self.logger = logger
         data_idx_order_list = self.dataset_traversal()
-        wh_ratio, data_idx_order_list = self.get_wh_ratio(data_idx_order_list)
+        character_dict_path = global_config.get('character_dict_path', None)
+        use_space_char = global_config.get('use_space_char', False)
+        if character_dict_path is None:
+            char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
+        else:
+            char_test = ''
+            with open(character_dict_path, 'rb') as fin:
+                lines = fin.readlines()
+                for line in lines:
+                    line = line.decode('utf-8').strip('\n').strip('\r\n')
+                    char_test += line
+            if use_space_char:
+                char_test += ' '
+        wh_ratio, data_idx_order_list = self.get_wh_ratio(
+            data_idx_order_list, char_test)
         self.data_idx_order_list = np.array(data_idx_order_list)
         wh_ratio = np.around(np.array(wh_ratio))
         self.wh_ratio = np.clip(wh_ratio, a_min=min_ratio, a_max=max_ratio)
@@ -75,7 +89,7 @@ class RatioDataSetTVResizeTest(Dataset):
         self.error = 0
         self.base_shape = dataset_config.get(
             'base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
-        self.base_h = 32
+        self.base_h = dataset_config.get('base_h', 32)
         self.interpolation = T.InterpolationMode.BICUBIC
         transforms = []
         transforms.extend([
@@ -84,11 +98,10 @@ class RatioDataSetTVResizeTest(Dataset):
         ])
         self.transforms = T.Compose(transforms)
 
-    def get_wh_ratio(self, data_idx_order_list):
+    def get_wh_ratio(self, data_idx_order_list, char_test):
         wh_ratio = []
         wh_ratio_len = [[0 for _ in range(26)] for _ in range(11)]
         data_idx_order_list_filter = []
-        char_test = '0123456789abcdefghijklmnopqrstuvwxyz'
         charset_adapter = CharsetAdapter(char_test)
 
         for idx in range(data_idx_order_list.shape[0]):
@@ -214,46 +227,9 @@ class RatioDataSetTVResizeTest(Dataset):
         data['image'] = img
         data['valid_ratio'] = valid_ratio
         data['gen_ratio'] = imgW // imgH
-        data['real_ratio'] = w // h
+        r = float(w) / float(h)
+        data['real_ratio'] = max(1, round(r))
         return data
-
-    # def resize_norm_img(self, data, gen_ratio, padding=True):
-    #     img = data['image']
-    #     h = img.shape[0]
-    #     w = img.shape[1]
-
-    #     imgW, imgH = self.base_shape[gen_ratio - 1] if gen_ratio <= 4 else [
-    #         self.base_h * gen_ratio, self.base_h
-    #     ]
-    #     use_ratio = imgW // imgH
-    #     if use_ratio >= (w // h) + 2:
-    #         self.error += 1
-    #         return None
-    #     if not padding:
-    #         resized_image = cv2.resize(img, (imgW, imgH),
-    #                                    interpolation=cv2.INTER_LINEAR)
-    #         resized_w = imgW
-    #     else:
-    #         ratio = w / float(h)
-    #         if math.ceil(imgH * ratio) > imgW:
-    #             resized_w = imgW
-    #         else:
-    #             resized_w = int(
-    #                 math.ceil(imgH * ratio * (random.random() + 0.5)))
-    #             resized_w = min(imgW, resized_w)
-
-    #         resized_image = cv2.resize(img, (resized_w, imgH))
-    #     resized_image = resized_image.astype('float32')
-    #     resized_image = resized_image.transpose((2, 0, 1)) / 255
-    #     resized_image -= 0.5
-    #     resized_image /= 0.5
-    #     padding_im = np.zeros((3, imgH, imgW), dtype=np.float32)
-    #     padding_im[:, :, :resized_w] = resized_image
-    #     valid_ratio = min(1.0, float(resized_w / imgW))
-    #     data['image'] = padding_im
-    #     data['valid_ratio'] = valid_ratio
-
-    #     return data
 
     def get_lmdb_sample_info(self, txn, index):
         label_key = 'label-%09d'.encode() % index

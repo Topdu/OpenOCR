@@ -15,7 +15,7 @@ class RobustScannerDecoder(nn.Module):
             hybrid_dec_rnn_layers=2,
             hybrid_dec_dropout=0,
             position_dec_rnn_layers=2,
-            max_text_length=40,
+            max_len=25,
             mask=True,
             encode_value=False,
             **kwargs):
@@ -27,7 +27,7 @@ class RobustScannerDecoder(nn.Module):
         # encoder module
         self.encoder = ChannelReductionEncoder(in_channels=in_channels,
                                                out_channels=enc_outchannles)
-        self.max_text_length = max_text_length + 1
+        self.max_text_length = max_len + 1
         self.mask = mask
         # decoder module
         self.decoder = Decoder(
@@ -37,7 +37,7 @@ class RobustScannerDecoder(nn.Module):
             hybrid_decoder_rnn_layers=hybrid_dec_rnn_layers,
             hybrid_decoder_dropout=hybrid_dec_dropout,
             position_decoder_rnn_layers=position_dec_rnn_layers,
-            max_seq_len=max_text_length + 1,
+            max_len=max_len + 1,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
@@ -57,10 +57,10 @@ class RobustScannerDecoder(nn.Module):
                                           [bs, 1])
 
         if self.mask:
-            valid_ratios = data[-2]
+            valid_ratios = data[-1]
 
         if self.training:
-            max_len = data[-1].max()
+            max_len = data[1].max()
             label = data[0][:, :1 + max_len]  # label
             final_out = self.decoder(inputs, out_enc, label, valid_ratios,
                                      word_positions[:, :1 + max_len])
@@ -629,7 +629,7 @@ class Decoder(BaseDecoder):
                  hybrid_decoder_rnn_layers=2,
                  hybrid_decoder_dropout=0,
                  position_decoder_rnn_layers=2,
-                 max_seq_len=40,
+                 max_len=40,
                  start_idx=0,
                  mask=True,
                  padding_idx=None,
@@ -639,7 +639,7 @@ class Decoder(BaseDecoder):
         self.num_classes = num_classes
         self.dim_input = dim_input
         self.dim_model = dim_model
-        self.max_seq_len = max_seq_len
+        self.max_seq_len = max_len
         self.encode_value = encode_value
         self.start_idx = start_idx
         self.padding_idx = padding_idx
@@ -652,7 +652,7 @@ class Decoder(BaseDecoder):
             rnn_layers=hybrid_decoder_rnn_layers,
             dim_input=dim_input,
             dim_model=dim_model,
-            max_seq_len=max_seq_len,
+            max_seq_len=max_len,
             start_idx=start_idx,
             mask=mask,
             padding_idx=padding_idx,
@@ -666,7 +666,7 @@ class Decoder(BaseDecoder):
             rnn_layers=position_decoder_rnn_layers,
             dim_input=dim_input,
             dim_model=dim_model,
-            max_seq_len=max_seq_len,
+            max_seq_len=max_len,
             mask=mask,
             encode_value=encode_value,
             return_feature=True)
