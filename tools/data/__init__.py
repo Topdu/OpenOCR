@@ -9,6 +9,7 @@ import copy
 from torch.utils.data import DataLoader, DistributedSampler
 
 from tools.data.lmdb_dataset import LMDBDataSet
+from tools.data.text_lmdb_dataset import TextLMDBDataSet
 from tools.data.lmdb_dataset_test import LMDBDataSetTest
 from tools.data.multi_scale_sampler import MultiScaleSampler
 from tools.data.ratio_dataset import RatioDataSet
@@ -30,7 +31,7 @@ def build_dataloader(config, mode, logger, seed=None, epoch=3):
     config = copy.deepcopy(config)
 
     support_dict = [
-        'SimpleDataSet', 'LMDBDataSet', 'MultiScaleDataSet', 'STRLMDBDataSet',
+        'SimpleDataSet', 'LMDBDataSet', 'TextLMDBDataSet', 'MultiScaleDataSet', 'STRLMDBDataSet',
         'LMDBDataSetTest', 'RatioDataSet', 'RatioDataSetTest',
         'RatioDataSetTVResize', 'RatioDataSetTVResizeTest'
     ]
