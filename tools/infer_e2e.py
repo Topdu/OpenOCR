@@ -28,7 +28,7 @@ from tools.utils.logging import get_logger
 root_dir = Path(__file__).resolve().parent
 DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
 DEFAULT_CFG_PATH_REC_SERVER = str(root_dir /
-                                  '../configs/det/svtrv2/svtrv2_ch.yml')
+                                  '../configs/rec/svtrv2/svtrv2_ch.yml')
 DEFAULT_CFG_PATH_REC = str(root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml')
 
 logger = get_logger()

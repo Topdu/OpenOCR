@@ -24,7 +24,7 @@ from .smtr_label_encode import SMTRLabelEncode
 from .srn_label_encode import SRNLabelEncode
 from .visionlan_label_encode import VisionLANLabelEncode
 from .cam_label_encode import CAMLabelEncode
-from .dptr_label_encode import DPTRLabelEncode
+# from .dptr_label_encode import DPTRLabelEncode
 
 
 class KeepKeys(object):

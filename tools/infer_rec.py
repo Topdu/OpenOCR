@@ -23,7 +23,7 @@ logger = get_logger()
 
 root_dir = Path(__file__).resolve().parent
 DEFAULT_CFG_PATH_REC_SERVER = str(root_dir /
-                                  '../configs/det/svtrv2/svtrv2_ch.yml')
+                                  '../configs/rec/svtrv2/svtrv2_ch.yml')
 DEFAULT_CFG_PATH_REC = str(root_dir / '../configs/rec/svtrv2/repsvtr_ch.yml')
 DEFAULT_DICT_PATH_REC = str(root_dir / './utils/ppocr_keys_v1.txt')
 

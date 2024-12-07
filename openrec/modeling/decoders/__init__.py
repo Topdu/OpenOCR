@@ -28,7 +28,7 @@ def build_decoder(config):
     from .cam_decoder import CAMDecoder
     from .ote_decoder import OTEDecoder
     from .bus_decoder import BUSDecoder
-    from .dptr_parseq_clip_b_decoder import DptrParseq
+    # from .dptr_parseq_clip_b_decoder import DptrParseq
 
     support_dict = [
         'CTCDecoder', 'NRTRDecoder', 'CPPDDecoder', 'ABINetDecoder',
