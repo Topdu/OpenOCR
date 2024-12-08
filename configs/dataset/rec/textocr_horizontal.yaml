@@ -1,0 +1,15 @@
+root: ../TextOCR_horizontal
+task: str
+download_links:
+  # train
+  - https://drive.usercontent.google.com/download?id=1sWH6J11xbjQb8SH7fdG_8mIKVI81ZQy5&authuser=0&confirm=
+  # val
+  - https://drive.usercontent.google.com/download?id=1gIE-AU2o-5hvg288-bjphO6UkI5AEQ2d&authuser=0&confirm=t
+filenames:
+  # train
+  - ../TextOCR_horizontal/train.zip
+  # val
+  - ../TextOCR_horizontal/val.zip
+processor:
+  - null
+check_validity: true

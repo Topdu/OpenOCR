@@ -5,6 +5,17 @@ from tqdm import tqdm
 import numpy as np
 import io
 from PIL import Image
+import sys
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+
+sys.path.append(__dir__)
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..', '..')))
+
+from engine import Config
+from utility import ArgsParser
+
 """ a modified version of CRNN torch repository https://github.com/bgshih/crnn/blob/master/tool/create_dataset.py """
 
 
@@ -96,6 +107,15 @@ def createDataset(data_list, outputPath, checkValid=True):
     writeCache(env, cache)
     print('Created dataset with %d samples' % nSamples)
 
+def main():
+    FLAGS = ArgsParser().parse_args()
+    cfg = Config(FLAGS.config)
+    FLAGS = vars(FLAGS)
+    opt = FLAGS.pop('opt')
+    cfg.merge_dict(FLAGS)
+    cfg.merge_dict(opt)
+    dataset_dir = os.path.join(cfg.cfg["root"], cfg.cfg["dataset_name"])
+    os.makedirs(dataset_dir, exist_ok=True)
 
 if __name__ == '__main__':
     data_dir = './Union14M-L/'
