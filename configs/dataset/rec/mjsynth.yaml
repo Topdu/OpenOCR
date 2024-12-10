@@ -8,6 +8,4 @@ filenames:
   - ../synth/MJ_train.zip
   - ../synth/MJ_val.zip
   - ../synth/MJ_test.zip
-processor:
-  - null
 check_validity: true

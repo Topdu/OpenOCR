@@ -10,6 +10,4 @@ filenames:
   - ../TextOCR_horizontal/train.zip
   # val
   - ../TextOCR_horizontal/val.zip
-processor:
-  - null
 check_validity: true

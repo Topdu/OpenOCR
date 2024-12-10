@@ -4,8 +4,8 @@ from tqdm import tqdm
 import os
 
 def get_dataset_info(cfg):
-    download_urls, filenames, processor, check_validity = cfg["download_links"], cfg["filenames"], cfg["processor"], cfg["check_validity"]
-    return download_urls, filenames, processor, check_validity
+    download_urls, filenames, check_validity = cfg["download_links"], cfg["filenames"], cfg["check_validity"]
+    return download_urls, filenames, check_validity
 
 # Modified from torchvision as some datasets cant pass the certificate validity check:
 # https://github.com/pytorch/vision/blob/868a3b42f4bffe29e4414ad7e4c7d9d0b4690ecb/torchvision/datasets/utils.py#L27C1-L32C40

@@ -22,6 +22,4 @@ filenames:
   - ../OpenVINO/train_f.zip
   # validation
   - ../OpenVINO/validation.zip
-processor:
-  - null
 check_validity: true
