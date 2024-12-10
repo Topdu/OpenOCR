@@ -80,6 +80,45 @@ tar xf OCR_e2e_img.tar
 python demo_gradio.py
 ```
 
+## Downloading Preprocessed Datasets
+
+The library also provides a utility for downloading datasets. Currently, only recognition datasets are included:
+
+### Text Recognition
+
+| Dataset name                                               | License | Config                                                                                                               |
+|------------------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------|
+| [CUTE80](http://cs-chan.com/downloads_CUTE80_dataset.html) | Non-commercial | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| [IC13_857](https://rrc.cvc.uab.es/?ch=2&com=introduction)  | -       | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)|
+| [IC15_1811](https://rrc.cvc.uab.es/?ch=2&com=introduction)  | -       | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| [IIIT5K](https://cvit.iiit.ac.in/research/projects/cvit-projects/the-iiit-5k-word-dataset)  | MIT       | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| [SVT](https://tc11.cvc.uab.es/datasets/SVT_1)  | -       | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| [SVTP](https://github.com/Jyouhou/Case-Sensitive-Scene-Text-Recognition-Datasets)  | -       | [configs/dataset/rec/evaluation.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/evaluation.yaml) <br/>  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| LTB | - |  [configs/dataset/rec/ltb.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/ltb.yaml)|
+| OST | - |  [configs/dataset/rec/ost.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/ost.yaml)|
+| [MJSynth](https://www.robots.ox.ac.uk/~vgg/data/text/) | - |  [configs/dataset/rec/mjsynth.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/mjsynth.yaml)|
+| [SynthText](https://github.com/ankush-me/SynthText) | Apache-2.0 |  [configs/dataset/rec/synthtext.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/synthtext.yaml)|
+| [ArT](https://rrc.cvc.uab.es/?ch=14) | Apache-2.0 |  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)|
+| [COCOv1.4](https://vision.cornell.edu/se3/coco-text-2/) | CC BY 4.0 |  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)
+| [CUTE80 test](https://vision.cornell.edu/se3/coco-text-2/) | Non-commercial |  [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml) |
+| [IC13_1015](https://rrc.cvc.uab.es/?ch=2&com=introduction) | - | [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)  |
+| [IC13_1095](https://rrc.cvc.uab.es/?ch=2&com=introduction) | - | [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)  |
+| [IC15_2077](https://rrc.cvc.uab.es/?ch=2&com=introduction) | - | [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)  |
+| [UberText](https://s3-us-west-2.amazonaws.com/uber-common-public/ubertext/index.html) | CC BY-SA 4.0 | [configs/dataset/rec/test.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/test.yaml)  |
+| [TextOCR](https://textvqa.org/textocr/) | - | [configs/dataset/rec/textocr.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/textocr.yaml) <br/> [configs/dataset/rec/textocr_horizontal.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/textocr_horizontal.yaml)  |
+| [Union14M](https://github.com/Mountchicken/Union14M) | MIT | [configs/dataset/rec/union14m_b.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/union14m_b.yaml) <br/> [configs/dataset/rec/union14m_l_filtered.yaml](https://github.com/Topdu/OpenOCR/blob/main/configs/dataset/rec/union14m_l_filtered.yaml)  |
+
+Where it is possible, the datasets use corrections introduced in [parseq](https://github.com/baudm/parseq/blob/main/Datasets.md).
+
+To download a dataset, use the following command:
+```python
+# Example of downloading Union-14M Benchmark
+python -m tools.download.download_dataset --configs configs/dataset/rec/union14m_b.yaml 
+```
+
+Datasets that are archived will automatically be extracted.
+
+
 ## Fine-tuning on a Custom dataset
 
 TODO
