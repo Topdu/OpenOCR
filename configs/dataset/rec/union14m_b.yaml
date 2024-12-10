@@ -44,6 +44,4 @@ filenames:
   # multi_oriented
   - ../u14m/multi_oriented/data.mdb
   - ../u14m/multi_oriented/lock.mdb
-processor:
-  - null
 check_validity: true

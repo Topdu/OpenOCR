@@ -6,6 +6,4 @@ download_links:
 filenames:
   - ../ltb/data.mdb
   - ../ltb/lock.mdb
-processor:
-  - null
 check_validity: true

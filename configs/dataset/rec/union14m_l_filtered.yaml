@@ -32,6 +32,4 @@ filenames:
   # train_normal
   - ../Union14M-L-LMDB-Filtered/train_normal/data.mdb
   - ../Union14M-L-LMDB-Filtered/train_normal/lock.mdb
-processor:
-  - null
 check_validity: true

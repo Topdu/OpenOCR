@@ -38,6 +38,4 @@ filenames:
   # CUTE80
   - ../evaluation/CUTE80/data.mdb
   - ../evaluation/CUTE80/lock.mdb
-processor:
-  - null
 check_validity: true
