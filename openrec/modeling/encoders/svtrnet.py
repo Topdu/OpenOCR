@@ -236,7 +236,7 @@ class PatchEmbed(nn.Module):
                         stride=2,
                         padding=1,
                         act=nn.GELU,
-                        bias=None,
+                        bias=True,
                     ),
                     ConvBNLayer(
                         in_channels=embed_dim // 2,
@@ -245,7 +245,7 @@ class PatchEmbed(nn.Module):
                         stride=2,
                         padding=1,
                         act=nn.GELU,
-                        bias=None,
+                        bias=True,
                     ),
                 )
             if sub_num == 3:
@@ -257,7 +257,7 @@ class PatchEmbed(nn.Module):
                         stride=2,
                         padding=1,
                         act=nn.GELU,
-                        bias=None,
+                        bias=True,
                     ),
                     ConvBNLayer(
                         in_channels=embed_dim // 4,
@@ -266,7 +266,7 @@ class PatchEmbed(nn.Module):
                         stride=2,
                         padding=1,
                         act=nn.GELU,
-                        bias=None,
+                        bias=True,
                     ),
                     ConvBNLayer(
                         in_channels=embed_dim // 2,
@@ -275,7 +275,7 @@ class PatchEmbed(nn.Module):
                         stride=2,
                         padding=1,
                         act=nn.GELU,
-                        bias=None,
+                        bias=True,
                     ),
                 )
         elif mode == 'linear':
