@@ -1,0 +1,35 @@
+root: ../Union14M-L-LMDB-Filtered
+task: str
+download_links:
+  # train_challenging
+  - https://drive.usercontent.google.com/download?id=1etwzBgGHjsFsb0sygsaRnKbanW2PMe07&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1ly6FJfPjItwGlVQ-ifTrzzM3rVu3Ezhr&authuser=0&confirm=t
+  # train_easy
+  - https://drive.usercontent.google.com/download?id=1_zeNluTnywIaa5h3PN-Ah9tKyByypot7&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1caYLeQHDidXgVBDi9IWXbO1gg__DYq9a&authuser=0&confirm=t
+  # train_hard
+  - https://drive.usercontent.google.com/download?id=1eP6s2xyYPZX9gykvWA4VSOc3Fqul_UB_&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1-ZlCvocX8P5uVRclUXp_5DNGLDzd16EO&authuser=0&confirm=t
+  # train_medium
+  - https://drive.usercontent.google.com/download?id=1s_CoaLNJEr-UxHYiqZ5jOcliMCFiRUUy&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1Wpj6WVpZ5Ily77kVwfQ18CiZBzkgmEnF&authuser=0&confirm=t
+  # train_normal
+  - https://drive.usercontent.google.com/download?id=1jPt44arlAswl9cXZjzmVcdpptdTPpJ3I&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1Rfc5kE03AzOUv7B_eYcBhUV8KMQ2MZ1m&authuser=0&confirm=t
+filenames:
+  # train_challenging
+  - ../Union14M-L-LMDB-Filtered/train_challenging/data.mdb
+  - ../Union14M-L-LMDB-Filtered/train_challenging/lock.mdb
+  # train_easy
+  - ../Union14M-L-LMDB-Filtered/train_easy/data.mdb
+  - ../Union14M-L-LMDB-Filtered/train_easy/lock.mdb
+  # train_hard
+  - ../Union14M-L-LMDB-Filtered/train_hard/data.mdb
+  - ../Union14M-L-LMDB-Filtered/train_hard/lock.mdb
+  # train_medium
+  - ../Union14M-L-LMDB-Filtered/train_medium/data.mdb
+  - ../Union14M-L-LMDB-Filtered/train_medium/lock.mdb
+  # train_normal
+  - ../Union14M-L-LMDB-Filtered/train_normal/data.mdb
+  - ../Union14M-L-LMDB-Filtered/train_normal/lock.mdb
+check_validity: true

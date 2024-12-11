@@ -1,0 +1,7 @@
+root: ../synth
+task: str
+download_links:
+  - https://drive.usercontent.google.com/download?id=1T-enqkq6_l2HqrsV3da_h0oJ7CUKu_oc&authuser=0&confirm=t
+filenames:
+  - ../synth/ST.zip
+check_validity: true

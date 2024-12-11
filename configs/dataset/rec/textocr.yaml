@@ -1,0 +1,13 @@
+root: ../TextOCR
+task: str
+download_links:
+  # train
+  - https://drive.usercontent.google.com/download?id=1jVjJFno4pnsU0Cp_kn4MIXQrChmELy92&authuser=0&confirm=
+  # val
+  - https://drive.usercontent.google.com/download?id=1ubIRu01MXIek6OvInu-XjaIbw6277-vw&authuser=0&confirm=t
+filenames:
+  # train
+  - ../TextOCR/train.zip
+  # val
+  - ../TextOCR/val.zip
+check_validity: true

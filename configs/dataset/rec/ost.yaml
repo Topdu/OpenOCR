@@ -1,0 +1,17 @@
+root: ../OST
+task: str
+download_links:
+  # OST heavy
+  - https://drive.usercontent.google.com/download?id=1RGpIFbD_SRlrzZFBoVF_LGvetNx1-5pg&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1Th4MfDf44k0EBpIqCLqVoGRu6G-FP1hq&authuser=0&confirm=t
+  # OST weak
+  - https://drive.usercontent.google.com/download?id=1z5CTDJucUnvALG12Q4UXk1DDKJDd8WJn&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1V17TTkX3sjpV7v0km_F2SDCK0tL3k_ls&authuser=0&confirm=t
+filenames:
+  # OST heavy
+  - ../OST/heavy/data.mdb
+  - ../OST/heavy/lock.mdb
+  # OST weak
+  - ../OST/weak/data.mdb
+  - ../OST/weak/lock.mdb
+check_validity: true
