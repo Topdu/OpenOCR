@@ -1,0 +1,11 @@
+root: ../synth
+task: str
+download_links:
+  - https://drive.usercontent.google.com/download?id=1FIoplSFZ-BKQoRDHDXsVMKa844e-K8PD&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1eckTvaeRtlTZvbO2orrVz-cIuIk6i87K&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1PBXTf-2PnmEvJBsqzJqxxRwzhAZGTiMG&authuser=0&confirm=t
+filenames:
+  - ../synth/MJ_train.zip
+  - ../synth/MJ_val.zip
+  - ../synth/MJ_test.zip
+check_validity: true
