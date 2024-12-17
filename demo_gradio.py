@@ -11,7 +11,7 @@ import time
 from PIL import Image
 from tools.infer_e2e import OpenOCR, check_and_download_font, draw_ocr_box_txt
 
-drop_score = 0.01
+drop_score = 0.4
 text_sys = OpenOCR(drop_score=drop_score)
 # warm up 5 times
 if True:
@@ -19,10 +19,11 @@ if True:
     for i in range(5):
         res = text_sys(img_numpy=img)
 font_path = './simfang.ttf'
-check_and_download_font(font_path)
+font_path = check_and_download_font(font_path)
 
 
 def main(input_image,
+         det_input_size_textbox=960,
          rec_drop_score=0.01,
          mask_thresh=0.3,
          box_thresh=0.6,
@@ -30,12 +31,14 @@ def main(input_image,
          det_score_mode='slow'):
     img = input_image[:, :, ::-1]
     starttime = time.time()
-    results, time_dict, mask = text_sys(img_numpy=img,
-                                        return_mask=True,
-                                        thresh=mask_thresh,
-                                        box_thresh=box_thresh,
-                                        unclip_ratio=unclip_ratio,
-                                        score_mode=det_score_mode)
+    results, time_dict, mask = text_sys(
+        img_numpy=img,
+        return_mask=True,
+        det_input_size=int(det_input_size_textbox),
+        thresh=mask_thresh,
+        box_thresh=box_thresh,
+        unclip_ratio=unclip_ratio,
+        score_mode=det_score_mode)
     elapse = time.time() - starttime
     save_pred = json.dumps(results[0], ensure_ascii=False)
     image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
@@ -109,15 +112,27 @@ if __name__ == '__main__':
                 downstream = gr.Button('Run')
 
                 # 添加参数调节组件
-                with gr.Row():
-                    with gr.Column():
+                with gr.Column():
+                    with gr.Row():
+                        det_input_size_textbox = gr.Number(
+                            label='Det Input Size',
+                            value=960,
+                            info='检测网络输入尺寸的最长边，默认为960。')
+                        det_score_mode_dropdown = gr.Dropdown(
+                            ['slow', 'fast'],
+                            value='slow',
+                            label='Det Score Mode',
+                            info=
+                            '文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
+                        )
+                    with gr.Row():
                         rec_drop_score_slider = gr.Slider(
                             0.0,
                             1.0,
-                            value=0.01,
+                            value=0.4,
                             step=0.01,
                             label='Recognition Drop Score',
-                            info='识别置信度阈值，默认值为0.01。低于该阈值的识别结果和对应的文本框被丢弃。')
+                            info='识别置信度阈值，默认值为0.4。低于该阈值的识别结果和对应的文本框被丢弃。')
                         mask_thresh_slider = gr.Slider(
                             0.0,
                             1.0,
@@ -125,7 +140,7 @@ if __name__ == '__main__':
                             step=0.01,
                             label='Mask Threshold',
                             info='Mask 阈值，用于二值化 mask，默认值为0.3。如果存在文本截断时，请调低该值。')
-                    with gr.Column():
+                    with gr.Row():
                         box_thresh_slider = gr.Slider(
                             0.0,
                             1.0,
@@ -141,13 +156,6 @@ if __name__ == '__main__':
                             label='Unclip Ratio',
                             info='文本框解析时的膨胀系数，默认值为1.5。值越大文本框越大。')
 
-                det_score_mode_dropdown = gr.Dropdown(
-                    ['slow', 'fast'],
-                    value='slow',
-                    label='Det Score Mode',
-                    info='文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
-                )
-
             with gr.Column(scale=1):
                 img_mask = gr.Image(label='mask',
                                     interactive=False,
@@ -161,9 +169,10 @@ if __name__ == '__main__':
 
             downstream.click(fn=main,
                              inputs=[
-                                 input_image, rec_drop_score_slider,
-                                 mask_thresh_slider, box_thresh_slider,
-                                 unclip_ratio_slider, det_score_mode_dropdown
+                                 input_image, det_input_size_textbox,
+                                 rec_drop_score_slider, mask_thresh_slider,
+                                 box_thresh_slider, unclip_ratio_slider,
+                                 det_score_mode_dropdown
                              ],
                              outputs=[
                                  output,
