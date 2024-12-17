@@ -27,6 +27,8 @@ class DetResizeForTest(object):
 
     def __call__(self, data):
         img = data['image']
+        if 'max_sile_len' in data:
+            self.limit_side_len = data['max_sile_len']
         src_h, src_w, _ = img.shape
         if sum([src_h, src_w]) < 64:
             img = self.image_padding(img)
