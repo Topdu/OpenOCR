@@ -392,6 +392,8 @@ class OpenDetector(object):
                     img = f.read()
                     data = {'image': img}
                 data = self.transform(data, self.ops[:1])
+            if kwargs.get('det_input_size', None) is not None:
+                data['max_sile_len'] = kwargs['det_input_size']
             batch = self.transform(data, self.ops[1:])
 
             images = np.expand_dims(batch[0], axis=0)
