@@ -27,10 +27,10 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Ours STR algorithms
 
+- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* AAAI 2025. [Doc](./configs/rec/smtr/), [Paper](https://arxiv.org/abs/2407.12317))
 - [**DPTR**](./configs/rec/dptr/) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [Paper](https://arxiv.org/abs/2408.05706))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* Under TPAMI minor revision 2024. [Doc](./configs/rec/igtr), [Paper](https://arxiv.org/abs/2401.17851))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* 2024. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
-- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* 2024. [Doc](./configs/rec/smtr/), [Paper](https://arxiv.org/abs/2407.12317))
 - [**CDistNet**](./configs/rec/cdistnet/) (*Tianlun Zheng, Zhineng Chen\*, Shancheng Fang, Hongtao Xie, Yu-Gang Jiang. CDistNet: Perceiving Multi-Domain Character Distance for Robust Text Recognition,* IJCV 2024. [Paper](https://link.springer.com/article/10.1007/s11263-023-01880-0))
 - **MRN** (*Tianlun Zheng, Zhineng Chen\*, Bingchen Huang, Wei Zhang, Yu-Gang Jiang. MRN: Multiplexed routing network for incremental multilingual text recognition,* ICCV 2023. [Paper](https://openaccess.thecvf.com/content/ICCV2023/html/Zheng_MRN_Multiplexed_Routing_Network_for_Incremental_Multilingual_Text_Recognition_ICCV_2023_paper.html), [Code](https://github.com/simplify23/MRN))
 - **TPS++** (*Tianlun Zheng, Zhineng Chen\*, Jinfeng Bai, Hongtao Xie, Yu-Gang Jiang. TPS++: Attention-Enhanced Thin-Plate Spline for Scene Text Recognition,* IJCAI 2023. [Paper](https://arxiv.org/abs/2305.05322), [Code](https://github.com/simplify23/TPS_PP))
@@ -40,7 +40,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Recent Updates
 
-- **2024.12.03**: The pre-training code for [DPTR](./configs/rec/dptr/) is merged.
+- **2024.12.16**: Our paper [SMTR](https://arxiv.org/abs/2407.12317) is accepted by AAAI 2025. Accessible in [Doc](./configs/rec/smtr/).
+
+- **2024.12.03**: The pre-training code for [DPTR](https://arxiv.org/abs/2408.05706) is merged.
 
 - **🔥 2024.11.23 release notes**:
 
@@ -159,7 +161,7 @@ python demo_gradio.py
 | [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | [fd-zs](https://github.com/fd-zs)           |
 | VIPTR                                         | [ACM CIKM 2024](https://arxiv.org/abs/2401.10110)                                              |          |            | TODO                                        |
 | [IGTR](./configs/rec/igtr/)                   | [2024](https://arxiv.org/abs/2401.17851)                                                       | ✅       | ✅         |                                             |
-| [SMTR](./configs/rec/smtr/)                   | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
+| [SMTR](./configs/rec/smtr/)                   | [AAAI 2025](https://arxiv.org/abs/2407.12317)                                                  | ✅       | ✅         |                                             |
 | [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
 | [SVTRv2](./configs/rec/svtrv2/)               | [2024](https://arxiv.org/abs/2411.15858)                                                       | ✅       | ✅         |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |

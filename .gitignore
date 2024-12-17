@@ -10,6 +10,9 @@ __pycache__/
 inference/
 inference_results/
 output/
+e2e_results/
+rec_results/
+det_results/
 train_data/
 log/
 *.DS_Store
