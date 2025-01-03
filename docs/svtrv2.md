@@ -221,7 +221,7 @@ NCCL_P2P_DISABLE=1 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.laun
 
 ```shell
 # short text: Common, Union14M-Benchmark, OST
-python tools/eval_rec_all_ratio.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
+python tools/eval_rec_all_en.py --c configs/rec/svtrv2/svtrv2_smtr_gtc_rctc.yml
 ```
 
 After a successful run, the results are saved in a csv file in `output_dir` in the config file.
