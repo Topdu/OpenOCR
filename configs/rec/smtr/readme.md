@@ -161,7 +161,7 @@ Evaluation:
 
 ```shell
 # en
-python tools/eval_rec_all_ratio.py --c configs/rec/smtr/focalsvtr_smtr.yml
+python tools/eval_rec_all_en.py --c configs/rec/smtr/focalsvtr_smtr.yml
 # long text
 python tools/eval_rec_all_long_simple.py --c configs/rec/smtr/focalsvtr_smtr_long.yml
 # ch
