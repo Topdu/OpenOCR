@@ -19,7 +19,7 @@ Global:
   model_type: det
 
 Architecture:
-  algorithm: DB
+  algorithm: DB_mobile
   Backbone:
     name: RepSVTR_det
   Neck:
