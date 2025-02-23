@@ -173,31 +173,21 @@ class OpenRecognizer(object):
         """
         if config is None:
             if mode == 'server':
-                config = Config(
-                    DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
-                if not os.path.exists(config['Global']['pretrained_model']):
-                    model_dir = check_and_download_model(
-                        MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
+                config_file = DEFAULT_CFG_PATH_REC_SERVER
             else:
-                config = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
-                if not os.path.exists(config['Global']['pretrained_model']):
-                    model_dir = check_and_download_model(
-                        MODEL_NAME_REC, DOWNLOAD_URL_REC)
-            config['Global']['pretrained_model'] = model_dir
+                config_file = DEFAULT_CFG_PATH_REC
+            config = Config(config_file).cfg
+
+        algorithm_name = config['Architecture']['algorithm']
+        if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
+            if not os.path.exists(config['Global']['pretrained_model']):
+                pretrained_model = check_and_download_model(
+                    MODEL_NAME_REC, DOWNLOAD_URL_REC
+                ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
+                    MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
+                config['Global']['pretrained_model'] = pretrained_model
             config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
-        else:
-            if config['Architecture']['algorithm'] == 'SVTRv2_mobile':
-                if not os.path.exists(config['Global']['pretrained_model']):
-                    config['Global'][
-                        'pretrained_model'] = check_and_download_model(
-                            MODEL_NAME_REC, DOWNLOAD_URL_REC)
-                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
-            elif config['Architecture']['algorithm'] == 'SVTRv2_server':
-                if not os.path.exists(config['Global']['pretrained_model']):
-                    config['Global'][
-                        'pretrained_model'] = check_and_download_model(
-                            MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
-                config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
+
         global_config = config['Global']
         self.cfg = config
         if global_config['pretrained_model'] is None:
@@ -212,14 +202,13 @@ class OpenRecognizer(object):
                                                      global_config)
         char_num = self.post_process_class.get_character_num()
         config['Architecture']['Decoder']['out_channels'] = char_num
-        # print(char_num)
         self.model = build_rec_model(config['Architecture'])
         load_ckpt(self.model, config)
 
-        # exit(0)
         self.device = set_device(global_config['device'], numId=numId)
         self.model.eval()
-        replace_batchnorm(self.model.encoder)
+        if algorithm_name == 'SVTRv2_mobile':
+            replace_batchnorm(self.model.encoder)
         self.model.to(device=self.device)
 
         transforms, ratio_resize_flag = build_rec_process(self.cfg)

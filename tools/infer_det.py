@@ -245,10 +245,11 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
-
-        if not os.path.exists(config['Global']['pretrained_model']):
-            config['Global']['pretrained_model'] = check_and_download_model(
-                MODEL_NAME_DET, DOWNLOAD_URL_DET)
+        if config['Architecture']['algorithm'] == 'DB_mobile':
+            if not os.path.exists(config['Global']['pretrained_model']):
+                config['Global'][
+                    'pretrained_model'] = check_and_download_model(
+                        MODEL_NAME_DET, DOWNLOAD_URL_DET)
 
         from opendet.modeling import build_model as build_det_model
         from opendet.postprocess import build_post_process
@@ -260,7 +261,8 @@ class OpenDetector(object):
         self.model = build_det_model(config['Architecture'])
         self.model.eval()
         load_ckpt(self.model, config)
-        replace_batchnorm(self.model.backbone)
+        if config['Architecture']['algorithm'] == 'DB_mobile':
+            replace_batchnorm(self.model.backbone)
         self.device = set_device(config['Global']['device'], numId=numId)
         self.model.to(device=self.device)
 

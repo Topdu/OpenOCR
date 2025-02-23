@@ -11,24 +11,41 @@ import time
 from PIL import Image
 from tools.infer_e2e import OpenOCR, check_and_download_font, draw_ocr_box_txt
 
+
+def initialize_ocr(model_type, drop_score):
+    return OpenOCR(mode=model_type, drop_score=drop_score)
+
+
+# Default model type
+model_type = 'mobile'
 drop_score = 0.4
-text_sys = OpenOCR(drop_score=drop_score)
+text_sys = initialize_ocr(model_type, drop_score)
+
 # warm up 5 times
 if True:
     img = np.random.uniform(0, 255, [640, 640, 3]).astype(np.uint8)
     for i in range(5):
         res = text_sys(img_numpy=img)
+
 font_path = './simfang.ttf'
 font_path = check_and_download_font(font_path)
 
 
 def main(input_image,
+         model_type_select,
          det_input_size_textbox=960,
-         rec_drop_score=0.01,
+         rec_drop_score=0.4,
          mask_thresh=0.3,
          box_thresh=0.6,
          unclip_ratio=1.5,
          det_score_mode='slow'):
+    global text_sys, model_type
+
+    # Update OCR model if the model type changes
+    if model_type_select != model_type:
+        model_type = model_type_select
+        text_sys = initialize_ocr(model_type, rec_drop_score)
+
     img = input_image[:, :, ::-1]
     starttime = time.time()
     results, time_dict, mask = text_sys(
@@ -99,7 +116,7 @@ if __name__ == '__main__':
     with gr.Blocks(css=css) as demo:
         gr.HTML("""
                 <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">OpenOCR</a></h1>
-                <p style='text-align: center;'>准确高效的通用 OCR 系统 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>"""
+                <p style='text-align: center;'>准确高效的通用 OCR 系统 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建） <a href="https://github.com/Topdu/OpenOCR/tree/main?tab=readme-ov-file#quick-start">[本地快速部署]</a></p>"""
                 )
         with gr.Row():
             with gr.Column(scale=1):
@@ -115,15 +132,14 @@ if __name__ == '__main__':
                 with gr.Column():
                     with gr.Row():
                         det_input_size_textbox = gr.Number(
-                            label='Det Input Size',
+                            label='Detection Input Size',
                             value=960,
                             info='检测网络输入尺寸的最长边，默认为960。')
                         det_score_mode_dropdown = gr.Dropdown(
                             ['slow', 'fast'],
                             value='slow',
-                            label='Det Score Mode',
-                            info=
-                            '文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
+                            label='Detection Score Mode',
+                            info='文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
                         )
                     with gr.Row():
                         rec_drop_score_slider = gr.Slider(
@@ -156,6 +172,13 @@ if __name__ == '__main__':
                             label='Unclip Ratio',
                             info='文本框解析时的膨胀系数，默认值为1.5。值越大文本框越大。')
 
+                    # 模型选择组件
+                    model_type_dropdown = gr.Dropdown(
+                        ['mobile', 'server'],
+                        value='mobile',
+                        label='Model Type',
+                        info='选择 OCR 模型类型：高效率模型mobile，高精度模型server。')
+
             with gr.Column(scale=1):
                 img_mask = gr.Image(label='mask',
                                     interactive=False,
@@ -169,10 +192,10 @@ if __name__ == '__main__':
 
             downstream.click(fn=main,
                              inputs=[
-                                 input_image, det_input_size_textbox,
-                                 rec_drop_score_slider, mask_thresh_slider,
-                                 box_thresh_slider, unclip_ratio_slider,
-                                 det_score_mode_dropdown
+                                 input_image, model_type_dropdown,
+                                 det_input_size_textbox, rec_drop_score_slider,
+                                 mask_thresh_slider, box_thresh_slider,
+                                 unclip_ratio_slider, det_score_mode_dropdown
                              ],
                              outputs=[
                                  output,
