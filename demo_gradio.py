@@ -139,8 +139,7 @@ if __name__ == '__main__':
                             ['slow', 'fast'],
                             value='slow',
                             label='Detection Score Mode',
-                            info=
-                            '文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
+                            info='文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
                         )
                     with gr.Row():
                         rec_drop_score_slider = gr.Slider(
