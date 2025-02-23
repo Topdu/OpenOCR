@@ -245,6 +245,42 @@ class CMFFLayer(nn.Module):
 
 
 class IGTRDecoder(nn.Module):
+    """
+    IGTRDecoder is a neural network module designed for decoding tasks in OCR (Optical Character Recognition) systems.
+    It utilizes a combination of embedding layers, multi-head attention layers, and linear layers to process input sequences
+    and generate output sequences.
+
+    Args:
+        in_channels (int): Number of input channels.
+        dim (int): Dimension of the model.
+        out_channels (int): Number of output channels.
+        num_layer (int, optional): Number of layers in the decoder. Default is 2.
+        drop_path_rate (float, optional): Drop path rate for stochastic depth. Default is 0.1.
+        max_len (int, optional): Maximum length of the sequence. Default is 25.
+        vis_seq (int, optional): Length of the visual sequence. Default is 50.
+        ch (bool, optional): Flag for character embedding. Default is False.
+        ar (bool, optional): Flag for autoregressive decoding. Default is False.
+        refine_iter (int, optional): Number of refinement iterations. Default is 0.
+        quesall (bool, optional): Flag to use all questions. Default is True.
+        next_pred (bool, optional): Flag for next prediction. Default is False.
+        ds (bool, optional): Flag for downsampling. Default is False.
+        pos2d (bool, optional): Flag for 2D positional embedding. Default is False.
+        check_search (bool, optional): Flag for checking search. Default is False.
+        max_size (list, optional): Maximum size for 2D positional embedding. Default is [8, 32].
+        **kwargs: Additional keyword arguments.
+
+    Methods:
+        _init_weights(m): Initializes the weights of the module.
+        no_weight_decay(): Returns the parameters that should not have weight decay.
+        question_encoder(targets, train_i): Encodes the questions based on the targets and training index.
+        forward(x, data=None): Forward pass of the decoder. Calls either forward_train or forward_test based on the mode.
+        forward_test(x): Forward pass during testing.
+        forward_train(x, targets=None): Forward pass during training.
+
+    Returns:
+        Depending on the mode (training or testing), the forward method returns either the loss and logits (during training)
+        or the predicted indices and probabilities (during testing).
+    """
 
     def __init__(self,
                  in_channels,
@@ -426,6 +462,33 @@ class IGTRDecoder(nn.Module):
             return self.forward_test(x)
 
     def forward_test(self, x):
+        """
+        Perform the forward pass for the test phase.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
+
+        Returns:
+            torch.Tensor or List[torch.Tensor]: The output logits or a list containing predicted indices and probabilities.
+
+        The function handles different modes of operation based on the attributes:
+        - `self.ds`: Determines if positional embedding is added to the input tensor.
+        - `self.pos2d`: Determines if the positional embedding is 2D.
+        - `self.ar`: Determines if autoregressive decoding is used.
+        - `self.check_search`: Determines if beam search is used.
+        - `self.next_pred`: Determines if next token prediction is used.
+        - `self.refine_iter`: Number of refinement iterations for the predictions.
+
+        The function performs the following steps:
+        1. Adds positional embeddings to the input tensor if required.
+        2. Initializes the BOS (beginning of sequence) prompt.
+        3. Depending on the mode, performs decoding using different strategies:
+            - Beam search decoding.
+            - Autoregressive decoding.
+            - Next token prediction.
+        4. If refinement iterations are specified, refines the predictions.
+        5. Returns the final logits or the predicted indices and probabilities.
+        """
         if not self.ds:
             visual_f = x + self.vis_pos_embed
         elif self.pos2d:
@@ -477,7 +540,6 @@ class IGTRDecoder(nn.Module):
                     if j < self.max_len - 1:
                         # greedy decode. add the next token index to the target input
                         tgt_in[:, j] = p_i.squeeze().argmax(-1)
-
                         # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
                         if (tgt_in == self.eos).any(dim=-1).all():
                             break
@@ -652,6 +714,34 @@ class IGTRDecoder(nn.Module):
         return F.softmax(logits, -1)
 
     def forward_train(self, x, targets=None):
+        """
+        Forward pass for training the model.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, ...).
+            targets (list, optional): List of target tensors. The list should contain:
+                - targets[1]: Tensor of shape (batch_size, ...), prompt position indices.
+                - targets[2]: Tensor of shape (batch_size, ...), prompt character indices.
+                - targets[3]: Tensor of shape (batch_size, ...), question position indices.
+                - targets[4]: Tensor of shape (batch_size, ...), question 1 answers.
+                - targets[5]: Tensor of shape (batch_size, ...), question 2 character indices.
+                - targets[6]: Tensor of shape (batch_size, ...), question 2 answers.
+                - targets[7]: Tensor of shape (batch_size, ..., 2), question 3 character indices and answers.
+                - targets[8]: Tensor of shape (batch_size, ...), question 4 character numbers.
+                - targets[9]: Tensor of shape (batch_size, ...), question lengths.
+                - targets[10]: Tensor of shape (batch_size, ...), prompt lengths.
+                - targets[11]: Tensor of shape (batch_size, ...), question 4 answers.
+
+        Returns:
+            list: A list containing:
+                - loss (dict): Dictionary containing the total loss and individual losses for each question.
+                    - 'loss': Total loss.
+                    - 'loss1': Loss for question 1.
+                    - 'loss2': Loss for question 2.
+                    - 'loss3': Loss for question 3.
+                    - 'loss4': Loss for question 4.
+                - logits (torch.Tensor): Logits for question 1 predictions.
+        """
 
         bs = x.shape[0]
         answer_token = torch.tile(self.answer_query, (bs, 1, 1))
