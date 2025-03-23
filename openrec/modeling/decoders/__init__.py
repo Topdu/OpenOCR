@@ -1,50 +1,51 @@
 import torch.nn as nn
+from importlib import import_module
 
 __all__ = ['build_decoder']
 
+class_to_module = {
+    'ABINetDecoder': '.abinet_decoder',
+    'ASTERDecoder': '.aster_decoder',
+    'CDistNetDecoder': '.cdistnet_decoder',
+    'CPPDDecoder': '.cppd_decoder',
+    'RCTCDecoder': '.rctc_decoder',
+    'CTCDecoder': '.ctc_decoder',
+    'DANDecoder': '.dan_decoder',
+    'IGTRDecoder': '.igtr_decoder',
+    'LISTERDecoder': '.lister_decoder',
+    'LPVDecoder': '.lpv_decoder',
+    'MGPDecoder': '.mgp_decoder',
+    'NRTRDecoder': '.nrtr_decoder',
+    'PARSeqDecoder': '.parseq_decoder',
+    'RobustScannerDecoder': '.robustscanner_decoder',
+    'SARDecoder': '.sar_decoder',
+    'SMTRDecoder': '.smtr_decoder',
+    'SMTRDecoderNumAttn': '.smtr_decoder_nattn',
+    'SRNDecoder': '.srn_decoder',
+    'VisionLANDecoder': '.visionlan_decoder',
+    'MATRNDecoder': '.matrn_decoder',
+    'CAMDecoder': '.cam_decoder',
+    'OTEDecoder': '.ote_decoder',
+    'BUSDecoder': '.bus_decoder',
+    'DptrParseq': '.dptr_parseq_clip_b_decoder',
+    }
 
 def build_decoder(config):
-    # rec decoder
-    from .abinet_decoder import ABINetDecoder
-    from .aster_decoder import ASTERDecoder
-    from .cdistnet_decoder import CDistNetDecoder
-    from .cppd_decoder import CPPDDecoder
-    from .rctc_decoder import RCTCDecoder
-    from .ctc_decoder import CTCDecoder
-    from .dan_decoder import DANDecoder
-    from .igtr_decoder import IGTRDecoder
-    from .lister_decoder import LISTERDecoder
-    from .lpv_decoder import LPVDecoder
-    from .mgp_decoder import MGPDecoder
-    from .nrtr_decoder import NRTRDecoder
-    from .parseq_decoder import PARSeqDecoder
-    from .robustscanner_decoder import RobustScannerDecoder
-    from .sar_decoder import SARDecoder
-    from .smtr_decoder import SMTRDecoder
-    from .smtr_decoder_nattn import SMTRDecoderNumAttn
-    from .srn_decoder import SRNDecoder
-    from .visionlan_decoder import VisionLANDecoder
-    from .matrn_decoder import MATRNDecoder
-    from .cam_decoder import CAMDecoder
-    from .ote_decoder import OTEDecoder
-    from .bus_decoder import BUSDecoder
-    # from .dptr_parseq_clip_b_decoder import DptrParseq
-
-    support_dict = [
-        'CTCDecoder', 'NRTRDecoder', 'CPPDDecoder', 'ABINetDecoder',
-        'CDistNetDecoder', 'VisionLANDecoder', 'PARSeqDecoder', 'IGTRDecoder',
-        'SMTRDecoder', 'LPVDecoder', 'SARDecoder', 'RobustScannerDecoder',
-        'SRNDecoder', 'ASTERDecoder', 'RCTCDecoder', 'LISTERDecoder',
-        'GTCDecoder', 'SMTRDecoderNumAttn', 'MATRNDecoder', 'MGPDecoder',
-        'DANDecoder', 'CAMDecoder', 'OTEDecoder', 'BUSDecoder', 'DptrParseq'
-    ]
 
     module_name = config.pop('name')
-    assert module_name in support_dict, Exception(
-        'decoder only support {}'.format(support_dict))
-    module_class = eval(module_name)(**config)
-    return module_class
-
+    
+    # Check if the class is defined in current module (e.g., GTCDecoder)
+    if module_name in globals():
+        module_class = globals()[module_name]
+    else:
+        if module_name not in class_to_module:
+            raise ValueError(f"Unsupported decoder: {module_name}")
+        module_str = class_to_module[module_name]
+        # Dynamically import the module and get the class
+        module = import_module(module_str, package=__package__)
+        module_class = getattr(module, module_name)
+    
+    return module_class(**config)
 
 class GTCDecoder(nn.Module):
 
