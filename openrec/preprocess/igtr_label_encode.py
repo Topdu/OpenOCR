@@ -192,15 +192,26 @@ class IGTRLabelEncode(BaseRecLabelEncode):
         return dict_character
 
     def encode(self, text):
-        """convert text-label into text-index.
-        input:
-            text: text labels of each image. [batch_size]
-
-        output:
-            text: concatenated text index for CTCLoss.
-                    [sum(text_lengths)] = [text_index_0 + text_index_1 + ... + text_index_(n - 1)]
-            length: length of each text. [batch_size]
         """
+        Encodes the given text into a list of character IDs and generates various lists for question and prompt sequences.
+
+        Args:
+            text (str): The input text to be encoded.
+
+        Returns:
+            tuple: A tuple containing:
+                - text_list (list): A list of character IDs corresponding to the input text.
+                - char_num (list): A list of character counts for each character ID.
+                - ques_list (list): A list of question sequences, each sequence is a list of [position, character ID, character count].
+                - prompt_list (list): A list of prompt sequences, each sequence is a list of [position, character ID, character count].
+
+        Notes:
+            - If the input text is empty, the function returns None.
+            - The function handles rare and unrare characters differently.
+            - The function supports both lowercased and original text based on the `self.lower` attribute.
+            - The function generates additional sequences if the length of the input text is greater than 1.
+        """
+
         if len(text) == 0:
             return None
         if self.lower:
