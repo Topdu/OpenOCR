@@ -134,7 +134,14 @@ def sorted_boxes(dt_boxes):
 
 class OpenOCR(object):
 
-    def __init__(self, mode='mobile', drop_score=0.5, det_box_type='quad'):
+    def __init__(self,
+                 mode='mobile',
+                 backend='torch',
+                 onnx_det_model_path=None,
+                 onnx_rec_model_path=None,
+                 drop_score=0.5,
+                 det_box_type='quad',
+                 device='gpu'):
         """
         初始化函数，用于初始化OCR引擎的相关配置和组件。
 
@@ -150,6 +157,7 @@ class OpenOCR(object):
         cfg_det = Config(DEFAULT_CFG_PATH_DET).cfg  # mobile model
         model_dir = check_and_download_model(MODEL_NAME_DET, DOWNLOAD_URL_DET)
         cfg_det['Global']['pretrained_model'] = model_dir
+        cfg_det['Global']['device'] = device
         if mode == 'server':
             cfg_rec = Config(DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
             model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
@@ -159,8 +167,13 @@ class OpenOCR(object):
             model_dir = check_and_download_model(MODEL_NAME_REC,
                                                  DOWNLOAD_URL_REC)
         cfg_rec['Global']['pretrained_model'] = model_dir
-        self.text_detector = OpenDetector(cfg_det)
-        self.text_recognizer = OpenRecognizer(cfg_rec)
+        cfg_rec['Global']['device'] = device
+
+        self.text_detector = OpenDetector(cfg_det,
+                                          backend=backend,
+                                          onnx_model_path=onnx_det_model_path)
+        self.text_recognizer = OpenRecognizer(
+            cfg_rec, backend=backend, onnx_model_path=onnx_rec_model_path)
         self.det_box_type = det_box_type
         self.drop_score = drop_score
 
@@ -439,6 +452,19 @@ def main():
         default='mobile',
         help="Mode of the OCR system, e.g., 'mobile' or 'server'.")
     parser.add_argument(
+        '--backend',
+        type=str,
+        default='torch',
+        help="Backend of the OCR system, e.g., 'torch' or 'onnx'.")
+    parser.add_argument('--onnx_det_model_path',
+                        type=str,
+                        default=None,
+                        help='Path to the ONNX model for text detection.')
+    parser.add_argument('--onnx_rec_model_path',
+                        type=str,
+                        default=None,
+                        help='Path to the ONNX model for text recognition.')
+    parser.add_argument(
         '--save_dir',
         type=str,
         default='e2e_results/',
@@ -452,16 +478,29 @@ def main():
                         type=float,
                         default=0.5,
                         help='Score threshold for text recognition.')
+    parser.add_argument('--device',
+                        type=str,
+                        default='gpu',
+                        help='Device to use for inference.')
     args = parser.parse_args()
 
     img_path = args.img_path
     mode = args.mode
+    backend = args.backend
+    onnx_det_model_path = args.onnx_det_model_path
+    onnx_rec_model_path = args.onnx_rec_model_path
     save_dir = args.save_dir
     is_visualize = args.is_vis
     drop_score = args.drop_score
+    device = args.device
 
-    text_sys = OpenOCR(mode=mode, drop_score=drop_score,
-                       det_box_type='quad')  # det_box_type: 'quad' or 'poly'
+    text_sys = OpenOCR(mode=mode,
+                       backend=backend,
+                       onnx_det_model_path=onnx_det_model_path,
+                       onnx_rec_model_path=onnx_rec_model_path,
+                       drop_score=drop_score,
+                       det_box_type='quad',
+                       device=device)  # det_box_type: 'quad' or 'poly'
     text_sys(img_path=img_path, save_dir=save_dir, is_visualize=is_visualize)
 
 

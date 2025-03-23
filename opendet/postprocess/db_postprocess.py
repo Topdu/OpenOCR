@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import torch
 from shapely.geometry import Polygon
 import pyclipper
 """
@@ -215,7 +214,7 @@ class DBPostProcess(object):
         self.box_type = kwargs.get('box_type', self.box_type)
         self.score_mode = kwargs.get('score_mode', self.score_mode)
         pred = outs_dict['maps']
-        if isinstance(pred, torch.Tensor):
+        if kwargs.get('torch_tensor', True):
             pred = pred.detach().cpu().numpy()
         pred = pred[:, 0, :, :]
         segmentation = pred > self.thresh

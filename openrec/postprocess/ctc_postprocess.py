@@ -1,7 +1,6 @@
 import re
 
 import numpy as np
-import torch
 
 
 class BaseRecLabelDecode(object):
@@ -102,9 +101,9 @@ class CTCLabelDecode(BaseRecLabelDecode):
         super(CTCLabelDecode, self).__init__(character_dict_path,
                                              use_space_char)
 
-    def __call__(self, preds, batch=None, *args, **kwargs):
+    def __call__(self, preds, batch=None, **kwargs):
         # preds = preds['res']
-        if isinstance(preds, torch.Tensor):
+        if kwargs.get('torch_tensor', True):
             preds = preds.detach().cpu().numpy()
         preds_idx = preds.argmax(axis=2)
         preds_prob = preds.max(axis=2)
