@@ -25,17 +25,17 @@ name_to_module = {
     'AutoSTREncoder': '.autostr_encoder',
     'NRTREncoder': '.nrtr_encoder',
     'RepSVTREncoder': '.repvit',
-    }
+}
+
 
 def build_encoder(config):
 
     module_name = config.pop('name')
     assert module_name in name_to_module, Exception(
-        f'Encoder only supports: {list(name_to_module.keys())}'
-    )
-    
+        f'Encoder only supports: {list(name_to_module.keys())}')
+
     module_path = name_to_module[module_name]
     mod = import_module(module_path, package=__package__)
     module_class = getattr(mod, module_name)(**config)
-    
+
     return module_class

@@ -28,24 +28,26 @@ class_to_module = {
     'OTEDecoder': '.ote_decoder',
     'BUSDecoder': '.bus_decoder',
     'DptrParseq': '.dptr_parseq_clip_b_decoder',
-    }
+}
+
 
 def build_decoder(config):
 
     module_name = config.pop('name')
-    
+
     # Check if the class is defined in current module (e.g., GTCDecoder)
     if module_name in globals():
         module_class = globals()[module_name]
     else:
         if module_name not in class_to_module:
-            raise ValueError(f"Unsupported decoder: {module_name}")
+            raise ValueError(f'Unsupported decoder: {module_name}')
         module_str = class_to_module[module_name]
         # Dynamically import the module and get the class
         module = import_module(module_str, package=__package__)
         module_class = getattr(module, module_name)
-    
+
     return module_class(**config)
+
 
 class GTCDecoder(nn.Module):
 
