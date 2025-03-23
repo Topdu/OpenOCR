@@ -9,7 +9,7 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 import numpy as np
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.utility import ArgsParser
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list

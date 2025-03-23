@@ -17,7 +17,7 @@ os.environ['FLAGS_allocator_strategy'] = 'auto_growth'
 
 import cv2
 import json
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.utility import ArgsParser
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
@@ -132,11 +132,7 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
-        if config['Architecture']['algorithm'] == 'DB_mobile':
-            if not os.path.exists(config['Global']['pretrained_model']):
-                config['Global'][
-                    'pretrained_model'] = check_and_download_model(
-                        MODEL_NAME_DET, DOWNLOAD_URL_DET)
+
         self._init_common(config)
         backend = backend if config['Global'].get(
             'backend', None) is None else config['Global']['backend']
@@ -144,6 +140,11 @@ class OpenDetector(object):
         if backend == 'torch':
             import torch
             self.torch = torch
+            if config['Architecture']['algorithm'] == 'DB_mobile':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_DET, DOWNLOAD_URL_DET)
             self._init_torch_model(config, numId)
         elif backend == 'onnx':
             from tools.infer.onnx_engine import ONNXEngine

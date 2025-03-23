@@ -9,7 +9,7 @@ import torch
 
 from openrec.modeling import build_model
 from openrec.postprocess import build_post_process
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.infer_rec import build_rec_process
 from tools.utility import ArgsParser
 from tools.utils.ckpt import load_ckpt
