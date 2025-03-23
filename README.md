@@ -141,7 +141,7 @@ python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file --backend=
 # Det model
 python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.backend=onnx Global.device=cpu Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/det_repsvtr_db/export_det/det_model.onnx
 # Rec model
-python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.backend=onnx Global.device=cpu --o Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/rec/repsvtr_ch/export_rec/rec_model.onnx
+python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.backend=onnx Global.device=cpu Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/rec/repsvtr_ch/export_rec/rec_model.onnx
 ```
 
 #### Local Demo
@@ -177,7 +177,6 @@ python demo_gradio.py
 | [PARSeq](./configs/rec/parseq/)               | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880177.pdf)            | ✅       | ✅         |                                             |
 | [MATRN](./configs/rec/matrn/)                 | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880442.pdf)            | ✅       | ✅         |                                             |
 | [MGP-STR](./configs/rec/mgpstr/)              | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880336.pdf)            | ✅       | ✅         |                                             |
-| [CPPD](./configs/rec/cppd/)                   | [2023](https://arxiv.org/abs/2307.12270)                                                       | ✅       | ✅         |                                             |
 | [LPV](./configs/rec/lpv/)                     | [IJCAI 2023](https://www.ijcai.org/proceedings/2023/0189.pdf)                                  | ✅       | ✅         |                                             |
 | [MAERec](./configs/rec/maerec/)(Union14M)     | [ICCV 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Jiang_Revisiting_Scene_Text_Recognition_A_Data_Perspective_ICCV_2023_paper.pdf) | ✅       | ✅         |                                             |
 | [LISTER](./configs/rec/lister/)               | [ICCV 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Cheng_LISTER_Neighbor_Decoding_for_Length-Insensitive_Scene_Text_Recognition_ICCV_2023_paper.pdf) | ✅       | ✅         |                                             |
@@ -189,8 +188,9 @@ python demo_gradio.py
 | CFF                                           | [IJCAI 2024](https://arxiv.org/abs/2407.05562)                                                 |          |            | TODO                                        |
 | [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | [fd-zs](https://github.com/fd-zs)           |
 | VIPTR                                         | [ACM CIKM 2024](https://arxiv.org/abs/2401.10110)                                              |          |            | TODO                                        |
-| [IGTR](./configs/rec/igtr/)                   | [TPAMI](https://arxiv.org/abs/2401.17851)                                                      | ✅       | ✅         |                                             |
+| [IGTR](./configs/rec/igtr/)                   | [TPAMI 2025](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526)                   | ✅       | ✅         |                                             |
 | [SMTR](./configs/rec/smtr/)                   | [AAAI 2025](https://arxiv.org/abs/2407.12317)                                                  | ✅       | ✅         |                                             |
+| [CPPD](./configs/rec/cppd/)                   | [TPAMI Online Access](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453)          | ✅       | ✅         |                                             |
 | [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
 | [SVTRv2](./configs/rec/svtrv2/)               | [2024](https://arxiv.org/abs/2411.15858)                                                       | ✅       | ✅         |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |
