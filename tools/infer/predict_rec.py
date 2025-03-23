@@ -13,7 +13,7 @@ import numpy as np
 
 from openrec.postprocess import build_post_process
 from openrec.preprocess import create_operators, transform
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.infer.onnx_engine import ONNXEngine
 from tools.infer.utility import check_gpu, parse_args
 from tools.utils.logging import get_logger

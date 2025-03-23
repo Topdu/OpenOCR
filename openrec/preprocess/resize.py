@@ -3,10 +3,7 @@ import random
 
 import cv2
 import numpy as np
-import torch
 from PIL import Image
-from torchvision import transforms as T
-from torchvision.transforms import functional as F
 
 
 class CDistNetResize(object):
@@ -86,6 +83,9 @@ class SVTRResize(object):
 class RecTVResize(object):
 
     def __init__(self, image_shape=[32, 128], padding=True, **kwargs):
+        from torchvision import transforms as T
+        from torchvision.transforms import functional as F
+        self.F = F
         self.padding = padding
         self.image_shape = image_shape
         self.interpolation = T.InterpolationMode.BICUBIC
@@ -108,11 +108,11 @@ class RecTVResize(object):
                 resized_w = imgW
             else:
                 resized_w = int(math.ceil(imgH * ratio))
-        resized_image = F.resize(img, (imgH, resized_w),
-                                 interpolation=self.interpolation)
+        resized_image = self.F.resize(img, (imgH, resized_w),
+                                      interpolation=self.interpolation)
         img = self.transforms(resized_image)
         if resized_w < imgW:
-            img = F.pad(img, [0, 0, imgW - resized_w, 0], fill=0.)
+            img = self.F.pad(img, [0, 0, imgW - resized_w, 0], fill=0.)
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = img
         data['valid_ratio'] = valid_ratio
@@ -185,6 +185,11 @@ class SliceTVResize(object):
                  max_ratio=12,
                  base_h=32,
                  **kwargs):
+        import torch
+        from torchvision import transforms as T
+        from torchvision.transforms import functional as F
+        self.F = F
+        self.torch = torch
         self.image_shape = image_shape
         self.padding = padding
         self.max_ratio = max_ratio
@@ -202,14 +207,14 @@ class SliceTVResize(object):
         w, h = img.size
         w_ratio = ((w // h) // 2) * 2
         w_ratio = max(6, w_ratio)
-        img = F.resize(img, (self.base_h, self.base_h * w_ratio),
-                       interpolation=self.interpolation)
+        img = self.F.resize(img, (self.base_h, self.base_h * w_ratio),
+                            interpolation=self.interpolation)
         img = self.transforms(img)
         img_list = []
         for i in range(0, w_ratio // 2 - 1):
             img_list.append(img[None, :, :,
                                 i * 2 * self.base_h:(i * 2 + 4) * self.base_h])
-        data['image'] = torch.concat(img_list, 0)
+        data['image'] = self.torch.concat(img_list, 0)
         data['valid_ratio'] = float(w_ratio) / w
         return data
 
@@ -223,6 +228,9 @@ class RecTVResizeRatio(object):
                  max_ratio=12,
                  base_h=32,
                  **kwargs):
+        from torchvision import transforms as T
+        from torchvision.transforms import functional as F
+        self.F = F
         self.padding = padding
         self.image_shape = image_shape
         self.max_ratio = max_ratio
@@ -256,11 +264,11 @@ class RecTVResizeRatio(object):
                 resized_w = imgW
             else:
                 resized_w = int(math.ceil(imgH * ratio))
-        resized_image = F.resize(img, (imgH, resized_w),
-                                 interpolation=self.interpolation)
+        resized_image = self.F.resize(img, (imgH, resized_w),
+                                      interpolation=self.interpolation)
         img = self.transforms(resized_image)
         if resized_w < imgW:
-            img = F.pad(img, [0, 0, imgW - resized_w, 0], fill=0.)
+            img = self.F.pad(img, [0, 0, imgW - resized_w, 0], fill=0.)
         valid_ratio = min(1.0, float(resized_w / imgW))
         data['image'] = img
         data['valid_ratio'] = valid_ratio

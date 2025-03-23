@@ -21,7 +21,7 @@ from PIL import Image
 from tools.utils.utility import get_image_file_list, check_and_read
 from tools.infer_rec import OpenRecognizer
 from tools.infer_det import OpenDetector
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.infer.utility import get_rotate_crop_image, get_minarea_rect_crop, draw_ocr_box_txt
 from tools.utils.logging import get_logger
 
@@ -155,18 +155,12 @@ class OpenOCR(object):
 
         """
         cfg_det = Config(DEFAULT_CFG_PATH_DET).cfg  # mobile model
-        model_dir = check_and_download_model(MODEL_NAME_DET, DOWNLOAD_URL_DET)
-        cfg_det['Global']['pretrained_model'] = model_dir
         cfg_det['Global']['device'] = device
         if mode == 'server':
             cfg_rec = Config(DEFAULT_CFG_PATH_REC_SERVER).cfg  # server model
-            model_dir = check_and_download_model(MODEL_NAME_REC_SERVER,
-                                                 DOWNLOAD_URL_REC_SERVER)
         else:
             cfg_rec = Config(DEFAULT_CFG_PATH_REC).cfg  # mobile model
-            model_dir = check_and_download_model(MODEL_NAME_REC,
-                                                 DOWNLOAD_URL_REC)
-        cfg_rec['Global']['pretrained_model'] = model_dir
+
         cfg_rec['Global']['device'] = device
 
         self.text_detector = OpenDetector(cfg_det,

@@ -4,7 +4,7 @@ Global:
   log_smooth_window: 20
   print_batch_step: 10
   output_dir: ./output/rec/u14m_filter/svtrv2_lnconv_smtr_maxratio12
-  save_epoch_step: 1
+  save_epoch_step: [15, 1]
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 500]
   eval_epoch_step: [0, 1]

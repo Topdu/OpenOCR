@@ -1,42 +1,78 @@
 import io
+import copy
+import importlib
 
 import cv2
 import numpy as np
 from PIL import Image
 
-from .abinet_label_encode import ABINetLabelEncode
-from .ar_label_encode import ARLabelEncode
-from .ce_label_encode import CELabelEncode
-from .char_label_encode import CharLabelEncode
-from .cppd_label_encode import CPPDLabelEncode
-from .ctc_label_encode import CTCLabelEncode
-from .ep_label_encode import EPLabelEncode
-from .igtr_label_encode import IGTRLabelEncode
-from .mgp_label_encode import MGPLabelEncode
-from .rec_aug import ABINetAug
-from .rec_aug import BaseDataAugmentation as BDA
-from .rec_aug import PARSeqAug, PARSeqAugPIL, SVTRAug
-from .resize import (ABINetResize, CDistNetResize, LongResize, RecTVResize,
-                     RobustScannerRecResizeImg, SliceResize, SliceTVResize,
-                     SRNRecResizeImg, SVTRResize, VisionLANResize,
-                     RecDynamicResize)
-from .smtr_label_encode import SMTRLabelEncode
-from .srn_label_encode import SRNLabelEncode
-from .visionlan_label_encode import VisionLANLabelEncode
-from .cam_label_encode import CAMLabelEncode
-# from .dptr_label_encode import DPTRLabelEncode
 
-
-class KeepKeys(object):
+class KeepKeys:
 
     def __init__(self, keep_keys, **kwargs):
         self.keep_keys = keep_keys
 
     def __call__(self, data):
-        data_list = []
-        for key in self.keep_keys:
-            data_list.append(data[key])
-        return data_list
+        return [data[key] for key in self.keep_keys]
+
+
+class Fasttext:
+
+    def __init__(self, path='None', **kwargs):
+        import fasttext
+        self.fast_model = fasttext.load_model(path)
+
+    def __call__(self, data):
+        data['fast_label'] = self.fast_model[data['label']]
+        return data
+
+
+class DecodeImage:
+
+    def __init__(self,
+                 img_mode='RGB',
+                 channel_first=False,
+                 ignore_orientation=False,
+                 **kwargs):
+        self.img_mode = img_mode
+        self.channel_first = channel_first
+        self.ignore_orientation = ignore_orientation
+
+    def __call__(self, data):
+        assert isinstance(data['image'], bytes) and len(data['image']) > 0
+        img = np.frombuffer(data['image'], dtype='uint8')
+
+        flags = cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_COLOR if self.ignore_orientation else 1
+        img = cv2.imdecode(img, flags)
+
+        if self.img_mode == 'GRAY':
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        elif self.img_mode == 'RGB':
+            img = img[:, :, ::-1]
+
+        if self.channel_first:
+            img = img.transpose((2, 0, 1))
+
+        data['image'] = img
+        return data
+
+
+class DecodeImagePIL:
+
+    def __init__(self, img_mode='RGB', **kwargs):
+        self.img_mode = img_mode
+
+    def __call__(self, data):
+        assert isinstance(data['image'], bytes) and len(data['image']) > 0
+        img = Image.open(io.BytesIO(data['image'])).convert('RGB')
+
+        if self.img_mode == 'Gray':
+            img = img.convert('L')
+        elif self.img_mode == 'BGR':
+            img = Image.fromarray(np.array(img)[:, :, ::-1])
+
+        data['image'] = img
+        return data
 
 
 def transform(data, ops=None):
@@ -50,99 +86,64 @@ def transform(data, ops=None):
     return data
 
 
-class Fasttext(object):
-
-    def __init__(self, path='None', **kwargs):
-        # pip install fasttext==0.9.1
-        import fasttext
-
-        self.fast_model = fasttext.load_model(path)
-
-    def __call__(self, data):
-        label = data['label']
-        fast_label = self.fast_model[label]
-        data['fast_label'] = fast_label
-        return data
-
-
-class DecodeImage(object):
-    """decode image."""
-
-    def __init__(self,
-                 img_mode='RGB',
-                 channel_first=False,
-                 ignore_orientation=False,
-                 **kwargs):
-        self.img_mode = img_mode
-        self.channel_first = channel_first
-        self.ignore_orientation = ignore_orientation
-
-    def __call__(self, data):
-        img = data['image']
-
-        assert type(img) is bytes and len(
-            img) > 0, "invalid input 'img' in DecodeImage"
-        img = np.frombuffer(img, dtype='uint8')
-        if self.ignore_orientation:
-            img = cv2.imdecode(
-                img, cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_COLOR)
-        else:
-            img = cv2.imdecode(img, 1)
-        if img is None:
-            return None
-        if self.img_mode == 'GRAY':
-            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        elif self.img_mode == 'RGB':
-            assert img.shape[2] == 3, 'invalid shape of image[%s]' % (
-                img.shape)
-            img = img[:, :, ::-1]
-
-        if self.channel_first:
-            img = img.transpose((2, 0, 1))
-
-        data['image'] = img
-        return data
+# 类名到模块的映射
+MODULE_MAPPING = {
+    'ABINetLabelEncode': '.abinet_label_encode',
+    'ARLabelEncode': '.ar_label_encode',
+    'CELabelEncode': '.ce_label_encode',
+    'CharLabelEncode': '.char_label_encode',
+    'CPPDLabelEncode': '.cppd_label_encode',
+    'CTCLabelEncode': '.ctc_label_encode',
+    'EPLabelEncode': '.ep_label_encode',
+    'IGTRLabelEncode': '.igtr_label_encode',
+    'MGPLabelEncode': '.mgp_label_encode',
+    'SMTRLabelEncode': '.smtr_label_encode',
+    'SRNLabelEncode': '.srn_label_encode',
+    'VisionLANLabelEncode': '.visionlan_label_encode',
+    'CAMLabelEncode': '.cam_label_encode',
+    'ABINetAug': '.rec_aug',
+    'BDA': '.rec_aug',
+    'PARSeqAug': '.rec_aug',
+    'PARSeqAugPIL': '.rec_aug',
+    'SVTRAug': '.rec_aug',
+    'ABINetResize': '.resize',
+    'CDistNetResize': '.resize',
+    'LongResize': '.resize',
+    'RecTVResize': '.resize',
+    'RobustScannerRecResizeImg': '.resize',
+    'SliceResize': '.resize',
+    'SliceTVResize': '.resize',
+    'SRNRecResizeImg': '.resize',
+    'SVTRResize': '.resize',
+    'VisionLANResize': '.resize',
+    'RecDynamicResize': '.resize',
+}
 
 
-class DecodeImagePIL(object):
-    """decode image."""
+def dynamic_import(class_name):
+    module_path = MODULE_MAPPING.get(class_name)
+    if not module_path:
+        raise ValueError(f'Unsupported class: {class_name}')
 
-    def __init__(self, img_mode='RGB', **kwargs):
-        self.img_mode = img_mode
-
-    def __call__(self, data):
-        img = data['image']
-        assert type(img) is bytes and len(
-            img) > 0, "invalid input 'img' in DecodeImage"
-        img = data['image']
-        buf = io.BytesIO(img)
-        img = Image.open(buf).convert('RGB')
-        if self.img_mode == 'Gray':
-            img = img.convert('L')
-        elif self.img_mode == 'BGR':
-            img = np.array(img)[:, :, ::-1]  # 将图片转为numpy格式，并将最后一维通道倒序
-            img = Image.fromarray(np.uint8(img))
-        data['image'] = img
-        return data
+    module = importlib.import_module(module_path, package=__package__)
+    return getattr(module, class_name)
 
 
 def create_operators(op_param_list, global_config=None):
-    """create operators based on the config.
-
-    Args:
-        params(list): a dict list, used to create some operators
-    """
-    assert isinstance(op_param_list, list), 'operator config should be a list'
     ops = []
-    for operator in op_param_list:
-        assert isinstance(operator,
-                          dict) and len(operator) == 1, 'yaml format error'
-        op_name = list(operator)[0]
-        param = {} if operator[op_name] is None else operator[op_name]
-        if global_config is not None:
+    for op_info in op_param_list:
+        op_name = list(op_info.keys())[0]
+        param = copy.deepcopy(op_info[op_name]) or {}
+
+        if global_config:
             param.update(global_config)
-        op = eval(op_name)(**param)
-        ops.append(op)
+
+        if op_name in globals():
+            op_class = globals()[op_name]
+        else:
+            op_class = dynamic_import(op_name)
+
+        ops.append(op_class(**param))
     return ops
 
 
@@ -155,14 +156,13 @@ class GTCLabelEncode():
                  character_dict_path=None,
                  use_space_char=False,
                  **kwargs):
-        self.gtc_label_encode = eval(gtc_label_encode['name'])(
+        self.gtc_label_encode = dynamic_import(gtc_label_encode['name'])(
             max_text_length=max_text_length,
             character_dict_path=character_dict_path,
             use_space_char=use_space_char,
             **gtc_label_encode)
-        self.ctc_label_encode = CTCLabelEncode(max_text_length,
-                                               character_dict_path,
-                                               use_space_char)
+        self.ctc_label_encode = dynamic_import('CTCLabelEncode')(
+            max_text_length, character_dict_path, use_space_char)
 
     def __call__(self, data):
         data_ctc = self.ctc_label_encode({'label': data['label']})

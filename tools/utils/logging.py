@@ -2,8 +2,6 @@ import os
 import sys
 import logging
 import functools
-import torch
-import torch.distributed as dist
 
 logger_initialized = {}
 
