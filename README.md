@@ -97,6 +97,9 @@ result, elapse = engine(img_path)
 
 # Server mode
 # engine = OpenOCR(mode='server')
+
+# ONNX Inference
+onnx_engine = OpenOCR(backend='onnx', onnx_det_model_path=/path/det_onnx_model, onnx_rec_model_path=/path/det_onnx_model)
 ```
 
 ### 2. Clone this repository:
