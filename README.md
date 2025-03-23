@@ -14,7 +14,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - [x] Supports Chinese and English text detection and recognition.
     - [x] Provides server model and mobile model.
     - [ ] Fine-tunes OpenOCR on a custom dataset.
-    - [ ] ONNX model export for wider compatibility.
+    - [x] [ONNX model export for wider compatibility](#export-onnx-model).
 - 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
   - \[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
   - [Introduction](./docs/svtrv2.md)
@@ -29,18 +29,22 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 - [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* AAAI 2025. [Doc](./configs/rec/smtr/), [Paper](https://arxiv.org/abs/2407.12317))
 - [**DPTR**](./configs/rec/dptr/) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [Paper](https://arxiv.org/abs/2408.05706))
-- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI (accepted). [Doc](./configs/rec/igtr), [Paper](https://arxiv.org/abs/2401.17851))
+- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* 2024. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
 - [**CDistNet**](./configs/rec/cdistnet/) (*Tianlun Zheng, Zhineng Chen\*, Shancheng Fang, Hongtao Xie, Yu-Gang Jiang. CDistNet: Perceiving Multi-Domain Character Distance for Robust Text Recognition,* IJCV 2024. [Paper](https://link.springer.com/article/10.1007/s11263-023-01880-0))
 - **MRN** (*Tianlun Zheng, Zhineng Chen\*, Bingchen Huang, Wei Zhang, Yu-Gang Jiang. MRN: Multiplexed Routing Network for Incremental Multilingual Text Recognition,* ICCV 2023. [Paper](https://openaccess.thecvf.com/content/ICCV2023/html/Zheng_MRN_Multiplexed_Routing_Network_for_Incremental_Multilingual_Text_Recognition_ICCV_2023_paper.html), [Code](https://github.com/simplify23/MRN))
 - **TPS++** (*Tianlun Zheng, Zhineng Chen\*, Jinfeng Bai, Hongtao Xie, Yu-Gang Jiang. TPS++: Attention-Enhanced Thin-Plate Spline for Scene Text Recognition,* IJCAI 2023. [Paper](https://arxiv.org/abs/2305.05322), [Code](https://github.com/simplify23/TPS_PP))
-- [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI (accepted). [PaddleOCR Doc](https://github.com/Topdu/PaddleOCR/blob/main/doc/doc_ch/algorithm_rec_cppd.md), [Paper](https://arxiv.org/abs/2307.12270))
+- [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI (accepted). [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md), [Paper](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453))
 - [**SVTR**](./configs/rec/svtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Tianlun Zheng, Chenxia Li, Yuning Du, Yu-Gang Jiang. SVTR: Scene Text Recognition with a Single Visual Model,* IJCAI 2022 (Long). [PaddleOCR Doc](https://github.com/Topdu/PaddleOCR/blob/main/doc/doc_ch/algorithm_rec_svtr.md), [Paper](https://www.ijcai.org/proceedings/2022/124))
 - [**NRTR**](./configs/rec/nrtr/) (*Fenfen Sheng, Zhineng Chen, Bo Xu. NRTR: A No-Recurrence Sequence-to-Sequence Model For Scene Text Recognition,* ICDAR 2019. [Paper](https://arxiv.org/abs/1806.00926))
 
 ## Recent Updates
 
-- **2024.12.31**: Our paper [IGTR](https://arxiv.org/abs/2401.17851) is accepted by TPAMI. Accessible in [Doc](./configs/rec/igtr/).
+- **2025.03.23**: Releasing the feature of [ONNX model export for wider compatibility](#export-onnx-model).
+
+- **2025.02.22**: Our paper [CPPD](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453) is accepted by TPAMI. Accessible in [Doc](./configs/rec/cppd/) and [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md).
+
+- **2024.12.31**: Our paper [IGTR](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526) is accepted by TPAMI. Accessible in [Doc](./configs/rec/igtr/).
 
 - **2024.12.16**: Our paper [SMTR](https://arxiv.org/abs/2407.12317) is accepted by AAAI 2025. Accessible in [Doc](./configs/rec/smtr/).
 
@@ -92,6 +96,9 @@ result, elapse = engine(img_path)
 
 # Server mode
 # engine = OpenOCR(mode='server')
+
+# ONNX Inference
+onnx_engine = OpenOCR(backend='onnx', onnx_det_model_path=/path/det_onnx_model, onnx_rec_model_path=/path/det_onnx_model)
 ```
 
 ### 2. Clone this repository:
@@ -115,6 +122,26 @@ python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file
 python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer_img=/path/img_fold or /path/img_file
 # Rec model
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
+```
+
+#### Export ONNX model
+
+```shell
+pip install onnx
+python tools/toonnx.py --c configs/rec/svtrv2/repsvtr_ch.yml --o Global.device=cpu
+python tools/toonnx.py --c configs/det/dbnet/repvit_db.yml --o Global.device=cpu
+```
+
+#### Inference with ONNXRuntime
+
+```shell
+pip install onnxruntime
+# OpenOCR system: Det + Rec model
+python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file --backend=onnx --onnx_det_model_path=output/det_repsvtr_db/export_det/det_model.onnx --onnx_rec_model_path=output/rec/repsvtr_ch/export_rec/rec_model.onnx --device='cpu'
+# Det model
+python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.backend=onnx Global.device=cpu Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/det_repsvtr_db/export_det/det_model.onnx
+# Rec model
+python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.backend=onnx Global.device=cpu Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/rec/repsvtr_ch/export_rec/rec_model.onnx
 ```
 
 #### Local Demo
@@ -150,7 +177,6 @@ python demo_gradio.py
 | [PARSeq](./configs/rec/parseq/)               | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880177.pdf)            | ✅       | ✅         |                                             |
 | [MATRN](./configs/rec/matrn/)                 | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880442.pdf)            | ✅       | ✅         |                                             |
 | [MGP-STR](./configs/rec/mgpstr/)              | [ECCV 2022](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136880336.pdf)            | ✅       | ✅         |                                             |
-| [CPPD](./configs/rec/cppd/)                   | [2023](https://arxiv.org/abs/2307.12270)                                                       | ✅       | ✅         |                                             |
 | [LPV](./configs/rec/lpv/)                     | [IJCAI 2023](https://www.ijcai.org/proceedings/2023/0189.pdf)                                  | ✅       | ✅         |                                             |
 | [MAERec](./configs/rec/maerec/)(Union14M)     | [ICCV 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Jiang_Revisiting_Scene_Text_Recognition_A_Data_Perspective_ICCV_2023_paper.pdf) | ✅       | ✅         |                                             |
 | [LISTER](./configs/rec/lister/)               | [ICCV 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Cheng_LISTER_Neighbor_Decoding_for_Length-Insensitive_Scene_Text_Recognition_ICCV_2023_paper.pdf) | ✅       | ✅         |                                             |
@@ -162,8 +188,9 @@ python demo_gradio.py
 | CFF                                           | [IJCAI 2024](https://arxiv.org/abs/2407.05562)                                                 |          |            | TODO                                        |
 | [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | [fd-zs](https://github.com/fd-zs)           |
 | VIPTR                                         | [ACM CIKM 2024](https://arxiv.org/abs/2401.10110)                                              |          |            | TODO                                        |
-| [IGTR](./configs/rec/igtr/)                   | [TPAMI](https://arxiv.org/abs/2401.17851)                                                      | ✅       | ✅         |                                             |
+| [IGTR](./configs/rec/igtr/)                   | [TPAMI 2025](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526)                   | ✅       | ✅         |                                             |
 | [SMTR](./configs/rec/smtr/)                   | [AAAI 2025](https://arxiv.org/abs/2407.12317)                                                  | ✅       | ✅         |                                             |
+| [CPPD](./configs/rec/cppd/)                   | [TPAMI Online Access](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453)          | ✅       | ✅         |                                             |
 | [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
 | [SVTRv2](./configs/rec/svtrv2/)               | [2024](https://arxiv.org/abs/2411.15858)                                                       | ✅       | ✅         |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |

@@ -9,15 +9,10 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 import numpy as np
-import torch
-from torchvision import transforms as T
-from torchvision.transforms import functional as F
 from tools.engine import Config
 from tools.utility import ArgsParser
-from tools.utils.ckpt import load_ckpt
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
-from tools.infer_det import replace_batchnorm
 
 logger = get_logger()
 
@@ -90,6 +85,10 @@ class RatioRecTVReisze(object):
         self.base_shape = cfg['Eval']['dataset'].get(
             'base_shape', [[64, 64], [96, 48], [112, 40], [128, 32]])
         self.base_h = cfg['Eval']['dataset'].get('base_h', 32)
+
+        from torchvision import transforms as T
+        from torchvision.transforms import functional as F
+        self.F = F
         self.interpolation = T.InterpolationMode.BICUBIC
         transforms = []
         transforms.extend([
@@ -114,8 +113,8 @@ class RatioRecTVReisze(object):
                                          ratio_resize, self.base_h
                                      ]
         resized_w = imgW
-        resized_image = F.resize(img, (imgH, resized_w),
-                                 interpolation=self.interpolation)
+        resized_image = self.F.resize(img, (imgH, resized_w),
+                                      interpolation=self.interpolation)
         img = self.transforms(resized_image)
         data['image'] = img
         return data
@@ -145,6 +144,7 @@ def build_rec_process(cfg):
 
 
 def set_device(device, numId=0):
+    import torch
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
     else:
@@ -153,70 +153,92 @@ def set_device(device, numId=0):
     return device
 
 
-class OpenRecognizer(object):
+class OpenRecognizer:
 
-    def __init__(self, config=None, mode='mobile', numId=0):
+    def __init__(self,
+                 config=None,
+                 mode='mobile',
+                 backend='torch',
+                 onnx_model_path=None,
+                 numId=0):
         """
-        初始化方法。
-
         Args:
             config (dict, optional): 配置信息。默认为None。
             mode (str, optional): 模式，'server' 或 'mobile'。默认为'mobile'。
+            backend (str): 'torch' 或 'onnx'
+            onnx_model_path (str): ONNX模型路径（仅当backend='onnx'时需要）
             numId (int, optional): 设备编号。默认为0。
-
-        Returns:
-            None
-
-        Raises:
-            无
-
         """
-        if config is None:
-            if mode == 'server':
-                config_file = DEFAULT_CFG_PATH_REC_SERVER
-            else:
-                config_file = DEFAULT_CFG_PATH_REC
-            config = Config(config_file).cfg
 
-        algorithm_name = config['Architecture']['algorithm']
+        if config is None:
+            config_file = DEFAULT_CFG_PATH_REC_SERVER if mode == 'server' else DEFAULT_CFG_PATH_REC
+            config = Config(config_file).cfg
+        self.cfg = config
+        # 公共初始化
+        self._init_common()
+        backend = backend if config['Global'].get(
+            'backend', None) is None else config['Global']['backend']
+        self.backend = backend
+        if backend == 'torch':
+            import torch
+            self.torch = torch
+            self._init_torch_model(numId)
+        elif backend == 'onnx':
+            from tools.infer.onnx_engine import ONNXEngine
+            onnx_model_path = onnx_model_path if config['Global'].get(
+                'onnx_model_path',
+                None) is None else config['Global']['onnx_model_path']
+            if not onnx_model_path:
+                raise ValueError('ONNX模式需要指定onnx_model_path参数')
+            self.onnx_rec_engine = ONNXEngine(
+                onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
+        else:
+            raise ValueError("backend参数必须是'torch'或'onnx'")
+
+    def _init_common(self):
+        # 初始化公共组件
+        from openrec.postprocess import build_post_process
+        from openrec.preprocess import create_operators, transform
+        self.transform = transform
+        self.post_process_class = build_post_process(self.cfg['PostProcess'],
+                                                     self.cfg['Global'])
+        char_num = self.post_process_class.get_character_num()
+        self.cfg['Architecture']['Decoder']['out_channels'] = char_num
+        # 构建预处理流程
+        transforms, ratio_resize_flag = build_rec_process(self.cfg)
+        self.ops = create_operators(transforms, self.cfg['Global'])
+        if ratio_resize_flag:
+            ratio_resize = RatioRecTVReisze(cfg=self.cfg)
+            self.ops.insert(-1, ratio_resize)
+
+    def _init_torch_model(self, numId):
+        from tools.utils.ckpt import load_ckpt
+        from tools.infer_det import replace_batchnorm
+        # PyTorch专用初始化
+        algorithm_name = self.cfg['Architecture']['algorithm']
         if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
-            if not os.path.exists(config['Global']['pretrained_model']):
+            if not os.path.exists(self.cfg['Global']['pretrained_model']):
                 pretrained_model = check_and_download_model(
                     MODEL_NAME_REC, DOWNLOAD_URL_REC
                 ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
                     MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
-                config['Global']['pretrained_model'] = pretrained_model
-            config['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
+                self.cfg['Global']['pretrained_model'] = pretrained_model
+            self.cfg['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
 
-        global_config = config['Global']
-        self.cfg = config
-        if global_config['pretrained_model'] is None:
-            global_config[
-                'pretrained_model'] = global_config['output_dir'] + '/best.pth'
-        # build post process
         from openrec.modeling import build_model as build_rec_model
-        from openrec.postprocess import build_post_process
-        from openrec.preprocess import create_operators, transform
-        self.transform = transform
-        self.post_process_class = build_post_process(config['PostProcess'],
-                                                     global_config)
-        char_num = self.post_process_class.get_character_num()
-        config['Architecture']['Decoder']['out_channels'] = char_num
-        self.model = build_rec_model(config['Architecture'])
-        load_ckpt(self.model, config)
 
-        self.device = set_device(global_config['device'], numId=numId)
+        self.model = build_rec_model(self.cfg['Architecture'])
+        load_ckpt(self.model, self.cfg)
+
+        self.device = set_device(self.cfg['Global']['device'], numId)
+        self.model.to(self.device)
         self.model.eval()
         if algorithm_name == 'SVTRv2_mobile':
             replace_batchnorm(self.model.encoder)
-        self.model.to(device=self.device)
 
-        transforms, ratio_resize_flag = build_rec_process(self.cfg)
-        global_config['infer_mode'] = True
-        self.ops = create_operators(transforms, global_config)
-        if ratio_resize_flag:
-            ratio_resize = RatioRecTVReisze(cfg=self.cfg)
-            self.ops.insert(-1, ratio_resize)
+    def _inference_onnx(self, images):
+        # ONNX输入需要为numpy数组
+        return self.onnx_rec_engine.run(images)
 
     def __call__(self,
                  img_path=None,
@@ -276,37 +298,38 @@ class OpenRecognizer(object):
                 ]:
                     valid_ratio = np.expand_dims(batch[-1], axis=0)
                     batch_others.append(valid_ratio)
-                    # others = [torch.from_numpy(valid_ratio).to(device=self.device)]
-                resized_image = batch[0]
+
+                resized_image = batch[0] if isinstance(
+                    batch[0], np.ndarray) else batch[0].numpy()
                 h, w = resized_image.shape[-2:]
                 max_width = max(max_width, w)
                 max_height = max(max_height, h)
                 batch_data.append(batch[0])
 
-            padded_batch_data = []
-            for resized_image in batch_data:
-                padded_image = np.zeros([1, 3, max_height, max_width],
-                                        dtype=np.float32)
-                h, w = resized_image.shape[-2:]
-
-                # Apply padding (bottom-right padding)
-                padded_image[:, :, :h, :
-                             w] = resized_image  # 0 is typically used for padding
-                padded_batch_data.append(padded_image)
+            padded_batch = np.zeros(
+                (len(batch_data), 3, max_height, max_width), dtype=np.float32)
+            for i, img in enumerate(batch_data):
+                h, w = img.shape[-2:]
+                padded_batch[i, :, :h, :w] = img
 
             if batch_others:
                 others = np.concatenate(batch_others, axis=0)
             else:
                 others = None
-            images = np.concatenate(padded_batch_data, axis=0)
-            images = torch.from_numpy(images).to(device=self.device)
-
-            with torch.no_grad():
-                t_start = time.time()
-                preds = self.model(images, others)
-                t_cost = time.time() - t_start
-            post_results = self.post_process_class(preds)
-
+            t_start = time.time()
+            if self.backend == 'torch':
+                images = self.torch.from_numpy(padded_batch).to(
+                    device=self.device)
+                preds = self.model(images, others)  # bs, len, num_classes
+                torch_tensor = True
+            elif self.backend == 'onnx':
+                # ONNX推理
+                preds = self._inference_onnx(padded_batch)
+                preds = preds[0]  # bs, len, num_classes
+                torch_tensor = False
+            t_cost = time.time() - t_start
+            post_results = self.post_process_class(preds,
+                                                   torch_tensor=torch_tensor)
             for i, post_result in enumerate(post_results):
                 if img_path is not None:
                     info = {
