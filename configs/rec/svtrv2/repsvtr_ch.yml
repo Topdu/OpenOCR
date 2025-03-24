@@ -92,8 +92,8 @@ Eval:
     label_file_list:
       - ../ic15_data/rec_gt_test.txt
     transforms:
-      - DecodeImagePIL: # load image
-          img_mode: RGB
+      - DecodeImage: # load image
+          img_mode: BGR
       - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
@@ -101,8 +101,8 @@ Eval:
       - RecDynamicResize:
           image_shape: [48, 320]
           padding: False
-      # - RecTVResize:
-      #     image_shape: [48, 320]
+      # - SVTRResize:
+      #     image_shape: [3, 48, 320]
       #     padding: True
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
