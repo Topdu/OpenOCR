@@ -104,22 +104,22 @@ Eval:
     label_file_list:
       - ../ic15_data/rec_gt_test.txt
     transforms:
-      - DecodeImagePIL: # load image
-          img_mode: RGB
+      - DecodeImage: # load image
+          img_mode: BGR
       - CTCLabelEncode: # Class handling label
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
-      # - RecDynamicResize:
-      #     image_shape: [48, 320]
-      #     padding: False
-      - RecTVResize:
+      - RecDynamicResize:
           image_shape: [48, 320]
-          padding: True
+          padding: False
+      # - RecTVResize:
+      #     image_shape: [48, 320]
+      #     padding: True
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 256
+    batch_size_per_card: 1
     num_workers: 4
