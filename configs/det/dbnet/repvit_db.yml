@@ -4,7 +4,7 @@ Global:
   log_smooth_window: 20
   print_batch_step: 100
   output_dir: ./output/det_repsvtr_db
-  save_epoch_step: 10
+  save_epoch_step: [400, 25]
   eval_batch_step:
   - 0
   - 1000
@@ -12,8 +12,8 @@ Global:
   checkpoints:
   pretrained_model: openocr_det_repvit_ch.pth
   save_inference_dir: null
-  use_visualdl: false
-  infer_img: ./testA
+  use_tensorboard: false
+  infer_img:
   save_res_path: ./checkpoints/det_db/predicts_db.txt
   distributed: true
   model_type: det
@@ -30,25 +30,23 @@ Architecture:
     name: DBHead
     k: 50
 
-# Loss:
-#   name: DBLoss
-#   balance_loss: true
-#   main_loss_type: DiceLoss
-#   alpha: 5
-#   beta: 10
-#   ohem_ratio: 3
+Loss:
+  name: DBLoss
+  balance_loss: true
+  main_loss_type: DiceLoss
+  alpha: 5
+  beta: 10
+  ohem_ratio: 3
 
-# Optimizer:
-#   name: Adam
-#   beta1: 0.9
-#   beta2: 0.999
-#   lr:
-#     name: Cosine
-#     learning_rate: 0.001 #(8*8c)
-#     warmup_epoch: 2
-#   regularizer:
-#     name: L2
-#     factor: 5.0e-05
+Optimizer:
+  name: Adam
+  lr: 0.001
+  weight_decay: 5.0e-05
+  filter_bias_and_bn: False
+
+LRScheduler:
+  name: CosineAnnealingLR
+  warmup_epoch: 2
 
 PostProcess:
   name: DBPostProcess
@@ -58,84 +56,84 @@ PostProcess:
   unclip_ratio: 1.5
   score_mode: 'slow'
 
-# Metric:
-#   name: DetMetric
-#   main_indicator: hmean
+Metric:
+  name: DetMetric
+  main_indicator: hmean
 
-# Train:
-#   dataset:
-#     name: SimpleDataSet
-#     data_dir: ./train_data/icdar2015/text_localization/
-#     label_file_list:
-#       - ./train_data/icdar2015/text_localization/train_icdar2015_label.txt
-#     ratio_list: [1.0]
-#     transforms:
-#     - DecodeImage:
-#         img_mode: BGR
-#         channel_first: false
-#     - DetLabelEncode: null
-#     - CopyPaste: null
-#     - IaaAugment:
-#         augmenter_args:
-#         - type: Fliplr
-#           args:
-#             p: 0.5
-#         - type: Affine
-#           args:
-#             rotate:
-#             - -10
-#             - 10
-#         - type: Resize
-#           args:
-#             size:
-#             - 0.5
-#             - 3
-#     - EastRandomCropData:
-#         size:
-#         - 640
-#         - 640
-#         max_tries: 50
-#         keep_ratio: true
-#     - MakeBorderMap:
-#         shrink_ratio: 0.4
-#         thresh_min: 0.3
-#         thresh_max: 0.7
-#         total_epoch: *epoch_num
-#     - MakeShrinkMap:
-#         shrink_ratio: 0.4
-#         min_text_size: 8
-#         total_epoch: *epoch_num
-#     - NormalizeImage:
-#         scale: 1./255.
-#         mean:
-#         - 0.485
-#         - 0.456
-#         - 0.406
-#         std:
-#         - 0.229
-#         - 0.224
-#         - 0.225
-#         order: hwc
-#     - ToCHWImage: null
-#     - KeepKeys:
-#         keep_keys:
-#         - image
-#         - threshold_map
-#         - threshold_mask
-#         - shrink_map
-#         - shrink_mask
-#   loader:
-#     shuffle: true
-#     drop_last: false
-#     batch_size_per_card: 8
-#     num_workers: 8
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ../icdar2015/text_localization/
+    label_file_list:
+      - ../icdar2015/text_localization/train_icdar2015_label.txt
+    ratio_list: [1.0]
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - DetLabelEncode: null
+    - CopyPaste: null
+    - IaaAugment:
+        augmenter_args:
+        - type: Fliplr
+          args:
+            p: 0.5
+        - type: Affine
+          args:
+            rotate:
+            - -10
+            - 10
+        - type: Resize
+          args:
+            size:
+            - 0.5
+            - 3
+    - EastRandomCropData:
+        size:
+        - 640
+        - 640
+        max_tries: 50
+        keep_ratio: true
+    - MakeBorderMap:
+        shrink_ratio: 0.4
+        thresh_min: 0.3
+        thresh_max: 0.7
+        total_epoch: *epoch_num
+    - MakeShrinkMap:
+        shrink_ratio: 0.4
+        min_text_size: 8
+        total_epoch: *epoch_num
+    - NormalizeImage:
+        scale: 1./255.
+        mean:
+        - 0.485
+        - 0.456
+        - 0.406
+        std:
+        - 0.229
+        - 0.224
+        - 0.225
+        order: hwc
+    - ToCHWImage: null
+    - KeepKeys:
+        keep_keys:
+        - image
+        - threshold_map
+        - threshold_mask
+        - shrink_map
+        - shrink_mask
+  loader:
+    shuffle: true
+    drop_last: false
+    batch_size_per_card: 8
+    num_workers: 8
 
 Eval:
   dataset:
     name: SimpleDataSet
-    data_dir: ./train_data/icdar2015/text_localization/
+    data_dir: ../icdar2015/text_localization/
     label_file_list:
-      - ./train_data/icdar2015/text_localization/test_icdar2015_label.txt
+      - ../icdar2015/text_localization/test_icdar2015_label.txt
     transforms:
     - DecodeImage:
         img_mode: BGR

@@ -6,7 +6,8 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
-from tools.engine import Config, Trainer
+from tools.engine.config import Config
+from tools.engine.trainer import Trainer
 from tools.utility import ArgsParser
 
 

@@ -1,10 +1,19 @@
+import copy
 import io
-
 import cv2
 import numpy as np
 from PIL import Image
+from importlib import import_module
 
-from .db_resize_for_test import DetResizeForTest
+MODULE_MAPPING = {
+    'DetResizeForTest': '.db_resize_for_test',
+    'CopyPaste': '.crop_paste',
+    'IaaAugment': '.iaa_augment',
+    'EastRandomCropData': '.crop_resize',
+    'DetLabelEncode': '.db_label_encode',
+    'MakeBorderMap': '.db_label_encode',
+    'MakeShrinkMap': '.db_label_encode',
+}
 
 
 class NormalizeImage(object):
@@ -134,21 +143,28 @@ class DecodeImagePIL(object):
         return data
 
 
-def create_operators(op_param_list, global_config=None):
-    """create operators based on the config.
+def dynamic_import(class_name):
+    module_path = MODULE_MAPPING.get(class_name)
+    if not module_path:
+        raise ValueError(f'Unsupported class: {class_name}')
 
-    Args:
-        params(list): a dict list, used to create some operators
-    """
-    assert isinstance(op_param_list, list), 'operator config should be a list'
+    module = import_module(module_path, package=__package__)
+    return getattr(module, class_name)
+
+
+def create_operators(op_param_list, global_config=None):
     ops = []
-    for operator in op_param_list:
-        assert isinstance(operator,
-                          dict) and len(operator) == 1, 'yaml format error'
-        op_name = list(operator)[0]
-        param = {} if operator[op_name] is None else operator[op_name]
-        if global_config is not None:
+    for op_info in op_param_list:
+        op_name = list(op_info.keys())[0]
+        param = copy.deepcopy(op_info[op_name]) or {}
+
+        if global_config:
             param.update(global_config)
-        op = eval(op_name)(**param)
-        ops.append(op)
+
+        if op_name in globals():
+            op_class = globals()[op_name]
+        else:
+            op_class = dynamic_import(op_name)
+
+        ops.append(op_class(**param))
     return ops

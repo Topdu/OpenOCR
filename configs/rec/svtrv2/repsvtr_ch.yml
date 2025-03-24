@@ -1,13 +1,13 @@
 Global:
   device: gpu
-  epoch_num: 20
+  epoch_num: 100
   log_smooth_window: 20
   print_batch_step: 10
-  output_dir: ./output/rec/repsvtr_ch/
-  save_epoch_step: 1
+  output_dir: ./output/rec/ch/repsvtr_ch/
+  save_epoch_step: [150, 10]
   # evaluation is run every 2000 iterations
   eval_epoch_step: [0, 1]
-  eval_batch_step: [0, 500]
+  eval_batch_step: [0, 2000]
   cal_metric_during_train: True
   pretrained_model: ./openocr_repsvtr_ch.pth
   checkpoints:
@@ -22,15 +22,14 @@ Global:
   project_name: resvtr_ctc_nosgm_ds
 
 Optimizer:
-  name: AdamW
-  lr: 0.00065 # for 4gpus bs256/gpu
-  weight_decay: 0.05
-  filter_bias_and_bn: True
+  name: Adam
+  lr: 0.0001
+  weight_decay: 3.0e-05
+  filter_bias_and_bn: False
 
 LRScheduler:
-  name: OneCycleLR
-  warmup_epoch: 1.5 # pct_start 0.075*20 = 1.5ep
-  cycle_momentum: False
+  name: CosineAnnealingLR
+  warmup_epoch: 5
 
 Architecture:
   model_type: rec
@@ -63,16 +62,10 @@ Metric:
 
 Train:
   dataset:
-    name: RatioDataSetTVResize
-    ds_width: True
-    padding: False
-    base_shape: [[32, 32], [64, 32], [96, 32], [128, 32]]
-    data_dir_list: ['../Union14M-L-LMDB-Filtered/filter_train_challenging',
-    '../Union14M-L-LMDB-Filtered/filter_train_hard',
-    '../Union14M-L-LMDB-Filtered/filter_train_medium',
-    '../Union14M-L-LMDB-Filtered/filter_train_normal',
-    '../Union14M-L-LMDB-Filtered/filter_train_easy',
-    ]
+    name: SimpleDataSet
+    data_dir: ../ic15_data/
+    label_file_list:
+      - ../ic15_data/rec_gt_train.txt
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
@@ -81,27 +74,23 @@ Train:
           character_dict_path: *character_dict_path
           use_space_char: *use_space_char
           max_text_length: *max_text_length
+      - RecTVResize:
+          image_shape: [48, 320]
+          padding: True
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
-  sampler:
-    name: RatioSampler
-    scales: [[128, 32]] # w, h
-    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
-    first_bs: &bs 256
-    fix_bs: false
-    divided_factor: [4, 16] # w, h
-    is_training: True
   loader:
     shuffle: True
-    batch_size_per_card: *bs
+    batch_size_per_card: 256
     drop_last: True
-    max_ratio: 4
     num_workers: 4
 
 Eval:
   dataset:
-    name: LMDBDataSet
-    data_dir: ../evaluation
+    name: SimpleDataSet
+    data_dir: ../ic15_data/
+    label_file_list:
+      - ../ic15_data/rec_gt_test.txt
     transforms:
       - DecodeImage: # load image
           img_mode: BGR
@@ -112,6 +101,9 @@ Eval:
       - RecDynamicResize:
           image_shape: [48, 320]
           padding: False
+      # - SVTRResize:
+      #     image_shape: [3, 48, 320]
+      #     padding: True
       - KeepKeys:
           keep_keys: ['image', 'label', 'length']
   loader:

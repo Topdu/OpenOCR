@@ -9,7 +9,7 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 import numpy as np
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.utility import ArgsParser
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
@@ -26,6 +26,8 @@ MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
 MODEL_NAME_REC_SERVER = './openocr_svtrv2_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC_SERVER = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth'  # 模型文件 URL
+MODEL_NAME_REC_ONNX = './openocr_rec_model.onnx'  # 模型文件名称
+DOWNLOAD_URL_REC_ONNX = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_rec_model.onnx'  # 模型文件 URL
 
 
 def check_and_download_model(model_name: str, url: str):
@@ -189,7 +191,11 @@ class OpenRecognizer:
                 'onnx_model_path',
                 None) is None else config['Global']['onnx_model_path']
             if not onnx_model_path:
-                raise ValueError('ONNX模式需要指定onnx_model_path参数')
+                if self.cfg['Architecture']['algorithm'] == 'SVTRv2_mobile':
+                    onnx_model_path = check_and_download_model(
+                        MODEL_NAME_REC_ONNX, DOWNLOAD_URL_REC_ONNX)
+                else:
+                    raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_rec_engine = ONNXEngine(
                 onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
         else:
@@ -200,11 +206,14 @@ class OpenRecognizer:
         from openrec.postprocess import build_post_process
         from openrec.preprocess import create_operators, transform
         self.transform = transform
+        # 构建预处理流程
+        algorithm_name = self.cfg['Architecture']['algorithm']
+        if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
+            self.cfg['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         self.post_process_class = build_post_process(self.cfg['PostProcess'],
                                                      self.cfg['Global'])
         char_num = self.post_process_class.get_character_num()
         self.cfg['Architecture']['Decoder']['out_channels'] = char_num
-        # 构建预处理流程
         transforms, ratio_resize_flag = build_rec_process(self.cfg)
         self.ops = create_operators(transforms, self.cfg['Global'])
         if ratio_resize_flag:
@@ -223,7 +232,6 @@ class OpenRecognizer:
                 ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
                     MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
                 self.cfg['Global']['pretrained_model'] = pretrained_model
-            self.cfg['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
 
         from openrec.modeling import build_model as build_rec_model
 
