@@ -9,7 +9,8 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 from tools.data import build_dataloader
-from tools.engine import Config, Trainer
+from tools.engine.config import Config
+from tools.engine.trainer import Trainer
 from tools.utility import ArgsParser
 
 

@@ -34,7 +34,7 @@ class CharsetAdapter:
 
 class RatioDataSetTest(Dataset):
 
-    def __init__(self, config, mode, logger, seed=None, epoch=1):
+    def __init__(self, config, mode, logger, seed=None, epoch=1, task='rec'):
         super(RatioDataSetTest, self).__init__()
         self.ds_width = config[mode]['dataset'].get('ds_width', True)
         global_config = config['Global']

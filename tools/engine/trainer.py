@@ -28,7 +28,7 @@ class Trainer(object):
 
     def __init__(self, cfg, mode='train', task='rec'):
         self.cfg = cfg.cfg
-
+        self.task = task
         self.local_rank = (int(os.environ['LOCAL_RANK'])
                            if 'LOCAL_RANK' in os.environ else 0)
         self.set_device(self.cfg['Global']['device'])
@@ -77,14 +77,18 @@ class Trainer(object):
             cfg.save(
                 os.path.join(self.cfg['Global']['output_dir'], 'config.yml'),
                 self.cfg)
-            self.train_dataloader = build_dataloader(self.cfg, 'Train',
-                                                     self.logger)
+            self.train_dataloader = build_dataloader(self.cfg,
+                                                     'Train',
+                                                     self.logger,
+                                                     task=task)
             self.logger.info(
                 f'train dataloader has {len(self.train_dataloader)} iters')
         self.valid_dataloader = None
         if 'eval' in mode and self.cfg['Eval']:
-            self.valid_dataloader = build_dataloader(self.cfg, 'Eval',
-                                                     self.logger)
+            self.valid_dataloader = build_dataloader(self.cfg,
+                                                     'Eval',
+                                                     self.logger,
+                                                     task=task)
             self.logger.info(
                 f'valid dataloader has {len(self.valid_dataloader)} iters')
 
@@ -246,12 +250,11 @@ class Trainer(object):
 
         for epoch in range(start_epoch, epoch_num + 1):
             if self.train_dataloader.dataset.need_reset:
-                self.train_dataloader = build_dataloader(
-                    self.cfg,
-                    'Train',
-                    self.logger,
-                    epoch=epoch,
-                )
+                self.train_dataloader = build_dataloader(self.cfg,
+                                                         'Train',
+                                                         self.logger,
+                                                         epoch=epoch,
+                                                         task=self.task)
 
             for idx, batch in enumerate(self.train_dataloader):
                 batch = [t.to(self.device) for t in batch]

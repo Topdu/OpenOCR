@@ -10,7 +10,7 @@ from openrec.preprocess import create_operators, transform
 
 class LMDBDataSet(Dataset):
 
-    def __init__(self, config, mode, logger, seed=None, epoch=1):
+    def __init__(self, config, mode, logger, seed=None, epoch=1, task='rec'):
         super(LMDBDataSet, self).__init__()
 
         global_config = config['Global']

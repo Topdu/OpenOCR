@@ -32,7 +32,7 @@ def main():
     cfg.merge_dict(opt)
     trainer = Trainer(cfg,
                       mode='train_eval' if FLAGS['eval'] else 'train',
-                      task='rec')
+                      task='det')
     trainer.train()
 
 

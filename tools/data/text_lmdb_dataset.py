@@ -1,5 +1,4 @@
 import os
-import cv2
 import lmdb
 import numpy as np
 from torch.utils.data import Dataset
@@ -9,7 +8,7 @@ from openrec.preprocess import create_operators, transform
 
 class TextLMDBDataSet(Dataset):
 
-    def __init__(self, config, mode, logger, seed=None, epoch=1):
+    def __init__(self, config, mode, logger, seed=None, epoch=1, task='rec'):
         super(TextLMDBDataSet, self).__init__()
 
         global_config = config['Global']
@@ -99,7 +98,12 @@ class TextLMDBDataSet(Dataset):
             ext_data.append(data)
         return ext_data
 
-    def get_lmdb_sample_info(self, txn, index, normalize_unicode=True, remove_whitespace=True, max_length=True):
+    def get_lmdb_sample_info(self,
+                             txn,
+                             index,
+                             normalize_unicode=True,
+                             remove_whitespace=True,
+                             max_length=True):
         label_key = 'label-%09d'.encode() % index
         label = txn.get(label_key)
         if label is None:
