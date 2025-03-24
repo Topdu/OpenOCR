@@ -207,7 +207,7 @@ class DBPostProcess(object):
         cv2.fillPoly(mask, contour.reshape(1, -1, 2).astype('int32'), 1)
         return cv2.mean(bitmap[ymin:ymax + 1, xmin:xmax + 1], mask)[0]
 
-    def __call__(self, outs_dict, shape_list, **kwargs):
+    def __call__(self, outs_dict, batch, **kwargs):
         self.thresh = kwargs.get('mask_thresh', self.thresh)
         self.box_thresh = kwargs.get('box_thresh', self.box_thresh)
         self.unclip_ratio = kwargs.get('unclip_ratio', self.unclip_ratio)
@@ -221,7 +221,7 @@ class DBPostProcess(object):
 
         boxes_batch = []
         for batch_index in range(pred.shape[0]):
-            src_h, src_w, ratio_h, ratio_w = shape_list[batch_index]
+            src_h, src_w, ratio_h, ratio_w = batch[1][batch_index]
             if self.dilation_kernel is not None:
                 mask = cv2.dilate(
                     np.array(segmentation[batch_index]).astype(np.uint8),

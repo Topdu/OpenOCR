@@ -4,7 +4,7 @@ Global:
   log_smooth_window: 20
   print_batch_step: 100
   output_dir: ./output/det_repsvtr_db
-  save_epoch_step: [15, 1]
+  save_epoch_step: [400, 25]
   eval_batch_step:
   - 0
   - 1000

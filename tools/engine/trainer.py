@@ -257,15 +257,17 @@ class Trainer(object):
                                                          task=self.task)
 
             for idx, batch in enumerate(self.train_dataloader):
-                batch = [t.to(self.device) for t in batch]
+                batch_tensor = [t.to(self.device) for t in batch]
+                batch_numpy = [t.numpy() for t in batch]
                 self.optimizer.zero_grad()
                 train_reader_cost += time.time() - reader_start
                 # use amp
                 if self.scaler:
                     with torch.cuda.amp.autocast(
                             enabled=self.device.type == 'cuda'):
-                        preds = self.model(batch[0], data=batch[1:])
-                        loss = self.loss_class(preds, batch)
+                        preds = self.model(batch_tensor[0],
+                                           data=batch_tensor[1:])
+                        loss = self.loss_class(preds, batch_tensor)
                     self.scaler.scale(loss['loss']).backward()
                     if self.grad_clip_val > 0:
                         torch.nn.utils.clip_grad_norm_(
@@ -274,8 +276,8 @@ class Trainer(object):
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
                 else:
-                    preds = self.model(batch[0], data=batch[1:])
-                    loss = self.loss_class(preds, batch)
+                    preds = self.model(batch_tensor[0], data=batch_tensor[1:])
+                    loss = self.loss_class(preds, batch_tensor)
                     avg_loss = loss['loss']
                     avg_loss.backward()
                     if self.grad_clip_val > 0:
@@ -286,9 +288,9 @@ class Trainer(object):
 
                 if cal_metric_during_train:  # only rec and cls need
                     post_result = self.post_process_class(preds,
-                                                          batch,
+                                                          batch_numpy,
                                                           training=True)
-                    self.eval_class(post_result, batch, training=True)
+                    self.eval_class(post_result, batch_numpy, training=True)
                     metric = self.eval_class.get_metric()
                     train_stats.update(metric)
 
@@ -423,20 +425,22 @@ class Trainer(object):
             )
             sum_images = 0
             for idx, batch in enumerate(self.valid_dataloader):
-                batch = [t.to(self.device) for t in batch]
+                batch_tensor = [t.to(self.device) for t in batch]
+                batch_numpy = [t.numpy() for t in batch]
                 start = time.time()
                 if self.scaler:
                     with torch.cuda.amp.autocast(
                             enabled=self.device.type == 'cuda'):
-                        preds = self.model(batch[0], data=batch[1:])
+                        preds = self.model(batch_tensor[0],
+                                           data=batch_tensor[1:])
                 else:
-                    preds = self.model(batch[0], data=batch[1:])
+                    preds = self.model(batch_tensor[0], data=batch_tensor[1:])
 
                 total_time += time.time() - start
                 # Obtain usable results from post-processing methods
                 # Evaluate the results of the current batch
-                post_result = self.post_process_class(preds, batch)
-                self.eval_class(post_result, batch)
+                post_result = self.post_process_class(preds, batch_numpy)
+                self.eval_class(post_result, batch_numpy)
 
                 pbar.update(1)
                 total_frame += len(batch[0])
