@@ -194,8 +194,6 @@ class OpenRecognizer:
                 if self.cfg['Architecture']['algorithm'] == 'SVTRv2_mobile':
                     onnx_model_path = check_and_download_model(
                         MODEL_NAME_REC_ONNX, DOWNLOAD_URL_REC_ONNX)
-                    self.cfg['Global'][
-                        'character_dict_path'] = DEFAULT_DICT_PATH_REC
                 else:
                     raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_rec_engine = ONNXEngine(
@@ -208,11 +206,14 @@ class OpenRecognizer:
         from openrec.postprocess import build_post_process
         from openrec.preprocess import create_operators, transform
         self.transform = transform
+        # 构建预处理流程
+        algorithm_name = self.cfg['Architecture']['algorithm']
+        if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
+            self.cfg['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
         self.post_process_class = build_post_process(self.cfg['PostProcess'],
                                                      self.cfg['Global'])
         char_num = self.post_process_class.get_character_num()
         self.cfg['Architecture']['Decoder']['out_channels'] = char_num
-        # 构建预处理流程
         transforms, ratio_resize_flag = build_rec_process(self.cfg)
         self.ops = create_operators(transforms, self.cfg['Global'])
         if ratio_resize_flag:
@@ -231,7 +232,6 @@ class OpenRecognizer:
                 ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
                     MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
                 self.cfg['Global']['pretrained_model'] = pretrained_model
-            self.cfg['Global']['character_dict_path'] = DEFAULT_DICT_PATH_REC
 
         from openrec.modeling import build_model as build_rec_model
 
