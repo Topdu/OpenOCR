@@ -1,40 +1,41 @@
 import copy
-
+from importlib import import_module
 from torch import nn
 
-from .abinet_loss import ABINetLoss
-from .ar_loss import ARLoss
-from .cdistnet_loss import CDistNetLoss
-from .ce_loss import CELoss
-from .cppd_loss import CPPDLoss
-from .ctc_loss import CTCLoss
-from .igtr_loss import IGTRLoss
-from .lister_loss import LISTERLoss
-from .lpv_loss import LPVLoss
-from .mgp_loss import MGPLoss
-from .parseq_loss import PARSeqLoss
-from .robustscanner_loss import RobustScannerLoss
-from .smtr_loss import SMTRLoss
-from .srn_loss import SRNLoss
-from .visionlan_loss import VisionLANLoss
-from .cam_loss import CAMLoss
-from .seed_loss import SEEDLoss
-
-support_dict = [
-    'CTCLoss', 'ARLoss', 'CELoss', 'CPPDLoss', 'ABINetLoss', 'CDistNetLoss',
-    'VisionLANLoss', 'PARSeqLoss', 'IGTRLoss', 'SMTRLoss', 'LPVLoss',
-    'RobustScannerLoss', 'SRNLoss', 'LISTERLoss', 'GTCLoss', 'MGPLoss',
-    'CAMLoss', 'SEEDLoss'
-]
+name_to_module = {
+    'ABINetLoss': '.abinet_loss',
+    'ARLoss': '.ar_loss',
+    'CDistNetLoss': '.cdistnet_loss',
+    'CELoss': '.ce_loss',
+    'CPPDLoss': '.cppd_loss',
+    'CTCLoss': '.ctc_loss',
+    'IGTRLoss': '.igtr_loss',
+    'LISTERLoss': '.lister_loss',
+    'LPVLoss': '.lpv_loss',
+    'MGPLoss': '.mgp_loss',
+    'PARSeqLoss': '.parseq_loss',
+    'RobustScannerLoss': '.robustscanner_loss',
+    'SRNLoss': '.srn_loss',
+    'VisionLANLoss': '.visionlan_loss',
+    'CAMLoss': '.cam_loss',
+    'SEEDLoss': '.seed_loss',
+}
 
 
 def build_loss(config):
     config = copy.deepcopy(config)
     module_name = config.pop('name')
-    assert module_name in support_dict, Exception(
-        'loss only support {}'.format(support_dict))
-    module_class = eval(module_name)(**config)
-    return module_class
+    assert module_name in name_to_module, Exception(
+        'loss only support {}'.format(list(name_to_module.keys())))
+
+    if module_name in globals():
+        module_class = globals()[module_name]
+    else:
+        module_path = name_to_module[module_name]
+        module = import_module(module_path, package=__package__)
+        module_class = getattr(module, module_name)
+
+    return module_class(**config)
 
 
 class GTCLoss(nn.Module):
@@ -46,7 +47,10 @@ class GTCLoss(nn.Module):
                  zero_infinity=True,
                  **kwargs):
         super(GTCLoss, self).__init__()
-        self.ctc_loss = CTCLoss(zero_infinity=zero_infinity)
+        # 动态构建CTCLoss
+        ctc_config = {'name': 'CTCLoss', 'zero_infinity': zero_infinity}
+        self.ctc_loss = build_loss(ctc_config)
+        # 构建GTC损失
         self.gtc_loss = build_loss(gtc_loss)
         self.gtc_weight = gtc_weight
         self.ctc_weight = ctc_weight

@@ -1,39 +1,41 @@
 __all__ = ['build_encoder']
 
+from importlib import import_module
+
+name_to_module = {
+    'MobileNetV1Enhance': '.rec_mv1_enhance',
+    'ResNet31': '.rec_resnet_31',
+    'MobileNetV3': '.rec_mobilenet_v3',
+    'PPLCNetV3': '.rec_lcnetv3',
+    'PPHGNet_small': '.rec_hgnet',
+    'ResNet': '.rec_resnet_vd',
+    'MTB': '.rec_nrtr_mtb',
+    'SVTRNet': '.svtrnet',
+    'ResNet45': '.rec_resnet_45',
+    'ViT': '.vit',
+    'SVTRNet2DPos': '.svtrnet2dpos',
+    'SVTRv2': '.svtrv2',
+    'FocalSVTR': '.focalsvtr',
+    'ResNet_FPN': '.rec_resnet_fpn',
+    'ResNet_ASTER': '.resnet31_rnn',
+    'SVTRv2LNConv': '.svtrv2_lnconv',
+    'SVTRv2LNConvTwo33': '.svtrv2_lnconv_two33',
+    'CAMEncoder': '.cam_encoder',
+    'ConvNeXtV2': '.convnextv2',
+    'AutoSTREncoder': '.autostr_encoder',
+    'NRTREncoder': '.nrtr_encoder',
+    'RepSVTREncoder': '.repvit',
+}
+
 
 def build_encoder(config):
-    # from .rec_mobilenet_v3 import MobileNetV3
-    from .focalsvtr import FocalSVTR
-    from .rec_hgnet import PPHGNet_small
-    from .rec_lcnetv3 import PPLCNetV3
-    from .rec_mv1_enhance import MobileNetV1Enhance
-    from .rec_nrtr_mtb import MTB
-    from .rec_resnet_31 import ResNet31
-    from .rec_resnet_45 import ResNet45
-    from .rec_resnet_fpn import ResNet_FPN
-    from .rec_resnet_vd import ResNet
-    from .resnet31_rnn import ResNet_ASTER
-    from .svtrnet import SVTRNet
-    from .svtrnet2dpos import SVTRNet2DPos
-    from .svtrv2 import SVTRv2
-    from .svtrv2_lnconv import SVTRv2LNConv
-    from .svtrv2_lnconv_two33 import SVTRv2LNConvTwo33
-    from .vit import ViT
-    from .cam_encoder import CAMEncoder
-    from .convnextv2 import ConvNeXtV2
-    from .autostr_encoder import AutoSTREncoder
-    from .nrtr_encoder import NRTREncoder
-    from .repvit import RepSVTREncoder
-    support_dict = [
-        'MobileNetV1Enhance', 'ResNet31', 'MobileNetV3', 'PPLCNetV3',
-        'PPHGNet_small', 'ResNet', 'MTB', 'SVTRNet', 'ResNet45', 'ViT',
-        'SVTRNet2DPos', 'SVTRv2', 'FocalSVTR', 'ResNet_FPN', 'ResNet_ASTER',
-        'SVTRv2LNConv', 'SVTRv2LNConvTwo33', 'CAMEncoder', 'ConvNeXtV2',
-        'AutoSTREncoder', 'NRTREncoder', 'RepSVTREncoder'
-    ]
 
     module_name = config.pop('name')
-    assert module_name in support_dict, Exception(
-        'when encoder of rec model only support {}'.format(support_dict))
-    module_class = eval(module_name)(**config)
+    assert module_name in name_to_module, Exception(
+        f'Encoder only supports: {list(name_to_module.keys())}')
+
+    module_path = name_to_module[module_name]
+    mod = import_module(module_path, package=__package__)
+    module_class = getattr(mod, module_name)(**config)
+
     return module_class

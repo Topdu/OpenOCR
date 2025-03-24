@@ -17,7 +17,7 @@ os.environ['FLAGS_allocator_strategy'] = 'auto_growth'
 
 import cv2
 import json
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.utility import ArgsParser
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
@@ -29,6 +29,8 @@ DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
 
 MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
+MODEL_NAME_DET_ONNX = './openocr_det_model.onnx'  # 模型文件名称
+DOWNLOAD_URL_DET_ONNX = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_model.onnx'  # 模型文件 URL
 
 
 def check_and_download_model(model_name: str, url: str):
@@ -132,11 +134,7 @@ class OpenDetector(object):
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
-        if config['Architecture']['algorithm'] == 'DB_mobile':
-            if not os.path.exists(config['Global']['pretrained_model']):
-                config['Global'][
-                    'pretrained_model'] = check_and_download_model(
-                        MODEL_NAME_DET, DOWNLOAD_URL_DET)
+
         self._init_common(config)
         backend = backend if config['Global'].get(
             'backend', None) is None else config['Global']['backend']
@@ -144,14 +142,23 @@ class OpenDetector(object):
         if backend == 'torch':
             import torch
             self.torch = torch
+            if config['Architecture']['algorithm'] == 'DB_mobile':
+                if not os.path.exists(config['Global']['pretrained_model']):
+                    config['Global'][
+                        'pretrained_model'] = check_and_download_model(
+                            MODEL_NAME_DET, DOWNLOAD_URL_DET)
             self._init_torch_model(config, numId)
         elif backend == 'onnx':
             from tools.infer.onnx_engine import ONNXEngine
             onnx_model_path = onnx_model_path if config['Global'].get(
                 'onnx_model_path',
                 None) is None else config['Global']['onnx_model_path']
-            if not onnx_model_path:
-                raise ValueError('ONNX模式需要指定onnx_model_path参数')
+            if onnx_model_path is None:
+                if config['Architecture']['algorithm'] == 'DB_mobile':
+                    onnx_model_path = check_and_download_model(
+                        MODEL_NAME_DET_ONNX, DOWNLOAD_URL_DET_ONNX)
+                else:
+                    raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_det_engine = ONNXEngine(
                 onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
         else:
@@ -256,7 +263,8 @@ class OpenDetector(object):
                 kwargs['torch_tensor'] = False
 
             t_cost = time.time() - t_start
-            post_result = self.post_process_class(preds, shape_list, **kwargs)
+            post_result = self.post_process_class(preds, [None, shape_list],
+                                                  **kwargs)
 
             info = {'boxes': post_result[0]['points'], 'elapse': t_cost}
             if return_mask:

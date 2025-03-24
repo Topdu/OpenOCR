@@ -20,7 +20,7 @@ from tools.utils.utility import get_image_file_list, check_and_read
 from tools.infer_rec import OpenRecognizer
 from tools.infer_det import OpenDetector
 from tools.infer_e2e import check_and_download_font, sorted_boxes
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.infer.utility import get_rotate_crop_image, get_minarea_rect_crop, draw_ocr_box_txt
 
 

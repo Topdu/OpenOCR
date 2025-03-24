@@ -8,12 +8,12 @@ import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
-from openrec.preprocess import create_operators, transform
+from openrec.preprocess import transform
 
 
 class SimpleDataSet(Dataset):
 
-    def __init__(self, config, mode, logger, seed=None, epoch=0):
+    def __init__(self, config, mode, logger, seed=None, epoch=0, task='rec'):
         super(SimpleDataSet, self).__init__()
         self.logger = logger
         self.mode = mode.lower()
@@ -42,7 +42,10 @@ class SimpleDataSet(Dataset):
             self.shuffle_data_random()
 
         self.set_epoch_as_seed(self.seed, dataset_config)
-
+        if task == 'rec':
+            from openrec.preprocess import create_operators
+        elif task == 'det':
+            from opendet.preprocess import create_operators
         self.ops = create_operators(dataset_config['transforms'],
                                     global_config)
         self.ext_op_transform_idx = dataset_config.get('ext_op_transform_idx',

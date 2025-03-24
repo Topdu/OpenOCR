@@ -49,7 +49,8 @@ class LMDBDataSetTest(Dataset):
                  remove_whitespace: bool = True,
                  normalize_unicode: bool = True,
                  unlabelled: bool = False,
-                 transform=None):
+                 transform=None,
+                 task='rec'):
         dataset_config = config[mode]['dataset']
         global_config = config['Global']
         max_label_len = global_config['max_text_length']

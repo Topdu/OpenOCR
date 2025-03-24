@@ -18,7 +18,8 @@ class STRLMDBDataSet(Dataset):
         loader_config = config[mode]['loader']
         loader_config['batch_size_per_card']
         # data_dir = dataset_config['data_dir']
-        data_dir = '../training_aug_lmdb_noerror/ep' + str(epoch)
+        data_dir = '../training_aug_lmdb_noerror/ep' + str(
+            epoch % 20 if epoch % 20 != 0 else 20)
         self.do_shuffle = loader_config['shuffle']
 
         self.lmdb_sets = self.load_hierarchical_lmdb_dataset(data_dir)

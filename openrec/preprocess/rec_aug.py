@@ -3,9 +3,6 @@ import random
 import cv2
 import numpy as np
 from PIL import Image
-from torchvision.transforms import Compose
-
-from .abinet_aug import CVColorJitter, CVDeterioration, CVGeometry, SVTRDeterioration, SVTRGeometry
 from .parseq_aug import rand_augment_transform
 
 
@@ -41,6 +38,8 @@ class ABINetAug(object):
                  deterioration_p=0.25,
                  colorjitter_p=0.25,
                  **kwargs):
+        from torchvision.transforms import Compose
+        from .abinet_aug import CVColorJitter, CVDeterioration, CVGeometry
         self.transforms = Compose([
             CVGeometry(
                 degrees=45,
@@ -75,6 +74,8 @@ class SVTRAug(object):
                  deterioration_p=0.25,
                  colorjitter_p=0.25,
                  **kwargs):
+        from torchvision.transforms import Compose
+        from .abinet_aug import CVColorJitter, SVTRDeterioration, SVTRGeometry
         self.transforms = Compose([
             SVTRGeometry(
                 aug_type=aug_type,
