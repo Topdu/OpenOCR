@@ -51,6 +51,17 @@ class DetLabelEncode(object):
         rect[3] = tmp[np.argmax(diff)]
         return rect
 
+    def expand_points_num(self, boxes):
+        max_points_num = 0
+        for box in boxes:
+            if len(box) > max_points_num:
+                max_points_num = len(box)
+        ex_boxes = []
+        for box in boxes:
+            ex_box = box + [box[-1]] * (max_points_num - len(box))
+            ex_boxes.append(ex_box)
+        return ex_boxes
+
 
 class MakeBorderMap(object):
 

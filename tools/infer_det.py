@@ -257,7 +257,8 @@ class OpenDetector(object):
                 kwargs['torch_tensor'] = False
 
             t_cost = time.time() - t_start
-            post_result = self.post_process_class(preds, shape_list, **kwargs)
+            post_result = self.post_process_class(preds, [None, shape_list],
+                                                  **kwargs)
 
             info = {'boxes': post_result[0]['points'], 'elapse': t_cost}
             if return_mask:
