@@ -26,6 +26,8 @@ MODEL_NAME_REC = './openocr_repsvtr_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_repsvtr_ch.pth'  # 模型文件 URL
 MODEL_NAME_REC_SERVER = './openocr_svtrv2_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_REC_SERVER = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_svtrv2_ch.pth'  # 模型文件 URL
+MODEL_NAME_REC_ONNX = './openocr_rec_model.onnx'  # 模型文件名称
+DOWNLOAD_URL_REC_ONNX = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_rec_model.onnx'  # 模型文件 URL
 
 
 def check_and_download_model(model_name: str, url: str):
@@ -189,7 +191,11 @@ class OpenRecognizer:
                 'onnx_model_path',
                 None) is None else config['Global']['onnx_model_path']
             if not onnx_model_path:
-                raise ValueError('ONNX模式需要指定onnx_model_path参数')
+                if self.cfg['Architecture']['algorithm'] == 'SVTRv2_mobile':
+                    onnx_model_path = check_and_download_model(
+                        MODEL_NAME_REC_ONNX, DOWNLOAD_URL_REC_ONNX)
+                else:
+                    raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_rec_engine = ONNXEngine(
                 onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
         else:

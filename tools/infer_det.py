@@ -29,6 +29,8 @@ DEFAULT_CFG_PATH_DET = str(root_dir / '../configs/det/dbnet/repvit_db.yml')
 
 MODEL_NAME_DET = './openocr_det_repvit_ch.pth'  # 模型文件名称
 DOWNLOAD_URL_DET = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_repvit_ch.pth'  # 模型文件 URL
+MODEL_NAME_DET_ONNX = './openocr_det_model.onnx'  # 模型文件名称
+DOWNLOAD_URL_DET_ONNX = 'https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/openocr_det_model.onnx'  # 模型文件 URL
 
 
 def check_and_download_model(model_name: str, url: str):
@@ -151,8 +153,12 @@ class OpenDetector(object):
             onnx_model_path = onnx_model_path if config['Global'].get(
                 'onnx_model_path',
                 None) is None else config['Global']['onnx_model_path']
-            if not onnx_model_path:
-                raise ValueError('ONNX模式需要指定onnx_model_path参数')
+            if onnx_model_path is None:
+                if config['Architecture']['algorithm'] == 'DB_mobile':
+                    onnx_model_path = check_and_download_model(
+                        MODEL_NAME_DET_ONNX, DOWNLOAD_URL_DET_ONNX)
+                else:
+                    raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_det_engine = ONNXEngine(
                 onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
         else:

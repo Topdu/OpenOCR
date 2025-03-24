@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 import torch
 
-from tools.engine import Config
+from tools.engine.config import Config
 from tools.utility import ArgsParser
 from tools.utils.logging import get_logger
 
