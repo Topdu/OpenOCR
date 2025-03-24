@@ -64,7 +64,23 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Quick Start
 
-### Dependencies:
+### 1. ONNX Inference
+
+```shell
+pip install openocr-python
+pip install onnxruntime
+```
+
+```python
+from openocr import OpenOCR
+onnx_engine = OpenOCR(backend='onnx', device='cpu')
+img_path = '/path/img_path or /path/img_file'
+result, elapse = onnx_engine(img_path)
+```
+
+### 2. Pytorch inference
+
+#### Dependencies:
 
 - [PyTorch](http://pytorch.org/) version >= 1.13.0
 - Python version >= 3.7
@@ -80,7 +96,7 @@ conda install pytorch torchvision torchaudio cpuonly -c pytorch
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
 
-### 1. Python Modules
+#### 2.1. Python Modules
 
 ```shell
 pip install openocr-python
@@ -98,12 +114,9 @@ result, elapse = engine(img_path)
 
 # Server mode
 # engine = OpenOCR(mode='server')
-
-# ONNX Inference
-onnx_engine = OpenOCR(backend='onnx', device='cpu')
 ```
 
-### 2. Clone this repository:
+#### 2.2. Clone this repository:
 
 ```shell
 git clone https://github.com/Topdu/OpenOCR.git
@@ -126,7 +139,7 @@ python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
 ```
 
-#### Export ONNX model
+##### Export ONNX model
 
 ```shell
 pip install onnx
@@ -134,7 +147,7 @@ python tools/toonnx.py --c configs/rec/svtrv2/repsvtr_ch.yml --o Global.device=c
 python tools/toonnx.py --c configs/det/dbnet/repvit_db.yml --o Global.device=cpu
 ```
 
-#### Inference with ONNXRuntime
+##### Inference with ONNXRuntime
 
 ```shell
 pip install onnxruntime
