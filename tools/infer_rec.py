@@ -194,6 +194,8 @@ class OpenRecognizer:
                 if self.cfg['Architecture']['algorithm'] == 'SVTRv2_mobile':
                     onnx_model_path = check_and_download_model(
                         MODEL_NAME_REC_ONNX, DOWNLOAD_URL_REC_ONNX)
+                    self.cfg['Global'][
+                        'character_dict_path'] = DEFAULT_DICT_PATH_REC
                 else:
                     raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_rec_engine = ONNXEngine(
