@@ -13,7 +13,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - Outperforms [PP-OCRv4](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/model_list.html) baseline by 4.5% on the [OCR competition leaderboard](https://aistudio.baidu.com/competition/detail/1131/0/leaderboard) in terms of accuracy, while preserving quite similar inference speed.
     - [x] Supports Chinese and English text detection and recognition.
     - [x] Provides server model and mobile model.
-    - [x] Fine-tunes OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
+    - [x] Fine-tunes OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md).
     - [x] [ONNX model export for wider compatibility](#export-onnx-model).
 - 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
   - \[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
@@ -40,9 +40,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Recent Updates
 
-- **2025.03.23**: Releasing the feature of Fine-tuning OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
+- **2025.03.24**: 🔥 Releasing the feature of fine-tuning OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
 
-- **2025.03.23**: Releasing the feature of [ONNX model export for wider compatibility](#export-onnx-model).
+- **2025.03.23**: 🔥 Releasing the feature of [ONNX model export for wider compatibility](#export-onnx-model).
 
 - **2025.02.22**: Our paper [CPPD](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453) is accepted by TPAMI. Accessible in [Doc](./configs/rec/cppd/) and [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md).
 
@@ -66,10 +66,14 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ### 1. ONNX Inference
 
+#### Install OpenOCR and Dependencies:
+
 ```shell
 pip install openocr-python
 pip install onnxruntime
 ```
+
+#### Usage:
 
 ```python
 from openocr import OpenOCR
@@ -98,6 +102,8 @@ After installing dependencies, the following two installation methods are availa
 
 #### 2.1. Python Modules
 
+**Install OpenOCR**:
+
 ```shell
 pip install openocr-python
 ```
@@ -106,9 +112,7 @@ pip install openocr-python
 
 ```python
 from openocr import OpenOCR
-
 engine = OpenOCR()
-
 img_path = '/path/img_path or /path/img_file'
 result, elapse = engine(img_path)
 
