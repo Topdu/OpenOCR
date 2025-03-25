@@ -12,7 +12,27 @@ We proposed strategies to comprehensively enhance CTC-based STR models and devel
 
 ## Quick Start
 
-### Dependencies:
+### 1. ONNX Inference
+
+#### Install OpenOCR and Dependencies:
+
+```shell
+pip install openocr-python
+pip install onnxruntime
+```
+
+#### Usage:
+
+```python
+from openocr import OpenOCR
+onnx_engine = OpenOCR(backend='onnx', device='cpu')
+img_path = '/path/img_path or /path/img_file'
+result, elapse = onnx_engine(img_path)
+```
+
+### 2. Pytorch inference
+
+#### Dependencies:
 
 - [PyTorch](http://pytorch.org/) version >= 1.13.0
 - Python version >= 3.7
@@ -28,7 +48,9 @@ conda install pytorch torchvision torchaudio cpuonly -c pytorch
 
 After installing dependencies, the following two installation methods are available. Either one can be chosen.
 
-### 1. Python Modules
+#### 2.1. Python Modules
+
+**Install OpenOCR**:
 
 ```shell
 pip install openocr-python
@@ -38,9 +60,7 @@ pip install openocr-python
 
 ```python
 from openocr import OpenOCR
-
 engine = OpenOCR()
-
 img_path = '/path/img_path or /path/img_file'
 result, elapse = engine(img_path)
 
@@ -48,7 +68,7 @@ result, elapse = engine(img_path)
 # engine = OpenOCR(mode='server')
 ```
 
-### 2. Clone this repository:
+#### 2.2. Clone this repository:
 
 ```shell
 git clone https://github.com/Topdu/OpenOCR.git
@@ -83,11 +103,32 @@ python demo_gradio.py
 
 ## Fine-tuning on a Custom dataset
 
-TODO
+Referring to [Finetuning Det](./finetune_det.md) and [Finetuning Rec](./finetune_rec.md).
 
 ## Exporting to ONNX Engine
 
-TODO
+### Export ONNX model
+
+```shell
+pip install onnx
+python tools/toonnx.py --c configs/rec/svtrv2/repsvtr_ch.yml --o Global.device=cpu
+python tools/toonnx.py --c configs/det/dbnet/repvit_db.yml --o Global.device=cpu
+```
+
+The det onnx model is saved in `./output/det_repsvtr_db/export_det/det_model.onnx`.
+The rec onnx model is saved in `./output/rec/repsvtr_ch/export_rec/rec_model.onnx`.
+
+### Inference with ONNXRuntime
+
+```shell
+pip install onnxruntime
+# OpenOCR system: Det + Rec model
+python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file --backend=onnx --device=cpu --onnx_det_model_path=./output/det_repsvtr_db/export_det/det_model.onnx --onnx_rec_model_path=output/rec/repsvtr_ch/export_rec/rec_model.onnx
+# Det model
+python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.backend=onnx Global.device=cpu  Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/det_repsvtr_db/export_det/det_model.onnx
+# Rec model
+python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.backend=onnx Global.device=cpu Global.infer_img=/path/img_fold or /path/img_file Global.onnx_model_path=./output/rec/repsvtr_ch/export_rec/rec_model.onnx
+```
 
 ## Results Showcase
 
