@@ -13,9 +13,38 @@
 
 ______________________________________________________________________
 
+## Installation
+
+#### Dependencies:
+
+- [PyTorch](http://pytorch.org/) version >= 1.13.0
+- Python version >= 3.7
+
+```shell
+conda create -n openocr python==3.8
+conda activate openocr
+# install gpu version torch
+conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+# or cpu version
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+```
+
+#### Clone this repository:
+
+```shell
+git clone https://github.com/Topdu/OpenOCR.git
+cd OpenOCR
+pip install albumentations
+pip install -r requirements.txt
+```
+
+This section uses the icdar2015 dataset as an example to introduce the training, evaluation, and testing of the detection model in OpenOCR.
+
 ## 1. Data and Weights Preparation
 
 ### 1.1 Data Preparation
+
+**Note:** If you want to use your own dataset, please following the format of [icdar2015 dataset](https://aistudio.baidu.com/datasetdetail/46088).
 
 Downloading datasets from [icdar2015 dataset](https://aistudio.baidu.com/datasetdetail/46088).
 
@@ -39,6 +68,22 @@ ch4_test_images/img_61.jpg    [{"transcription": "MASA", "points": [[310, 104], 
 
 Before being encoded with `json.dumps`, the image annotation information is a list containing multiple dictionaries. In each dictionary, the field `points` represents the coordinates (x, y) of the four corners of the text bounding box, arranged in a clockwise order starting from the top-left corner. The field `transcription` indicates the text content within the current bounding box.
 
+To modify the training and evaluation dataset paths in the configuration file `./configs/det/dbnet/repvit_db.yml` to your own dataset paths, for example:
+
+```yaml
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ../icdar2015/text_localization/  # Root directory of the training dataset
+    label_file_list: ["../icdar2015/text_localization/train_icdar2015_label.txt"]  # Path to the training label file
+    ......
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ../icdar2015/text_localization/  # Root directory of the evaluation dataset
+    label_file_list: ["../icdar2015/text_localization/test_icdar2015_label.txt"]  # Path to the evaluation label file
+```
+
 ### 1.2 Download Pre-trained Model
 
 First download the pre-trained model.
@@ -55,11 +100,10 @@ ______________________________________________________________________
 ### 2.1 Start Training
 
 ```bash
-pip install albumentations
 # multi-GPU training
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_det.py --c configs/det/dbnet/repvit_db.yml
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 tools/train_det.py --c configs/det/dbnet/repvit_db.yml --o Global.pretrained_model=./openocr_det_repvit_ch.pth
 # single GPU training
-CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 tools/train_det.py --c configs/det/dbnet/repvit_db.yml
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 tools/train_det.py --c configs/det/dbnet/repvit_db.yml --o Global.pretrained_model=./openocr_det_repvit_ch.pth
 ```
 
 ### 2.2 Load Trained Model and Continue Training
