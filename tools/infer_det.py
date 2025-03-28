@@ -255,7 +255,8 @@ class OpenDetector(object):
 
             if self.backend == 'torch':
                 images = self.torch.from_numpy(images).to(device=self.device)
-                preds = self.model(images)
+                with self.torch.no_grad():
+                    preds = self.model(images)
                 kwargs['torch_tensor'] = True
             elif self.backend == 'onnx':
                 preds_det = self._inference_onnx(images)
