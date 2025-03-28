@@ -328,7 +328,8 @@ class OpenRecognizer:
             if self.backend == 'torch':
                 images = self.torch.from_numpy(padded_batch).to(
                     device=self.device)
-                preds = self.model(images, others)  # bs, len, num_classes
+                with self.torch.no_grad():
+                    preds = self.model(images, others)  # bs, len, num_classes
                 torch_tensor = True
             elif self.backend == 'onnx':
                 # ONNX推理
