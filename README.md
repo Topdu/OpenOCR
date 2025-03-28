@@ -64,6 +64,8 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Quick Start
 
+**Note**: OpenOCR supports inference using both the ONNX and Torch frameworks, with the dependency environments for the two frameworks being isolated. When using ONNX for inference, there is no need to install Torch, and vice versa.
+
 ### 1. ONNX Inference
 
 #### Install OpenOCR and Dependencies:
