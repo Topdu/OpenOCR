@@ -15,22 +15,24 @@ name_to_module = {
     'MGPLoss': '.mgp_loss',
     'PARSeqLoss': '.parseq_loss',
     'RobustScannerLoss': '.robustscanner_loss',
+    'SEEDLoss': '.seed_loss',
+    'SMTRLoss': '.smtr_loss',
     'SRNLoss': '.srn_loss',
     'VisionLANLoss': '.visionlan_loss',
     'CAMLoss': '.cam_loss',
-    'SEEDLoss': '.seed_loss',
 }
 
 
 def build_loss(config):
     config = copy.deepcopy(config)
     module_name = config.pop('name')
-    assert module_name in name_to_module, Exception(
-        'loss only support {}'.format(list(name_to_module.keys())))
 
     if module_name in globals():
         module_class = globals()[module_name]
     else:
+        assert module_name in name_to_module, Exception(
+            '{} is not supported. The losses in {} are supportes'.format(
+                module_name, list(name_to_module.keys())))
         module_path = name_to_module[module_name]
         module = import_module(module_path, package=__package__)
         module_class = getattr(module, module_name)

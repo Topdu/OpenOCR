@@ -37,7 +37,7 @@ class MPGLabelDecode(BaseRecLabelDecode):
         if batch is None:
             return char_text
         label = batch[1]
-        label = self.char_decode(label[:, 1:].detach().cpu().numpy())
+        label = self.char_decode(label[:, 1:])
         if self.only_char:
             return char_text, label
         else:
