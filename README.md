@@ -10,11 +10,11 @@
 <a href="https://modelscope.cn/studios/topdktu/OpenOCR-Demo" target="_blank"><img src="https://img.shields.io/badge/魔搭-Demo-blue"></a>
 <a href=""><img src="https://img.shields.io/badge/OS-Linux%2C%20Win%2C%20Mac-pink.svg"></a>
 <a href="https://github.com/Topdu/OpenOCR/graphs/contributors"><img src="https://img.shields.io/github/contributors/Topdu/OpenOCR?color=9ea"></a>
-<a href="https://pepy.tech/project/openocr"><img src="https://static.pepy.tech/personalized-badge/openocr?period=total&units=abbreviation&left_color=grey&right_color=blue&left_text=Downloads%20openocr"></a>
+<a href="https://pepy.tech/project/openocr"><img src="https://static.pepy.tech/personalized-badge/openocr?period=total&units=abbreviation&left_color=grey&right_color=blue&left_text=Clone%20downloads"></a>
 <a href="https://github.com/Topdu/OpenOCR/stargazers"><img src="https://img.shields.io/github/stars/Topdu/OpenOCR?color=ccf"></a>
 <a href="https://pypi.org/project/openocr-python/"><img alt="PyPI" src="https://img.shields.io/pypi/v/openocr-python"><img src="https://img.shields.io/pypi/dm/openocr-python?label=PyPI%20downloads"></a>
 
-<h4 align="center"> <a href="#quick-start"> 🚀 Quick Start </a> </h4>
+<a href="#quick-start"> 🚀 Quick Start </a> | English | [简体中文](./README_ch.md)
 
 </div>
 
