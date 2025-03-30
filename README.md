@@ -4,9 +4,7 @@
 
 <h5 align="center"> If you find this project useful, please give us a star🌟. </h5>
 
-<a href="https://github.com/Topdu/OpenOCR/blob/main/LICENSE">
-        <img alt="license" src="https://img.shields.io/github/license/Topdu/OpenOCR">
-    </a>
+<a href="https://github.com/Topdu/OpenOCR/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/github/license/Topdu/OpenOCR"></a>
 <a href='https://arxiv.org/abs/2411.15858'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
 <a href="https://huggingface.co/spaces/topdu/OpenOCR-Demo" target="_blank"><img src="https://img.shields.io/badge/%F0%9F%A4%97-Hugging Face Demo-blue"></a>
 <a href="https://modelscope.cn/studios/topdktu/OpenOCR-Demo" target="_blank"><img src="https://img.shields.io/badge/魔搭-Demo-blue"></a>
