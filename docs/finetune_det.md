@@ -46,7 +46,7 @@ This section uses the icdar2015 dataset as an example to introduce the training,
 
 **Note:** If you want to use your own dataset, please following the format of [icdar2015 dataset](https://aistudio.baidu.com/datasetdetail/46088).
 
-Downloading datasets from [icdar2015 dataset](https://aistudio.baidu.com/datasetdetail/46088).
+Downloading datasets from [icdar2015 dataset](https://aistudio.baidu.com/datasetdetail/46088)/[Google Drive](https://drive.google.com/file/d/1nfsYj-JzAqVouZPBDqmuP0Rkj6J6XFUJ/view?usp=sharing).
 
 #### File Directory
 

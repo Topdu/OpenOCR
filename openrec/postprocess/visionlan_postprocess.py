@@ -77,5 +77,5 @@ class VisionLANLabelDecode(BaseRecLabelDecode):
             text.append((preds_text, float(preds_prob)))
         if batch is None:
             return text
-        label = self.decode(label.detach().cpu().numpy())
+        label = self.decode(label)
         return text, label
