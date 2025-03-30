@@ -43,7 +43,7 @@ This section uses the icdar2015 recognition dataset as an example to introduce t
 
 **Note:** If you want to use your own dataset, please following the following data format.
 
-Downloading datasets from [icdar2015 recognition dataset](https://aistudio.baidu.com/datasetdetail/75418).
+Downloading datasets from [icdar2015 recognition dataset](https://aistudio.baidu.com/datasetdetail/75418)/[Google Drive](https://drive.google.com/file/d/1YviGN_f7xrRrMOSR4OGwv7uhKFjnxuUP/view?usp=sharing).
 
 #### File Directory
 

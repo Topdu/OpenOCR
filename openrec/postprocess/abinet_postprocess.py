@@ -29,7 +29,7 @@ class ABINetLabelDecode(NRTRLabelDecode):
         text = self.decode(preds_idx, preds_prob, is_remove_duplicate=False)
         if batch is None:
             return text
-        label = self.decode(batch[1].cpu().numpy())
+        label = self.decode(batch[1])
         return text, label
 
     def add_special_char(self, dict_character):
