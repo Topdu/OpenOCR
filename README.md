@@ -1,4 +1,26 @@
-# OpenOCR
+<div align="center">
+
+<h1> OpenOCR: A general OCR system with accuracy and efficiency </h1>
+
+<h5 align="center"> If you find this project useful, please give us a star🌟. </h5>
+
+<a href="https://github.com/Topdu/OpenOCR/blob/main/LICENSE">
+        <img alt="license" src="https://img.shields.io/github/license/Topdu/OpenOCR">
+    </a>
+<a href='https://arxiv.org/abs/2411.15858'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
+<a href="https://huggingface.co/spaces/topdu/OpenOCR-Demo" target="_blank"><img src="https://img.shields.io/badge/%F0%9F%A4%97-Hugging Face Demo-blue"></a>
+<a href="https://modelscope.cn/studios/topdktu/OpenOCR-Demo" target="_blank"><img src="https://img.shields.io/badge/魔搭-Demo-blue"></a>
+<a href=""><img src="https://img.shields.io/badge/OS-Linux%2C%20Win%2C%20Mac-pink.svg"></a>
+<a href="https://github.com/Topdu/OpenOCR/graphs/contributors"><img src="https://img.shields.io/github/contributors/Topdu/OpenOCR?color=9ea"></a>
+<a href="https://pepy.tech/project/openocr"><img src="https://static.pepy.tech/personalized-badge/openocr?period=total&units=abbreviation&left_color=grey&right_color=blue&left_text=Downloads%20openocr"></a>
+<a href="https://github.com/Topdu/OpenOCR/stargazers"><img src="https://img.shields.io/github/stars/Topdu/OpenOCR?color=ccf"></a>
+<a href="https://pypi.org/project/openocr-python/"><img alt="PyPI" src="https://img.shields.io/pypi/v/openocr-python"><img src="https://img.shields.io/pypi/dm/openocr-python?label=PyPI%20downloads"></a>
+
+<h4 align="center"> <a href="#quick-start"> 🚀 Quick Start </a> </h4>
+
+</div>
+
+______________________________________________________________________
 
 We aim to establish a unified benchmark for training and evaluating models in scene text detection and recognition. Building on this benchmark, we introduce a general OCR system with accuracy and efficiency, **OpenOCR**. This repository also serves as the official codebase of the OCR team from the [FVL Laboratory](https://fvl.fudan.edu.cn), Fudan University.
 
