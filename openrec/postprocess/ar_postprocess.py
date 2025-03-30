@@ -30,7 +30,7 @@ class ARLabelDecode(BaseRecLabelDecode):
         if batch is None:
             return text
         label = batch[1]
-        label = self.decode(label[:, 1:].detach().cpu().numpy())
+        label = self.decode(label[:, 1:])
         return text, label
 
     def add_special_char(self, dict_character):

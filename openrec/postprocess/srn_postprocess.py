@@ -71,7 +71,7 @@ class SRNLabelDecode(BaseRecLabelDecode):
         if batch is None:
             return text
 
-        label = batch[1].cpu().numpy()
+        label = batch[1]
         # print(f"label.shape:{label.shape}")
         label = self.decode(label, is_remove_duplicate=False)
         return text, label
