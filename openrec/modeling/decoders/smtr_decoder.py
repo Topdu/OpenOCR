@@ -71,6 +71,7 @@ class SSMatchLayer(nn.Module):
         drop_path=0.0,
         act_layer=nn.GELU,
         epsilon=1e-6,
+        is_last_layer=False,
     ):
         super().__init__()
         self.dim = dim
@@ -96,17 +97,18 @@ class SSMatchLayer(nn.Module):
             proj_drop=drop)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else Identity()
+        self.is_last_layer = is_last_layer
 
     def forward(self, question_f, prompt_f, visual_f, mask=None):
-
         question_f = question_f + self.drop_path(
             self.images_to_question_cross_attn(self.normq1(question_f),
                                                self.normkv1(prompt_f), mask))
         question_f = question_f.reshape(visual_f.shape[0], -1, self.dim)
         question_f = self.question_to_images_cross_attn(
             self.normq2(question_f), self.normkv2(visual_f))
-
-        return question_f
+        if self.is_last_layer:
+            return question_f
+        return question_f.flatten(0, 1).unsqueeze(1)
 
 
 class SMTRDecoder(nn.Module):
@@ -152,7 +154,8 @@ class SMTRDecoder(nn.Module):
                          dynq2img_heads=dynq2img_heads,
                          mlp_ratio=4.0,
                          qkv_bias=True,
-                         drop_path=dpr[i]) for i in range(num_layer)
+                         drop_path=dpr[i],
+                         is_last_layer=i==num_layer-1) for i in range(num_layer)
         ])
 
         self.ds = ds
@@ -579,7 +582,7 @@ class SMTRDecoder(nn.Module):
         prompt_char_next = torch.concat([
             prompt_next_embed[:, :, :1, :],
             prompt_next_embed[:, :, 1:, :] + self.char_embed(subs)
-        ], 2)  # b, n, sub_l, dim
+        ], 2)  # b, n, subs_l, dim
         next = self.next_token.tile([bs, max_len_curr, 1, 1])
 
         max_len_curr_pre = targets[6].max()
