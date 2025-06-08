@@ -132,7 +132,7 @@ class EncoderWithSVTR(nn.Module):
         z = self.conv2(z)
         # SVTR global block
         B, C, H, W = z.shape
-        z = z.flatten(2).transpose(1, 2)
+        z = z.flatten(2).transpose(1, 2).contiguous()
         for blk in self.svtr_block:
             z = blk(z)
         z = self.norm(z)
