@@ -140,14 +140,10 @@ python tools/infer_rec.py --c configs/rec/SVTRv2/svtrv2_smtr_gtc_rctc_infer.yml 
 If you find our method useful for your reserach, please cite:
 
 ```bibtex
-@article{Du2024SVTRv2,
+@inproceedings{Du2024SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
-      journal={CoRR},
-      volume={abs/2411.15858},
-      eprinttype={arXiv},
-      year={2024},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2411.15858}
+      journal={ICCV},
+      year={2025}
 }
 ```
