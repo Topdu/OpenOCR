@@ -256,7 +256,7 @@ ______________________________________________________________________
 @inproceedings{Du2024SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
-      journal={ICCV},
+      booktitle={ICCV},
       year={2025}
 }
 ```
