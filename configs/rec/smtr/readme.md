@@ -13,7 +13,7 @@
 
 Paper:
 
-> [Out of Length Text Recognition with Sub-String Matching](https://arxiv.org/abs/2407.12317).
+> [Out of Length Text Recognition with Sub-String Matching](https://ojs.aaai.org/index.php/AAAI/article/view/32285).
 > Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang.
 > AAAI 2025
 
@@ -181,6 +181,6 @@ If you find our method useful for your reserach, please cite:
   primaryClass={cs.CV},
   volume    = {abs/2407.12317},
   year      = {2024},
-  url       = {https://arxiv.org/abs/2407.12317}
+  url       = {https://ojs.aaai.org/index.php/AAAI/article/view/32285}
 }
 ```
