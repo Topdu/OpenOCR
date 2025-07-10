@@ -37,7 +37,7 @@ ______________________________________________________________________
     - [x] 支持自定义数据集微调: [检测模型微调](./docs/finetune_det.md), [识别模型微调](./docs/finetune_rec.md)
     - [x] [支持导出ONNX模型](#导出onnx模型)
 
-- 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
+- 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition (ICCV 2025)**
 
   - \[[论文](https://arxiv.org/abs/2411.15858)\] \[[文档](./configs/rec/svtrv2/)\] \[[模型](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[数据集](./docs/svtrv2.md#downloading-datasets)\] \[[配置/训练/推理](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[基准测试](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
   - [技术文档](./docs/svtrv2.md)
