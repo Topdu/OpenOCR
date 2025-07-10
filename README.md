@@ -35,7 +35,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - [x] Provides server model and mobile model.
     - [x] Fine-tunes OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md).
     - [x] [ONNX model export for wider compatibility](#export-onnx-model).
-- 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition**
+- 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition (ICCV 2025)**
   - \[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
   - [Introduction](./docs/svtrv2.md)
     - A unified training and evaluation benchmark (on top of [Union14M](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset)) for Scene Text Recognition
@@ -47,30 +47,32 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Ours STR algorithms
 
-- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* AAAI 2025. [Doc](./configs/rec/smtr/), [Paper](https://arxiv.org/abs/2407.12317))
-- [**DPTR**](./configs/rec/dptr/) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [Paper](https://arxiv.org/abs/2408.05706))
-- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526))
-- [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* 2024. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
+- [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
+- [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://ieeexplore.ieee.org/document/10820836))
+- [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI 2025. [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md), [Paper](https://ieeexplore.ieee.org/document/10902187))
+- [**SMTR&FocalSVTR**](./configs/rec/smtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xieping Gao, Yu-Gang Jiang. Out of Length Text Recognition with Sub-String Matching,* AAAI 2025. [Doc](./configs/rec/smtr/), [Paper](https://ojs.aaai.org/index.php/AAAI/article/view/32285))
+- [**DPTR**](./configs/rec/dptr/) (*Shuai Zhao, Yongkun Du, Zhineng Chen\*, Yu-Gang Jiang. Decoder Pre-Training with only Text for Scene Text Recognition,* ACM MM 2024. [Paper](https://dl.acm.org/doi/10.1145/3664647.3681390))
 - [**CDistNet**](./configs/rec/cdistnet/) (*Tianlun Zheng, Zhineng Chen\*, Shancheng Fang, Hongtao Xie, Yu-Gang Jiang. CDistNet: Perceiving Multi-Domain Character Distance for Robust Text Recognition,* IJCV 2024. [Paper](https://link.springer.com/article/10.1007/s11263-023-01880-0))
 - **MRN** (*Tianlun Zheng, Zhineng Chen\*, Bingchen Huang, Wei Zhang, Yu-Gang Jiang. MRN: Multiplexed Routing Network for Incremental Multilingual Text Recognition,* ICCV 2023. [Paper](https://openaccess.thecvf.com/content/ICCV2023/html/Zheng_MRN_Multiplexed_Routing_Network_for_Incremental_Multilingual_Text_Recognition_ICCV_2023_paper.html), [Code](https://github.com/simplify23/MRN))
 - **TPS++** (*Tianlun Zheng, Zhineng Chen\*, Jinfeng Bai, Hongtao Xie, Yu-Gang Jiang. TPS++: Attention-Enhanced Thin-Plate Spline for Scene Text Recognition,* IJCAI 2023. [Paper](https://arxiv.org/abs/2305.05322), [Code](https://github.com/simplify23/TPS_PP))
-- [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI (accepted). [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md), [Paper](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453))
 - [**SVTR**](./configs/rec/svtr/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Tianlun Zheng, Chenxia Li, Yuning Du, Yu-Gang Jiang. SVTR: Scene Text Recognition with a Single Visual Model,* IJCAI 2022 (Long). [PaddleOCR Doc](https://github.com/Topdu/PaddleOCR/blob/main/doc/doc_ch/algorithm_rec_svtr.md), [Paper](https://www.ijcai.org/proceedings/2022/124))
 - [**NRTR**](./configs/rec/nrtr/) (*Fenfen Sheng, Zhineng Chen, Bo Xu. NRTR: A No-Recurrence Sequence-to-Sequence Model For Scene Text Recognition,* ICDAR 2019. [Paper](https://arxiv.org/abs/1806.00926))
 
 ## Recent Updates
 
+- **2025.07.10**: Our paper [SVTRv2](https://arxiv.org/abs/2411.15858) is accepted by ICCV 2025. Accessible in [Doc](./configs/rec/svtrv2/).
+
 - **2025.03.24**: 🔥 Releasing the feature of fine-tuning OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
 
 - **2025.03.23**: 🔥 Releasing the feature of [ONNX model export for wider compatibility](#export-onnx-model).
 
-- **2025.02.22**: Our paper [CPPD](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453) is accepted by TPAMI. Accessible in [Doc](./configs/rec/cppd/) and [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md).
+- **2025.02.22**: Our paper [CPPD](https://ieeexplore.ieee.org/document/10902187) is accepted by TPAMI. Accessible in [Doc](./configs/rec/cppd/) and [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md).
 
-- **2024.12.31**: Our paper [IGTR](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526) is accepted by TPAMI. Accessible in [Doc](./configs/rec/igtr/).
+- **2024.12.31**: Our paper [IGTR](https://ieeexplore.ieee.org/document/10820836) is accepted by TPAMI. Accessible in [Doc](./configs/rec/igtr/).
 
-- **2024.12.16**: Our paper [SMTR](https://arxiv.org/abs/2407.12317) is accepted by AAAI 2025. Accessible in [Doc](./configs/rec/smtr/).
+- **2024.12.16**: Our paper [SMTR](https://ojs.aaai.org/index.php/AAAI/article/view/32285) is accepted by AAAI 2025. Accessible in [Doc](./configs/rec/smtr/).
 
-- **2024.12.03**: The pre-training code for [DPTR](https://arxiv.org/abs/2408.05706) is merged.
+- **2024.12.03**: The pre-training code for [DPTR](https://dl.acm.org/doi/10.1145/3664647.3681390) is merged.
 
 - **🔥 2024.11.23 release notes**:
 
@@ -227,13 +229,13 @@ python demo_gradio.py
 | [CAM](./configs/rec/cam/)                     | [PR 2024](https://arxiv.org/abs/2402.13643)                                                    | ✅       | ✅         |                                             |
 | [OTE](./configs/rec/ote/)                     | [CVPR 2024](https://openaccess.thecvf.com/content/CVPR2024/html/Xu_OTE_Exploring_Accurate_Scene_Text_Recognition_Using_One_Token_CVPR_2024_paper.html) | ✅       | ✅         |                                             |
 | CFF                                           | [IJCAI 2024](https://arxiv.org/abs/2407.05562)                                                 |          |            | TODO                                        |
-| [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://arxiv.org/abs/2408.05706)                                                |          |            | [fd-zs](https://github.com/fd-zs)           |
+| [DPTR](./configs/rec/dptr/)                   | [ACM MM 2024](https://dl.acm.org/doi/10.1145/3664647.3681390)                                  |          |            | [fd-zs](https://github.com/fd-zs)           |
 | VIPTR                                         | [ACM CIKM 2024](https://arxiv.org/abs/2401.10110)                                              |          |            | TODO                                        |
-| [IGTR](./configs/rec/igtr/)                   | [TPAMI 2025](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3525526)                   | ✅       | ✅         |                                             |
-| [SMTR](./configs/rec/smtr/)                   | [AAAI 2025](https://arxiv.org/abs/2407.12317)                                                  | ✅       | ✅         |                                             |
-| [CPPD](./configs/rec/cppd/)                   | [TPAMI Online Access](https://doi.ieeecomputersociety.org/10.1109/TPAMI.2025.3545453)          | ✅       | ✅         |                                             |
-| [FocalSVTR-CTC](./configs/rec/svtrs/)         | [2024](https://arxiv.org/abs/2407.12317)                                                       | ✅       | ✅         |                                             |
-| [SVTRv2](./configs/rec/svtrv2/)               | [2024](https://arxiv.org/abs/2411.15858)                                                       | ✅       | ✅         |                                             |
+| [IGTR](./configs/rec/igtr/)                   | [TPAMI 2025](https://ieeexplore.ieee.org/document/10820836)                                    | ✅       | ✅         |                                             |
+| [SMTR](./configs/rec/smtr/)                   | [AAAI 2025](https://ojs.aaai.org/index.php/AAAI/article/view/32285)                            | ✅       | ✅         |                                             |
+| [CPPD](./configs/rec/cppd/)                   | [TPAMI 2025](https://ieeexplore.ieee.org/document/10902187)                                    | ✅       | ✅         |                                             |
+| [FocalSVTR-CTC](./configs/rec/svtrs/)         | [AAAI 2025](https://ojs.aaai.org/index.php/AAAI/article/view/32285)                            | ✅       | ✅         |                                             |
+| [SVTRv2](./configs/rec/svtrv2/)               | [ICCV 2025](https://arxiv.org/abs/2411.15858)                                                  | ✅       | ✅         |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |
 | [ViT-CTC](./configs/rec/svtrs/)               |                                                                                                | ✅       | ✅         |                                             |
 
@@ -258,15 +260,11 @@ ______________________________________________________________________
 If you find our method useful for your reserach, please cite:
 
 ```bibtex
-@article{Du2024SVTRv2,
+@inproceedings{Du2024SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
-      journal={CoRR},
-      volume={abs/2411.15858},
-      eprinttype={arXiv},
-      year={2024},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2411.15858}
+      booktitle={ICCV},
+      year={2025}
 }
 ```
 
