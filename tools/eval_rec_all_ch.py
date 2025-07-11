@@ -50,12 +50,15 @@ def main():
     for k, v in best_model_dict.items():
         trainer.logger.info('{}:{}'.format(k, v))
 
-    data_dirs_list = [[
-        '../benchmark_bctr/benchmark_bctr_test/scene_test',
-        '../benchmark_bctr/benchmark_bctr_test/web_test',
-        '../benchmark_bctr/benchmark_bctr_test/document_test',
-        '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
-    ]]
+    data_dirs_list = [
+        cfg.cfg['Eval']['dataset']['data_dir_list']
+    ]
+    # data_dirs_list = [[
+    #     '../benchmark_bctr/benchmark_bctr_test/scene_test',
+    #     '../benchmark_bctr/benchmark_bctr_test/web_test',
+    #     '../benchmark_bctr/benchmark_bctr_test/document_test',
+    #     '../benchmark_bctr/benchmark_bctr_test/handwriting_test'
+    # ]]
     cfg = cfg.cfg
     file_csv = open(
         cfg['Global']['output_dir'] + '/' +
@@ -95,7 +98,7 @@ def main():
             acc_each_ignore_space_symbol.append(
                 metric['acc_ignore_space_symbol'] * 100)
             acc_each_lower_ignore_space_symbol.append(
-                metric['acc_lower_ignore_space_symbol'] * 100)
+                metric['acc_ignore_space_lower_symbol'] * 100)
             acc_each_dis.append(metric['norm_edit_dis'])
             acc_each_num.append(metric['num_samples'])
 
@@ -148,7 +151,7 @@ def main():
                        ] + [avg1.sum().tolist()])
         avg1 = np.array(acc_each_lower_ignore_space_symbol) * np.array(
             acc_each_num) / sum(acc_each_num)
-        csv_w.writerow(['acc_lower_ignore_space_symbol'] +
+        csv_w.writerow(['acc_ignore_space_lower_symbol'] +
                        acc_each_lower_ignore_space_symbol + [
                            sum(acc_each_lower_ignore_space_symbol) /
                            len(acc_each_lower_ignore_space_symbol)
