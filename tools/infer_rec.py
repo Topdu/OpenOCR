@@ -222,26 +222,38 @@ class OpenRecognizer:
 
     def _init_torch_model(self, numId):
         from tools.utils.ckpt import load_ckpt
-        from tools.infer_det import replace_batchnorm
-        # PyTorch专用初始化
-        algorithm_name = self.cfg['Architecture']['algorithm']
-        if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
-            if not os.path.exists(self.cfg['Global']['pretrained_model']):
-                pretrained_model = check_and_download_model(
-                    MODEL_NAME_REC, DOWNLOAD_URL_REC
-                ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
-                    MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
-                self.cfg['Global']['pretrained_model'] = pretrained_model
 
-        from openrec.modeling import build_model as build_rec_model
+        if self.cfg['Global'].get('use_transformers', False):
+            algorithm_name = 'unirec'  # 使用transformers模型
+            from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
+            from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
+            cfg_model = UniRecConfig.from_pretrained(
+                './configs/rec/unirec/unirec_100m')
+            # cfg_model._attn_implementation = "flash_attention_2"
+            cfg_model._attn_implementation = 'eager'
+            self.model = UniRecForConditionalGenerationNew(config=cfg_model)
 
-        self.model = build_rec_model(self.cfg['Architecture'])
+        else:
+            # PyTorch专用初始化
+            algorithm_name = self.cfg['Architecture']['algorithm']
+            if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
+                if not os.path.exists(self.cfg['Global']['pretrained_model']):
+                    pretrained_model = check_and_download_model(
+                        MODEL_NAME_REC, DOWNLOAD_URL_REC
+                    ) if algorithm_name == 'SVTRv2_mobile' else check_and_download_model(
+                        MODEL_NAME_REC_SERVER, DOWNLOAD_URL_REC_SERVER)
+                    self.cfg['Global']['pretrained_model'] = pretrained_model
+
+            from openrec.modeling import build_model as build_rec_model
+            self.model = build_rec_model(self.cfg['Architecture'])
+
         load_ckpt(self.model, self.cfg)
 
         self.device = set_device(self.cfg['Global']['device'], numId)
         self.model.to(self.device)
         self.model.eval()
         if algorithm_name == 'SVTRv2_mobile':
+            from tools.infer_det import replace_batchnorm
             replace_batchnorm(self.model.encoder)
 
     def _inference_onnx(self, images):
@@ -329,7 +341,18 @@ class OpenRecognizer:
                 images = self.torch.from_numpy(padded_batch).to(
                     device=self.device)
                 with self.torch.no_grad():
-                    preds = self.model(images, others)  # bs, len, num_classes
+                    if self.cfg['Global'].get('use_transformers', False):
+                        # transformers模型推理
+                        inputs = {
+                            'pixel_values': images,
+                            'input_ids': None,
+                            'attention_mask': None
+                        }
+                        preds = self.model.generate(**inputs)
+                    else:
+                        # PyTorch模型推理
+                        preds = self.model(images,
+                                           others)  # bs, len, num_classes
                 torch_tensor = True
             elif self.backend == 'onnx':
                 # ONNX推理
