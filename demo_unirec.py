@@ -1,7 +1,7 @@
-import os
-
+import gradio as gr
 import torch
-import gradio as gr  # gradio==4.20.0
+from threading import Thread
+
 import numpy as np
 from openrec.postprocess import build_post_process
 from openrec.preprocess import create_operators, transform
@@ -27,7 +27,7 @@ post_process_class = build_post_process(cfg['PostProcess'], cfg['Global'])
 
 from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
 from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, TextIteratorStreamer
 
 tokenizer = AutoTokenizer.from_pretrained('./configs/rec/unirec/unirec_100m')
 cfg_model = UniRecConfig.from_pretrained('./configs/rec/unirec/unirec_100m')
@@ -44,77 +44,65 @@ transforms, ratio_resize_flag = build_rec_process(cfg)
 ops = create_operators(transforms, global_config)
 
 
-def process_image(input_image):
+# --- 2. 定义流式生成函数 ---
+def stream_chat_with_image(input_image, history):
+    if input_image is None:
+        yield history + [('🖼️(空)', '请先上传一张图片。')]
+        return
+
+    # 创建 TextIteratorStreamer
+    streamer = TextIteratorStreamer(tokenizer,
+                                    skip_prompt=True,
+                                    skip_special_tokens=False)
+
     data = {'image': input_image}
     batch = transform(data, ops[1:])
     images = np.expand_dims(batch[0], axis=0)
     images = torch.from_numpy(images).to(device=device)
-    with torch.no_grad():
-        inputs = {
-            'pixel_values': images,
-            'input_ids': None,
-            'attention_mask': None
-        }
-        preds = model.generate(**inputs)
-        res = tokenizer.batch_decode(preds, skip_special_tokens=False)
-        res[0] = res[0].replace(' ', '').replace('Ġ', ' ').replace(
+    inputs = {
+        'pixel_values': images,
+        'input_ids': None,
+        'attention_mask': None
+    }
+    generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=1024)
+    # 后台线程运行生成
+    thread = Thread(target=model.generate, kwargs=generation_kwargs)
+    thread.start()
+    # 流式输出
+    generated_text = ''
+    history = history + [('🖼️(图片)', '')]
+    for new_text in streamer:
+        new_text = new_text.replace(' ', '').replace('Ġ', ' ').replace(
             'Ċ', '\n').replace('<|bos|>',
                                '').replace('<|eos|>',
                                            '').replace('<|pad|>', '')
-
-    rec_results = res[0]
-    return rec_results
-
-
-def list_image_paths(directory):
-    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff')
-
-    image_paths = []
-
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.lower().endswith(image_extensions):
-                relative_path = os.path.relpath(os.path.join(root, file),
-                                                directory)
-                full_path = os.path.join(directory, relative_path)
-                image_paths.append(full_path)
-    image_paths = sorted(image_paths)
-    return image_paths
+        generated_text += new_text
+        history[-1] = ('🖼️(图片)', generated_text)
+        yield history
 
 
-e2e_img_example = list_image_paths('./unirec_100m/demo_imgs')
-
-# 创建Gradio界面
-with gr.Blocks(title='文本-公式识别系统') as demo:
+# --- 3. Gradio 界面 ---
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML("""
             <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec: Unified Text and Formula Recognition Across Granularities</a></h1>
             <p style='text-align: center;'>统一多粒度文本与公式识别模型 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
-            <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/docs/unirec.md">[本地GPU部署]</a>获取快速识别</p>"""
+            <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/openocr_svtrv2/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
             )
+    gr.Markdown('上传一张图片，系统会自动识别文本和公式。')
     with gr.Row():
-        with gr.Column():
-            image_input = gr.Image(label='上传图片', type='pil')
-            process_btn = gr.Button('开始处理', variant='primary')
+        with gr.Column(scale=1):  # 左侧竖排：图片 + 清空按钮
+            image_input = gr.Image(label='上传图片 or 粘贴截图', type='pil')
+            clear = gr.ClearButton([image_input],
+                                   value='清空')  # 先挂载到 image_input
+        with gr.Column(scale=2):
+            chatbot = gr.Chatbot(label='结果（请使用LaTeX编译器渲染公式）',
+                                 show_copy_button=True,
+                                 height='auto')
+    # 再把 clear 绑定 chatbot 一起清理
+    clear.add([chatbot])
+    # 上传后触发
+    image_input.upload(stream_chat_with_image, [image_input, chatbot], chatbot)
 
-        with gr.Column():
-
-            edit_box = gr.Textbox(
-                label='识别结果（使用LaTeX编译器渲染公式）',
-                lines=10,
-                placeholder='在这里编辑Markdown内容...',
-                interactive=True,
-                show_copy_button=True,
-            )
-
-    examples = gr.Examples(examples=e2e_img_example,
-                           inputs=image_input,
-                           label='示例图片')
-
-    # 初始处理流程
-    process_btn.click(fn=process_image, inputs=image_input, outputs=edit_box)
-
-    # 实时渲染逻辑
-    edit_box.change(fn=lambda x: x, inputs=edit_box)
-
-# 启动服务 server_name="10.176.42.28"
-demo.launch()
+# --- 4. 启动应用 ---
+if __name__ == '__main__':
+    demo.queue().launch(share=True)

@@ -28,7 +28,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 - 🔥**UniRec: Unified Text and Formula Recognition Across Granularities**
 
-  - ⚡\[[Doc](./docs/unirec.md)\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\]
+  - ⚡\[[Doc](./docs/unirec.md)\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[Paper coming soon\]
     - Recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content.
     - 0.1B parameters.
     - Trained from scratch on 50M data without pre-training.

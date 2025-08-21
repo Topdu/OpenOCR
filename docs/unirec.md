@@ -1,10 +1,10 @@
 # UniRec: Unified Text and Formula Recognition Across Granularities
 
-\[Paper coming soon\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\] \[[Local Demo](#local-demo)\]
+\[Paper coming soon\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](#local-demo)\]
 
 ## Introduction
 
-**UniRec** is good at recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content. You only need to use a screenshot tool to select the text area from a paper and paste it into the \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] or \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\]. After clicking Run, the recognition will be completed automatically
+**UniRec** is good at recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content. You only need to use a screenshot tool to select the text area from a paper and paste it into the \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] or \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\]. After clicking Run, the recognition will be completed automatically
 
 ## Get Started with the UniRec
 
