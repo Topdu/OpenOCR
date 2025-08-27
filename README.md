@@ -26,7 +26,15 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Features
 
+- 🔥**UniRec: Unified Text and Formula Recognition Across Granularities**
+
+  - ⚡\[[Doc](./docs/unirec.md)\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[Paper coming soon\]
+    - Recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content.
+    - 0.1B parameters.
+    - Trained from scratch on 50M data without pre-training.
+
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
+
   - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\] \[[Local Demo](#local-demo)\]  \[[PaddleOCR Implementation](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
   - [Introduction](./docs/openocr.md)
     - A practical OCR system building on SVTRv2.
@@ -35,7 +43,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - [x] Provides server model and mobile model.
     - [x] Fine-tunes OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md).
     - [x] [ONNX model export for wider compatibility](#export-onnx-model).
+
 - 🔥**SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition (ICCV 2025)**
+
   - \[[Paper](https://arxiv.org/abs/2411.15858)\] \[[Doc](./configs/rec/svtrv2/)\] \[[Model](./configs/rec/svtrv2/readme.md#11-models-and-results)\] \[[Datasets](./docs/svtrv2.md#downloading-datasets)\] \[[Config, Training and Inference](./configs/rec/svtrv2/readme.md#3-model-training--evaluation)\] \[[Benchmark](./docs/svtrv2.md#results-benchmark--configs--checkpoints)\]
   - [Introduction](./docs/svtrv2.md)
     - A unified training and evaluation benchmark (on top of [Union14M](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset)) for Scene Text Recognition

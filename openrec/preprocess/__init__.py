@@ -117,6 +117,7 @@ MODULE_MAPPING = {
     'SVTRResize': '.resize',
     'VisionLANResize': '.resize',
     'RecDynamicResize': '.resize',
+    'NaSizeResize': '.resize',
 }
 
 

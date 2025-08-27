@@ -26,6 +26,13 @@ ______________________________________________________________________
 
 ## 核心特性
 
+- 🔥**UniRec: Unified Text and Formula Recognition Across Granularities**
+
+  - ⚡\[[使用文档](./docs/unirec.md)\] \[[模型下载](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[本地Demo](./docs/unirec.md#local-demo)\] \[论文coming soon\]
+    - 识别纯文本（单词、行、段落）、公式（单行、多行）、以及文本与公式混合的内容
+    - 0.1B 参数量
+    - 在 5000 万数据上从零开始训练，不使用任何预训练
+
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
 
   - ⚡\[[快速开始](#快速开始)\] \[[模型下载](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\] \[[本地Demo](#本地Demo)\] \[[PaddleOCR实现](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
