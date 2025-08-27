@@ -86,7 +86,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML("""
             <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec: Unified Text and Formula Recognition Across Granularities</a></h1>
             <p style='text-align: center;'>统一多粒度文本与公式识别模型 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
-            <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/openocr_svtrv2/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
+            <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/main/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
             )
     gr.Markdown('上传一张图片，系统会自动识别文本和公式。')
     with gr.Row():
