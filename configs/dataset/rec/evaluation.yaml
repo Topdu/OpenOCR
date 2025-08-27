@@ -1,0 +1,41 @@
+root: ../evaluation
+task: str
+download_links:
+  # IC15_1811
+  - https://drive.usercontent.google.com/download?id=1eGY0kXNV1qVxeUpoGzs-ioUO-ky7msH6&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1BWv7aLoLAT7avY326gXP3GJF48UZpuBC&authuser=0&confirm=t
+  # SVT
+  - https://drive.usercontent.google.com/download?id=1ecEZ4cJ7dIbTCZRltE0s5KzUotQWagH-&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1OygBP7i9R-3Pwi6WodCcW31J8CUMugOJ&authuser=0&confirm=t
+  # IIIT5k
+  - https://drive.usercontent.google.com/download?id=1PJ9_IvIGZTS5hHdGLnpKuYKZcCO8jE0E&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=10P3MixSBt1v8k8_6aFfziC33Z5IlM6Uf&authuser=0&confirm=t
+  # IC13_857
+  - https://drive.usercontent.google.com/download?id=1-wMHOFBXJaOaY-UD00nDn6qw2s_8R4Vd&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1J1QCFtOFxFKiLJIgTqZ6eRo9Y5QGqHpA&authuser=0&confirm=t
+  # SVTP
+  - https://drive.usercontent.google.com/download?id=1kckwfZkdaHG8k_FW5IIJKUaYZkF21Hza&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1x61lm_ea7lvIdxNPMG-jy-5W0MxtdH0N&authuser=0&confirm=t
+  # CUTE80
+  - https://drive.usercontent.google.com/download?id=1Zv_91c81tinLy5Je89HPr-5wUSnqXKIB&authuser=0&confirm=t
+  - https://drive.usercontent.google.com/download?id=1OuJ6QoJ9AlyNHIM9j2WedAPxTnac7kyY&authuser=0&confirm=t
+filenames: 
+  # IC15_1811
+  - ../evaluation/IC15_1811/data.mdb
+  - ../evaluation/IC15_1811/lock.mdb
+  # SVT
+  - ../evaluation/SVT/data.mdb
+  - ../evaluation/SVT/lock.mdb
+  # IIIT5k
+  - ../evaluation/IIIT5k/data.mdb
+  - ../evaluation/IIIT5k/lock.mdb
+  # IC13_857
+  - ../evaluation/IC13_857/data.mdb
+  - ../evaluation/IC13_857/lock.mdb
+  # SVTP
+  - ../evaluation/SVTP/data.mdb
+  - ../evaluation/SVTP/lock.mdb
+  # CUTE80
+  - ../evaluation/CUTE80/data.mdb
+  - ../evaluation/CUTE80/lock.mdb
+check_validity: true
