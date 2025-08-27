@@ -1,0 +1,109 @@
+Global:
+  device: gpu
+  epoch_num: 10
+  log_smooth_window: 20
+  print_batch_step: 20
+  output_dir: ./output/rec/unirec_100m/
+  save_epoch_step: [0, 1] # save every 1 epoch after 7 epochs
+  # evaluation is run every 2000 iterations
+  eval_batch_step: [2000000, 4000]
+  eval_epoch_step: [150, 1]
+  cal_metric_during_train: False
+  pretrained_model: ./unirec_100m/model.pth
+  checkpoints:
+  resume_from_iter: False
+  use_tensorboard: false
+  infer_img: ../crop_img_hand
+  # for data or label process
+  character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
+  # ./tools/utils/ppocr_keys_v1.txt  # ch
+  max_text_length: &max_text_length 1024
+  use_space_char: &use_space_char False
+  save_res_path: ./output/rec/unirec_100m/predicts_unirec_100m.txt
+  use_amp: True
+  use_ema: False
+  use_transformers: True
+  grad_clip_val: 1.0
+
+Optimizer:
+  name: AdamW
+  lr: 0.0001 # for 4gpus bs256/gpu
+  weight_decay: 0.01
+  filter_bias_and_bn: True
+
+LRScheduler:
+  name: OneCycleLR
+  warmup_epoch: 0.3 # pct_start 0.075*20 = 1.5ep
+  cycle_momentum: False
+
+Architecture:
+  model_type: rec
+  algorithm: AR
+  in_channels: 3
+  Transform:
+  Encoder:
+  Decoder:
+    out_channels: -1 # for inference, set to -1
+
+Loss:
+  name: VLMLoss
+  label_smoothing: 0.1
+
+PostProcess:
+  name: UniRecLabelDecode
+  lower: False
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  is_filter: False
+
+Train:
+  dataset:
+    name: NaSizeDataSet
+    divided_factor: &divided_factor [64, 64] # w, h
+    max_side: &max_side [960, 1408] # [64*30, 64*44] # w, h [960, 1408] #
+    add_return: True
+    zoom_min_factor: 4
+    rm_indent: True
+    use_zoom: True
+    all_data: True
+    use_region: False
+    transforms:
+      - DocAug:
+      - DocLabelEncode: # Class handling label
+          max_text_length: *max_text_length
+          vlmocr: True
+          tokenizer_path: 'vlmocr_new_768' # path to tokenizer, e.g. 'vocab.json', 'merges.txt'
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  sampler:
+    name: NaSizeSampler
+    # divide_factor: to ensure the width and height dimensions can be devided by downsampling multiple
+    min_bs: 1
+    max_bs: 24
+  loader:
+    shuffle: True
+    batch_size_per_card: 64
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: LMDBDataSet
+    data_dir: ../evaluation
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - DocLabelEncode: # Class handling label
+          max_text_length: *max_text_length
+      - NaSizeResize:
+          max_side: *max_side
+          divided_factor: *divided_factor
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 1
+    num_workers: 1

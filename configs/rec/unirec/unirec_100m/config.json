@@ -1,0 +1,97 @@
+{
+  "activation_dropout": 0.0,
+  "activation_function": "relu",
+  "architectures": [
+    "VLMOCRForConditionalGenerationNew"
+  ],
+  "attention_dropout": 0.1,
+  "bos_token_id": 0,
+  "d_model": 768,
+  "decoder_attention_heads": 6,
+  "decoder_ffn_dim": 3072,
+  "decoder_layerdrop": 0.0,
+  "decoder_layers": 6,
+  "decoder_start_token_id": 0,
+  "depths": [
+    2,
+    2,
+    9,
+    2
+  ],
+  "dims": [
+    128,
+    256,
+    512,
+    768
+  ],
+  "drop_path_rate": 0.1,
+  "dropout": 0.1,
+  "encoder_layerdrop": 0.0,
+  "eos_token_id": 2,
+  "init_std": 0.02,
+  "is_encoder_decoder": true,
+  "kernel_size": [
+    3,
+    3
+  ],
+  "max_position_embeddings": 3072,
+  "mixer": [
+    [
+      "Conv",
+      "Conv"
+    ],
+    [
+      "Conv",
+      "Conv"
+    ],
+    [
+      "Conv",
+      "Conv",
+      "Conv",
+      "Conv",
+      "Conv",
+      "FGlobal",
+      "Global",
+      "Global",
+      "Global"
+    ],
+    [
+      "Global",
+      "Global"
+    ]
+  ],
+  "mlp_ratio": 4,
+  "model_type": "m2m_100",
+  "num_heads": [
+    4,
+    8,
+    8,
+    12
+  ],
+  "pad_token_id": 1,
+  "scale_embedding": true,
+  "sub_k": [
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "torch_dtype": "float32",
+  "transformers_version": "4.49.0",
+  "use_cache": true,
+  "vocab_size": 9705,
+  "max_length": 1024,
+  "label_smoothing": 0.1
+}

@@ -18,6 +18,7 @@ module_mapping = {
     'SRNLabelDecode': '.srn_postprocess',
     'LISTERLabelDecode': '.lister_postprocess',
     'MPGLabelDecode': '.mgp_postprocess',
+    'UniRecLabelDecode': '.unirec_postprocess',
     'GTCLabelDecode': '.'  # 当前模块中的类
 }
 

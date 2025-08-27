@@ -304,6 +304,63 @@ class RecDynamicResize(object):
         return data
 
 
+class NaSizeResize(object):
+
+    def __init__(self,
+                 max_side=[64 * 15, 64 * 22],
+                 divided_factor=[64, 64],
+                 **kwargs):
+        from torchvision import transforms as T
+        from torchvision.transforms import functional as F
+        self.F = F
+        self.max_side = max_side
+        self.divided_factor = divided_factor
+        self.interpolation = T.InterpolationMode.BICUBIC
+        transforms = []
+        transforms.extend([
+            T.ToTensor(),
+            T.Normalize(0.5, 0.5),
+        ])
+        self.transforms = T.Compose(transforms)
+
+    def resize_image(self, original_width, original_height, max_width,
+                     max_height):
+        # 计算宽高比
+        aspect_ratio = original_width / original_height
+
+        # 计算新的宽度和高度
+        if original_width > max_width or original_height > max_height:
+            if (max_width / max_height) >= aspect_ratio:
+                # 按高度限制比例
+                new_height = max_height
+                new_width = int(new_height * aspect_ratio)
+            else:
+                # 按宽度限制比例
+                new_width = max_width
+                new_height = int(new_width / aspect_ratio)
+        else:
+            # 如果图片已经小于或等于最大尺寸，则无需调整
+            new_width, new_height = original_width, original_height
+        return new_width, new_height
+
+    def __call__(self, data):
+        img = data['image']
+        # imgW, imgH = self.max_side
+        w, h = img.size
+        w_r, h_r = self.resize_image(w, h, self.max_side[0], self.max_side[1])
+        h_r = max(int(h_r // self.divided_factor[1] * self.divided_factor[1]),
+                  64)
+        w_r = max(int(w_r // self.divided_factor[0] * self.divided_factor[0]),
+                  64)
+        resized_image = self.F.resize(img, (h_r, w_r),
+                                      interpolation=self.interpolation)
+        img = self.transforms(resized_image)
+        valid_ratio = min(1.0, float(w_r / w))
+        data['image'] = img
+        data['valid_ratio'] = valid_ratio
+        return data
+
+
 def resize_norm_img_slice(
     img,
     image_shape,
