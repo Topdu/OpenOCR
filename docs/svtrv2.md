@@ -114,7 +114,7 @@ pip install -r requirements.txt
 
 ### Downloading Datasets
 
-All data can be downloaded from [Google Drive](https://drive.google.com/drive/folders/17mK_PLiBU0-a8qhUd5g4H6V03yUM2Gyp?usp=sharing).
+All data can be downloaded from [huggingface](https://huggingface.co/datasets/topdu/OpenOCR-Data).
 
 #### The structure of Datasets and OpenOCR code will be organized as follows:
 
