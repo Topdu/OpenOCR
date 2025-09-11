@@ -197,7 +197,7 @@ If you have downloaded Union14M-L, you can use [the filtered list of images](htt
 | Datsets                   | Google Drive                                                                                             | Baidu Yun |
 | ------------------------- | -------------------------------------------------------------------------------------------------------- | --------- |
 | Union14M-L-Benchmark      | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
-| Common-Benchmarks         | [LMDB archives](https://drive.google.com/drive/folders/103DA5Wu9YofDbE-JIUm5StJxTO2GixgS?usp=drive_link) |           |
+| Common-Benchmarks         | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Long Text Benchmark (LTB) | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Occluded Scene Text (OST) | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 
