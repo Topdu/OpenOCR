@@ -185,7 +185,7 @@ Union14M-L-LMDB-Filtered # lmdb format Union14M-L-Filtered
 
 #### **Datasets used during Training**
 
-| Datsets           | Google Drive                                                                                             | Baidu Yun |
+| Datsets           | Hugging Face                                                                                             | Baidu Yun |
 | ----------------- | -------------------------------------------------------------------------------------------------------- | --------- |
 | Union14M-L-Filter | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data)    |           |
 | Evaluation        | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
@@ -194,7 +194,7 @@ If you have downloaded Union14M-L, you can use [the filtered list of images](htt
 
 #### **Test Set**
 
-| Datsets                   | Google Drive                                                                                             | Baidu Yun |
+| Datsets                   | Hugging Face                                                                                             | Baidu Yun |
 | ------------------------- | -------------------------------------------------------------------------------------------------------- | --------- |
 | Union14M-L-Benchmark      | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Common-Benchmarks         | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
