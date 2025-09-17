@@ -258,6 +258,16 @@ class OpenOCR(object):
         image_file_list = get_image_file_list(img_path)
         save_results = []
         time_dicts_return = []
+        font_path = None    # Pre-initialize visualization resources
+        draw_img_save_dir = None
+        if is_visualize:
+            font_path = './simfang.ttf'
+            font_path = check_and_download_font(font_path)
+            os.makedirs(save_dir, exist_ok=True)
+            draw_img_save_dir = os.path.join(save_dir, 'vis_results/')
+            os.makedirs(draw_img_save_dir, exist_ok=True)
+            logger.info(f'Visualized results will be saved to {draw_img_save_dir}.')
+
         for idx, image_file in enumerate(image_file_list):
             img, flag_gif, flag_pdf = check_and_read(image_file)
             if not flag_gif and not flag_pdf:
@@ -317,16 +327,6 @@ class OpenOCR(object):
                 time_dicts_return.append(time_dict)
 
                 if is_visualize and len(res) > 0:
-                    if idx == 0:
-                        font_path = './simfang.ttf'
-                        font_path = check_and_download_font(font_path)
-                        os.makedirs(save_dir, exist_ok=True)
-                        draw_img_save_dir = os.path.join(
-                            save_dir, 'vis_results/')
-                        os.makedirs(draw_img_save_dir, exist_ok=True)
-                        logger.info(
-                            f'Visualized results will be saved to {draw_img_save_dir}.'
-                        )
                     dt_boxes = [res[i]['points'] for i in range(len(res))]
                     rec_res = [
                         res[i]['transcription'] for i in range(len(res))
