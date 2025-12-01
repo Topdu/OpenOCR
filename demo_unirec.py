@@ -3,6 +3,7 @@ import torch
 from threading import Thread
 
 import numpy as np
+import re
 from openrec.postprocess.unirec_postprocess import clean_special_tokens
 from openrec.preprocess import create_operators, transform
 from tools.engine.config import Config
@@ -40,6 +41,18 @@ model.to(device=device)
 transforms, ratio_resize_flag = build_rec_process(cfg)
 ops = create_operators(transforms, global_config)
 
+rules = [
+    (r'-<\|sn\|>', ''),
+    (r' <\|sn\|>', ' '),
+    (r'<\|sn\|>', ' '),
+    (r'<\|unk\|>', ''),
+    (r'<s>', ''),
+    (r'</s>', ''),
+    (r'\uffff', ''),
+    (r'_{4,}', '___'),
+    (r'\.{4,}', '...'),
+]
+
 
 # --- 2. 定义流式生成函数 ---
 def stream_chat_with_image(input_image, history):
@@ -69,8 +82,9 @@ def stream_chat_with_image(input_image, history):
     generated_text = ''
     history = history + [('🖼️(图片)', '')]
     for new_text in streamer:
-        new_text = clean_special_tokens(new_text)
-        generated_text += new_text
+        generated_text += clean_special_tokens(new_text)
+        for rule in rules:
+            generated_text = re.sub(rule[0], rule[1], generated_text)
         history[-1] = ('🖼️(图片)', generated_text)
         yield history
 
@@ -79,7 +93,7 @@ def stream_chat_with_image(input_image, history):
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML("""
             <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters</a></h1>
-            <p style='text-align: center;'>0.1B超轻量模型统一文本与公式识别模型 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
+            <p style='text-align: center;'>0.1B超轻量模型统一文本与公式识别（由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
             <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/main/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
             )
     gr.Markdown('上传一张图片，系统会自动识别文本和公式。')
