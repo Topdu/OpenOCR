@@ -228,7 +228,7 @@ class OpenRecognizer:
             from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
             from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
             cfg_model = UniRecConfig.from_pretrained(
-                './configs/rec/unirec/unirec_100m')
+                self.cfg['Global']['vlm_ocr_config'])
             # cfg_model._attn_implementation = "flash_attention_2"
             cfg_model._attn_implementation = 'eager'
             self.model = UniRecForConditionalGenerationNew(config=cfg_model)

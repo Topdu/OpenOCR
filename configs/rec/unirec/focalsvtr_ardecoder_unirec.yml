@@ -3,13 +3,13 @@ Global:
   epoch_num: 10
   log_smooth_window: 20
   print_batch_step: 20
-  output_dir: ./output/rec/unirec_100m/
+  output_dir: ./output/rec/unirec-0.1b/
   save_epoch_step: [0, 1] # save every 1 epoch after 7 epochs
   # evaluation is run every 2000 iterations
   eval_batch_step: [2000000, 4000]
   eval_epoch_step: [150, 1]
   cal_metric_during_train: False
-  pretrained_model: ./unirec_100m/model.pth
+  pretrained_model: ./unirec-0.1b/model.pth
   checkpoints:
   resume_from_iter: False
   use_tensorboard: false
@@ -19,11 +19,13 @@ Global:
   # ./tools/utils/ppocr_keys_v1.txt  # ch
   max_text_length: &max_text_length 1024
   use_space_char: &use_space_char False
-  save_res_path: ./output/rec/unirec_100m/predicts_unirec_100m.txt
+  save_res_path: ./output/rec/unirec-0.1b/predicts_unirec-0.1b.txt
   use_amp: True
   use_ema: False
   use_transformers: True
+  use_vlmocr: True
   grad_clip_val: 1.0
+  vlm_ocr_config: &vlm_ocr_config ./configs/rec/unirec/unirec-0.1b
 
 Optimizer:
   name: AdamW
@@ -52,6 +54,7 @@ Loss:
 PostProcess:
   name: UniRecLabelDecode
   lower: False
+  tokenizer_path: *vlm_ocr_config
 
 Metric:
   name: RecMetric
@@ -74,7 +77,7 @@ Train:
       - DocLabelEncode: # Class handling label
           max_text_length: *max_text_length
           vlmocr: True
-          tokenizer_path: 'vlmocr_new_768' # path to tokenizer, e.g. 'vocab.json', 'merges.txt'
+          tokenizer_path: *vlm_ocr_config # path to tokenizer, e.g. 'vocab.json', 'merges.txt'
       - KeepKeys:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   sampler:

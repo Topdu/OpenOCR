@@ -26,12 +26,13 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Features
 
-- 🔥**UniRec: Unified Text and Formula Recognition Across Granularities**
+- 🔥**UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters**
 
-  - ⚡\[[Doc](./docs/unirec.md)\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[Paper coming soon\]
+  - ⚡\[[Doc](./docs/unirec.md)\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[Hugging Face Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[Paper coming soon\]
     - Recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content.
     - 0.1B parameters.
-    - Trained from scratch on 50M data without pre-training.
+    - Trained from scratch on 40M data without pre-training.
+    - Supporting both Chinese and English text/formulas recognition.
 
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
 
@@ -57,6 +58,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Ours STR algorithms
 
+- **MDiff4STR** (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. Paper and Code are coming soon.)
+- **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. Paper and Code are coming soon.)
+- **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://ieeexplore.ieee.org/document/10820836))
 - [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI 2025. [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md), [Paper](https://ieeexplore.ieee.org/document/10902187))
@@ -70,22 +74,17 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Recent Updates
 
+- **2025.11.08**: Our paper MDiff4STR is accepted by AAAI 2026 (Oral). Code is coming soon.
+- **2025.11.08**: Our paper CMER is accepted by AAAI 2026. Code is coming soon.
 - **2025.07.10**: Our paper [SVTRv2](https://arxiv.org/abs/2411.15858) is accepted by ICCV 2025. Accessible in [Doc](./configs/rec/svtrv2/).
-
+- **2025.07.10**: Our paper [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) is accepted by ICCV 2025. Accessible in [Code](https://github.com/YesianRohn/TextSSR).
 - **2025.03.24**: 🔥 Releasing the feature of fine-tuning OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
-
 - **2025.03.23**: 🔥 Releasing the feature of [ONNX model export for wider compatibility](#export-onnx-model).
-
 - **2025.02.22**: Our paper [CPPD](https://ieeexplore.ieee.org/document/10902187) is accepted by TPAMI. Accessible in [Doc](./configs/rec/cppd/) and [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md).
-
 - **2024.12.31**: Our paper [IGTR](https://ieeexplore.ieee.org/document/10820836) is accepted by TPAMI. Accessible in [Doc](./configs/rec/igtr/).
-
 - **2024.12.16**: Our paper [SMTR](https://ojs.aaai.org/index.php/AAAI/article/view/32285) is accepted by AAAI 2025. Accessible in [Doc](./configs/rec/smtr/).
-
 - **2024.12.03**: The pre-training code for [DPTR](https://dl.acm.org/doi/10.1145/3664647.3681390) is merged.
-
 - **🔥 2024.11.23 release notes**:
-
   - **OpenOCR: A general OCR system with accuracy and efficiency**
     - ⚡\[[Quick Start](#quick-start)\] \[[Model](https://github.com/Topdu/OpenOCR/releases/tag/develop0.0.1)\] \[[ModelScope Demo](https://modelscope.cn/studios/topdktu/OpenOCR-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-Demo)\] \[[Local Demo](#local-demo)\]  \[[PaddleOCR Implementation](https://paddlepaddle.github.io/PaddleOCR/latest/algorithm/text_recognition/algorithm_rec_svtrv2.html)\]
     - [Introduction](./docs/openocr.md)

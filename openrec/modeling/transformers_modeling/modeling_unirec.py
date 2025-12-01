@@ -1,5 +1,5 @@
 import math
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
@@ -10,12 +10,7 @@ from transformers import M2M100PreTrainedModel
 from transformers.models.m2m_100.modeling_m2m_100 import M2M100ScaledWordEmbedding, M2M100Decoder
 from transformers.modeling_outputs import Seq2SeqLMOutput, Seq2SeqModelOutput, BaseModelOutput
 from transformers.generation import GenerationMixin
-from openrec.modeling.encoders.svtrv2_lnconv_two33 import Attention
 from openrec.modeling.encoders.focalsvtr import FocalSVTR
-from transformers.utils import is_flash_attn_2_available
-
-if is_flash_attn_2_available():
-    from transformers.modeling_flash_attention_utils import _flash_attention_forward
 
 
 def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int,
@@ -33,73 +28,6 @@ def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int,
     shifted_input_ids.masked_fill_(shifted_input_ids == -100, pad_token_id)
 
     return shifted_input_ids
-
-
-class FlashAttention2(Attention):
-    """
-    M2M100 flash attention module. This module inherits from `M2M100Attention` as the weights of the module stays
-    untouched. The only required change would be on the forward pass where it needs to correctly call the public API of
-    flash attention and deal with padding tokens in case the input contains any of them.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def forward(self, x) -> torch.Tensor:
-        B, N, _ = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
-                                  self.head_dim).permute(2, 0, 1, 3, 4)
-        q, k, v = qkv.unbind(0)
-        attn_output = _flash_attention_forward(
-            q,
-            k,
-            v,
-            None,
-            N,
-            dropout=self.dropout if self.training else 0.0,
-            is_causal=False,
-            use_top_left_mask=False,
-        )
-        attn_output = attn_output.reshape(B, N, -1)
-        attn_output = self.proj(attn_output)
-        return attn_output
-
-
-# Copied from transformers.models.bart.modeling_bart.BartSdpaAttention with Bart->M2M100
-class SdpaAttention(Attention):
-
-    def forward(
-        self, x
-    ) -> Tuple[torch.Tensor, Optional[torch.Tensor],
-               Optional[Tuple[torch.Tensor]]]:
-        B, N, _ = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
-                                  self.head_dim).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv.unbind(0)
-        # NOTE: SDPA with memory-efficient backend is currently (torch==2.1.2) bugged when using non-contiguous inputs and a custom attn_mask,
-        # but we are fine here as `_shape` do call `.contiguous()`. Reference: https://github.com/pytorch/pytorch/issues/112577
-        attn_output = torch.nn.functional.scaled_dot_product_attention(
-            q,
-            k,
-            v,
-            attn_mask=None,
-            dropout_p=self.dropout if self.training else 0.0,
-            is_causal=False,
-        )
-        attn_output = attn_output.transpose(1, 2)
-        # Use the `embed_dim` from the config (stored in the class) rather than `hidden_state` because `attn_output` can be
-        # partitioned across GPUs when using tensor-parallelism.
-        attn_output = attn_output.reshape(B, N, self.dim)
-        attn_output = self.proj(attn_output)
-
-        return attn_output
-
-
-ATTENTION_CLASSES = {
-    'eager': Attention,
-    'flash_attention_2': FlashAttention2,
-    'sdpa': SdpaAttention,
-}
 
 
 class UniRecEncoder(M2M100PreTrainedModel):

@@ -3,7 +3,7 @@ import torch
 from threading import Thread
 
 import numpy as np
-from openrec.postprocess import build_post_process
+from openrec.postprocess.unirec_postprocess import clean_special_tokens
 from openrec.preprocess import create_operators, transform
 from tools.engine.config import Config
 from tools.utils.ckpt import load_ckpt
@@ -12,7 +12,7 @@ from tools.infer_rec import build_rec_process
 
 def set_device(device):
     if device == 'gpu' and torch.cuda.is_available():
-        device = torch.device(f'cuda:0')
+        device = torch.device('cuda:0')
     else:
         device = torch.device('cpu')
     return device
@@ -22,15 +22,12 @@ cfg = Config('configs/rec/unirec/focalsvtr_ardecoder_unirec.yml')
 cfg = cfg.cfg
 global_config = cfg['Global']
 
-# build post process
-post_process_class = build_post_process(cfg['PostProcess'], cfg['Global'])
-
 from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
 from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
 from transformers import AutoTokenizer, TextIteratorStreamer
 
-tokenizer = AutoTokenizer.from_pretrained('./configs/rec/unirec/unirec_100m')
-cfg_model = UniRecConfig.from_pretrained('./configs/rec/unirec/unirec_100m')
+tokenizer = AutoTokenizer.from_pretrained(global_config['vlm_ocr_config'])
+cfg_model = UniRecConfig.from_pretrained(global_config['vlm_ocr_config'])
 # cfg_model._attn_implementation = "flash_attention_2"
 cfg_model._attn_implementation = 'eager'
 
@@ -72,10 +69,7 @@ def stream_chat_with_image(input_image, history):
     generated_text = ''
     history = history + [('🖼️(图片)', '')]
     for new_text in streamer:
-        new_text = new_text.replace(' ', '').replace('Ġ', ' ').replace(
-            'Ċ', '\n').replace('<|bos|>',
-                               '').replace('<|eos|>',
-                                           '').replace('<|pad|>', '')
+        new_text = clean_special_tokens(new_text)
         generated_text += new_text
         history[-1] = ('🖼️(图片)', generated_text)
         yield history
@@ -84,8 +78,8 @@ def stream_chat_with_image(input_image, history):
 # --- 3. Gradio 界面 ---
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML("""
-            <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec: Unified Text and Formula Recognition Across Granularities</a></h1>
-            <p style='text-align: center;'>统一多粒度文本与公式识别模型 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
+            <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters</a></h1>
+            <p style='text-align: center;'>0.1B超轻量模型统一文本与公式识别模型 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
             <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/main/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
             )
     gr.Markdown('上传一张图片，系统会自动识别文本和公式。')
