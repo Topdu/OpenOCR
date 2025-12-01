@@ -114,7 +114,7 @@ pip install -r requirements.txt
 
 ### Downloading Datasets
 
-All data can be downloaded from [Google Drive](https://drive.google.com/drive/folders/17mK_PLiBU0-a8qhUd5g4H6V03yUM2Gyp?usp=sharing).
+All data can be downloaded from [huggingface](https://huggingface.co/datasets/topdu/OpenOCR-Data).
 
 #### The structure of Datasets and OpenOCR code will be organized as follows:
 
@@ -185,21 +185,21 @@ Union14M-L-LMDB-Filtered # lmdb format Union14M-L-Filtered
 
 #### **Datasets used during Training**
 
-| Datsets           | Google Drive                                                                                             | Baidu Yun |
+| Datsets           | Hugging Face                                                                                             | Baidu Yun |
 | ----------------- | -------------------------------------------------------------------------------------------------------- | --------- |
-| Union14M-L-Filter | [LMDB archives](https://drive.google.com/drive/folders/1OlDWJZgvd6s4S09S3IGeAI90jI0i7AB_?usp=sharing)    |           |
-| Evaluation        | [LMDB archives](https://drive.google.com/drive/folders/1EW0_YvmRSdpVOkR2guTQFrGz7KNqNc66?usp=drive_link) |           |
+| Union14M-L-Filter | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data)    |           |
+| Evaluation        | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 
 If you have downloaded Union14M-L, you can use [the filtered list of images](https://drive.google.com/drive/folders/1x1LC8C_W-Frl3sGV9i9_i_OD-bqNdodJ?usp=drive_link) to create an LMDB of the training set Union14M-L-Filter (detailed in [create_lmdb_dataset.py](../tools/create_lmdb_dataset.py)).
 
 #### **Test Set**
 
-| Datsets                   | Google Drive                                                                                             | Baidu Yun |
+| Datsets                   | Hugging Face                                                                                             | Baidu Yun |
 | ------------------------- | -------------------------------------------------------------------------------------------------------- | --------- |
-| Union14M-L-Benchmark      | [LMDB archives](https://drive.google.com/drive/folders/182RBQqjMVRZAXe0kpUJbMiDo7RWHwcSK?usp=drive_link) |           |
-| Common-Benchmarks         | [LMDB archives](https://drive.google.com/drive/folders/103DA5Wu9YofDbE-JIUm5StJxTO2GixgS?usp=drive_link) |           |
-| Long Text Benchmark (LTB) | [LMDB archives](https://drive.google.com/drive/folders/1XH4ADGir4KkeVrGpw0t8mDFBD0cKpQm_?usp=drive_link) |           |
-| Occluded Scene Text (OST) | [LMDB archives](https://drive.google.com/drive/folders/1c0NVNF4yRACiP2IfeO_GnrHj0u_FhnpN?usp=drive_link) |           |
+| Union14M-L-Benchmark      | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
+| Common-Benchmarks         | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
+| Long Text Benchmark (LTB) | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
+| Occluded Scene Text (OST) | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 
 **Note**: Both **Union14M-L-Filter** and **Union14M-L-Benchmark** are based on [Union14M-L](https://github.com/Mountchicken/Union14M?tab=readme-ov-file#3-union14m-dataset) and therefore comply with its copyright. Common Benchmarks and OST are derived from [PARSeq](https://github.com/baudm/parseq/tree/main?tab=readme-ov-file#datasets) and [VisionLAN](https://github.com/wangyuxin87/VisionLAN/blob/main/README.md#results-on-ost-datasets), respectively.
 
