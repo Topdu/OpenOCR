@@ -185,17 +185,17 @@ Union14M-L-LMDB-Filtered # lmdb format Union14M-L-Filtered
 
 #### **Datasets used during Training**
 
-| Datsets           | Hugging Face                                                                                             | Baidu Yun |
-| ----------------- | -------------------------------------------------------------------------------------------------------- | --------- |
-| Union14M-L-Filter | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data)    |           |
+| Datsets           | Hugging Face                                                        | Baidu Yun |
+| ----------------- | ------------------------------------------------------------------- | --------- |
+| Union14M-L-Filter | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Evaluation        | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 
 If you have downloaded Union14M-L, you can use [the filtered list of images](https://drive.google.com/drive/folders/1x1LC8C_W-Frl3sGV9i9_i_OD-bqNdodJ?usp=drive_link) to create an LMDB of the training set Union14M-L-Filter (detailed in [create_lmdb_dataset.py](../tools/create_lmdb_dataset.py)).
 
 #### **Test Set**
 
-| Datsets                   | Hugging Face                                                                                             | Baidu Yun |
-| ------------------------- | -------------------------------------------------------------------------------------------------------- | --------- |
+| Datsets                   | Hugging Face                                                        | Baidu Yun |
+| ------------------------- | ------------------------------------------------------------------- | --------- |
 | Union14M-L-Benchmark      | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Common-Benchmarks         | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
 | Long Text Benchmark (LTB) | [LMDB archives](https://huggingface.co/datasets/topdu/OpenOCR-Data) |           |
@@ -1650,10 +1650,11 @@ python tools/infer_rec.py --c configs/rec/svtrv2/svtrv2_rctc.yml --o Global.infe
 If you find our method useful for your reserach, please cite:
 
 ```bibtex
-@inproceedings{Du2024SVTRv2,
+@inproceedings{Du2025SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
       booktitle={ICCV},
-      year={2025}
+      year={2025},
+      pages={20147-20156}
 }
 ```

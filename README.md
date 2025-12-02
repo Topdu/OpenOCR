@@ -58,7 +58,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Ours STR algorithms
 
-- **MDiff4STR** (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. Paper and Code are coming soon.)
+- [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
 - **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. Paper and Code are coming soon.)
 - **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
@@ -74,7 +74,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Recent Updates
 
-- **2025.11.08**: Our paper MDiff4STR is accepted by AAAI 2026 (Oral). Code is coming soon.
+- **2025.11.08**: Our paper [MDiff4STR](https://arxiv.org/abs/2512.01422) is accepted by AAAI 2026 (Oral). Accessible in [Doc](./configs/rec/mdiff4str/).
 - **2025.11.08**: Our paper CMER is accepted by AAAI 2026. Code is coming soon.
 - **2025.07.10**: Our paper [SVTRv2](https://arxiv.org/abs/2411.15858) is accepted by ICCV 2025. Accessible in [Doc](./configs/rec/svtrv2/).
 - **2025.07.10**: Our paper [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) is accepted by ICCV 2025. Accessible in [Code](https://github.com/YesianRohn/TextSSR).
@@ -269,11 +269,12 @@ ______________________________________________________________________
 If you find our method useful for your reserach, please cite:
 
 ```bibtex
-@inproceedings{Du2024SVTRv2,
+@inproceedings{Du2025SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
       booktitle={ICCV},
-      year={2025}
+      year={2025},
+      pages={20147-20156}
 }
 ```
 

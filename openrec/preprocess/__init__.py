@@ -101,6 +101,7 @@ MODULE_MAPPING = {
     'SRNLabelEncode': '.srn_label_encode',
     'VisionLANLabelEncode': '.visionlan_label_encode',
     'CAMLabelEncode': '.cam_label_encode',
+    'MDiffLabelEncode': '.mdiff_label_encode',
     'ABINetAug': '.rec_aug',
     'BDA': '.rec_aug',
     'PARSeqAug': '.rec_aug',

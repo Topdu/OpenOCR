@@ -20,6 +20,7 @@ name_to_module = {
     'SRNLoss': '.srn_loss',
     'VisionLANLoss': '.visionlan_loss',
     'CAMLoss': '.cam_loss',
+    'MDiffLoss': '.mdiff_loss',
 }
 
 

@@ -26,12 +26,13 @@ ______________________________________________________________________
 
 ## 核心特性
 
-- 🔥**UniRec: Unified Text and Formula Recognition Across Granularities**
+- 🔥**UniRec: Unified Text and Formula Recognition with 0.1B Parameters**
 
-  - ⚡\[[使用文档](./docs/unirec.md)\] \[[模型下载](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[本地Demo](./docs/unirec.md#local-demo)\] \[论文coming soon\]
+  - ⚡\[[使用文档](./docs/unirec.md)\] \[[ModelScope模型下载](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace模型下载](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[本地Demo](./docs/unirec.md#local-demo)\] \[论文coming soon\]
     - 识别纯文本（单词、行、段落）、公式（单行、多行）、以及文本与公式混合的内容
     - 0.1B 参数量
     - 在 5000 万数据上从零开始训练，不使用任何预训练
+    - 支持中文和英文文本/公式识别
 
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
 
@@ -57,6 +58,9 @@ ______________________________________________________________________
 
 ## 自研STR算法
 
+- [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
+- **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. Paper and Code are coming soon.)
+- **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://ieeexplore.ieee.org/document/10820836))
 - [**CPPD**](./configs/rec/cppd/) (*Yongkun Du, Zhineng Chen\*, Caiyan Jia, Xiaoting Yin, Chenxia Li, Yuning Du, Yu-Gang Jiang. Context Perception Parallel Decoder for Scene Text Recognition,* TPAMI 2025. [PaddleOCR Doc](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md), [Paper](https://ieeexplore.ieee.org/document/10902187))
@@ -70,7 +74,10 @@ ______________________________________________________________________
 
 ## 近期更新
 
+- **2025.11.08**: [MDiff4STR](https://arxiv.org/abs/2512.01422)被AAAI 2026接收为Oral. 详见[Doc](./configs/rec/mdiff4str/).
+- **2025.11.08**: CMER被AAAI 2026接收. 代码即将开源.
 - **2025.07.10**: [SVTRv2](https://arxiv.org/abs/2411.15858)被ICCV 2025接收. 详见[文档](./configs/rec/svtrv2/)
+- **2025.07.10**: [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) 被ICCV 2025接收. 详见[Code](https://github.com/YesianRohn/TextSSR).
 - **2025.03.24**: 🔥 发布自定义数据集微调功能: [检测模型微调](./docs/finetune_det.md), [识别模型微调](./docs/finetune_rec.md)
 - **2025.03.23**: 🔥 新增[ONNX模型导出功能](#导出onnx模型)
 - **2025.02.22**: [CPPD](https://ieeexplore.ieee.org/document/10902187)论文被TPAMI录用，详见[文档](./configs/rec/cppd/)与[PaddleOCR文档](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/algorithm/text_recognition/algorithm_rec_cppd.en.md)
@@ -260,11 +267,12 @@ ______________________________________________________________________
 如果我们的工作对您的研究有所帮助，请引用：
 
 ```bibtex
-@inproceedings{Du2024SVTRv2,
+@inproceedings{Du2025SVTRv2,
       title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
       author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
       booktitle={ICCV},
-      year={2025}
+      year={2025},
+      pages={20147-20156}
 }
 ```
 

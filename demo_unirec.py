@@ -3,7 +3,6 @@ import torch
 from threading import Thread
 
 import numpy as np
-import re
 from openrec.postprocess.unirec_postprocess import clean_special_tokens
 from openrec.preprocess import create_operators, transform
 from tools.engine.config import Config
@@ -41,18 +40,6 @@ model.to(device=device)
 transforms, ratio_resize_flag = build_rec_process(cfg)
 ops = create_operators(transforms, global_config)
 
-rules = [
-    (r'-<\|sn\|>', ''),
-    (r' <\|sn\|>', ' '),
-    (r'<\|sn\|>', ' '),
-    (r'<\|unk\|>', ''),
-    (r'<s>', ''),
-    (r'</s>', ''),
-    (r'\uffff', ''),
-    (r'_{4,}', '___'),
-    (r'\.{4,}', '...'),
-]
-
 
 # --- 2. 定义流式生成函数 ---
 def stream_chat_with_image(input_image, history):
@@ -82,9 +69,8 @@ def stream_chat_with_image(input_image, history):
     generated_text = ''
     history = history + [('🖼️(图片)', '')]
     for new_text in streamer:
-        generated_text += clean_special_tokens(new_text)
-        for rule in rules:
-            generated_text = re.sub(rule[0], rule[1], generated_text)
+        generated_text += new_text
+        generated_text = clean_special_tokens(generated_text)
         history[-1] = ('🖼️(图片)', generated_text)
         yield history
 
