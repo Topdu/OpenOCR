@@ -1,6 +1,6 @@
 # UniRec: Unified Text and Formula Recognition Across Granularities
 
-\[Paper coming soon\] \[[Model](https://huggingface.co/topdu/unirec_100m)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](#local-demo)\]
+\[Paper coming soon\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](#local-demo)\]
 
 ## Introduction
 
@@ -31,7 +31,7 @@ cd OpenOCR
 pip install -r requirements.txt
 # Make sure git-lfs is installed (https://git-lfs.com)
 git lfs install
-git clone https://huggingface.co/topdu/unirec_100m
+git clone https://huggingface.co/topdu/unirec-0.1b
 ```
 
 ### Inference

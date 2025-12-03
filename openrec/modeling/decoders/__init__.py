@@ -28,6 +28,7 @@ class_to_module = {
     'OTEDecoder': '.ote_decoder',
     'BUSDecoder': '.bus_decoder',
     'DptrParseq': '.dptr_parseq_clip_b_decoder',
+    'MDiffDecoder': '.mdiff_decoder',
 }
 
 
