@@ -3786,13 +3786,6 @@
       "normalized": false,
       "rstrip": false,
       "single_word": false
-    },
-    {
-      "content": "<|sn|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
     }
   ],
   "bos_token": {

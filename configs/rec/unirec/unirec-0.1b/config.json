@@ -23,7 +23,7 @@
   "torch_dtype": "float32",
   "transformers_version": "4.49.0",
   "use_cache": true,
-  "vocab_size": 56372,
+  "vocab_size": 56371,
   "max_length": 2048,
   "label_smoothing": 0.1
 }
