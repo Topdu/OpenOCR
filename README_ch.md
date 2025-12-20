@@ -59,7 +59,7 @@ ______________________________________________________________________
 ## 自研STR算法
 
 - [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
-- **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. Paper and Code are coming soon.)
+- **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Paper](https://arxiv.org/abs/2512.13731), Code is coming soon.)
 - **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://arxiv.org/abs/2411.15858))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://ieeexplore.ieee.org/document/10820836))
@@ -75,7 +75,7 @@ ______________________________________________________________________
 ## 近期更新
 
 - **2025.11.08**: [MDiff4STR](https://arxiv.org/abs/2512.01422)被AAAI 2026接收为Oral. 详见[Doc](./configs/rec/mdiff4str/).
-- **2025.11.08**: CMER被AAAI 2026接收. 代码即将开源.
+- **2025.11.08**: [CMER](https://arxiv.org/abs/2512.13731)被AAAI 2026接收. 代码即将开源.
 - **2025.07.10**: [SVTRv2](https://arxiv.org/abs/2411.15858)被ICCV 2025接收. 详见[文档](./configs/rec/svtrv2/)
 - **2025.07.10**: [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) 被ICCV 2025接收. 详见[Code](https://github.com/YesianRohn/TextSSR).
 - **2025.03.24**: 🔥 发布自定义数据集微调功能: [检测模型微调](./docs/finetune_det.md), [识别模型微调](./docs/finetune_rec.md)
@@ -245,7 +245,7 @@ python demo_gradio.py
 | [SVTRv2](./configs/rec/svtrv2/)               | [ICCV 2025](https://arxiv.org/abs/2411.15858)                                                    | ✅       | ✅       |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                  | ✅       | ✅       |                                             |
 | [ViT-CTC](./configs/rec/svtrs/)               |                                                                                                  | ✅       | ✅       |                                             |
-| [MDiff4STR](./configs/rec/mdiff4str/)         | [AAAI 2026 Oral](https://arxiv.org/abs/2512.01422)                                               | ✅       | ✅       |                                             |
+| [MDiff4STR](./configs/rec/mdiff4str/)         | [AAAI 2025 Oral](https://arxiv.org/abs/2512.01422)                                               | ✅       | ✅       |                                             |
 
 #### 核心贡献者
 

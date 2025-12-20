@@ -19,6 +19,9 @@ def clean_special_tokens(text):
         '<|bos|>', '').replace('<|eos|>', '').replace('<|pad|>', '')
     for rule in rules:
         text = re.sub(rule[0], rule[1], text)
+    text = text.replace('<tdcolspan=', '<td colspan=')
+    text = text.replace('<tdrowspan=', '<td rowspan=')
+    text = text.replace('"colspan=', '" colspan=')
     return text
 
 

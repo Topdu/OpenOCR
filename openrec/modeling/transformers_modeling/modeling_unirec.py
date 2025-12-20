@@ -55,7 +55,7 @@ class UniRecEncoder(M2M100PreTrainedModel):
                                         last_stage=False,
                                         feat2d=False)
 
-        self.vision_fc = nn.Linear(config.dims[-1], config.d_model)
+        self.vision_fc = nn.Linear(config.d_model, config.d_model)
 
     def forward(
         self,
