@@ -247,6 +247,7 @@ python demo_gradio.py
 | [SVTRv2](./configs/rec/svtrv2/)               | [ICCV 2025](https://arxiv.org/abs/2411.15858)                                                  | ✅       | ✅         |                                             |
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |
 | [ViT-CTC](./configs/rec/svtrs/)               |                                                                                                | ✅       | ✅         |                                             |
+| [MDiff4STR](./configs/rec/mdiff4str/)         | [AAAI 2026 Oral](https://arxiv.org/abs/2512.01422)                                             | ✅       | ✅         |                                             |
 
 #### Contributors
 
