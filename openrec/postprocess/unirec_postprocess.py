@@ -15,13 +15,11 @@ rules = [
 
 
 def clean_special_tokens(text):
-    text = text.replace(' ', '').replace('Ġ', ' ').replace('Ċ', '\n').replace(
-        '<|bos|>', '').replace('<|eos|>', '').replace('<|pad|>', '')
+    text = text.replace('Ġ',
+                        ' ').replace('Ċ', '\n').replace('<|bos|>', '').replace(
+                            '<|eos|>', '').replace('<|pad|>', '')
     for rule in rules:
         text = re.sub(rule[0], rule[1], text)
-    text = text.replace('<tdcolspan=', '<td colspan=')
-    text = text.replace('<tdrowspan=', '<td rowspan=')
-    text = text.replace('"colspan=', '" colspan=')
     return text
 
 
@@ -44,7 +42,10 @@ class UniRecLabelDecode(BaseRecLabelDecode):
     def __call__(self, preds, batch=None, *args, **kwargs):
         result_list = []
         pred_ids = preds
-        res = self.tokenizer.batch_decode(pred_ids, skip_special_tokens=False)
+        res = [
+            ''.join(self.tokenizer.convert_ids_to_tokens(seq.tolist()))
+            for seq in pred_ids
+        ]
         for i in range(len(res)):
             res[i] = clean_special_tokens(res[i])
             result_list.append(
