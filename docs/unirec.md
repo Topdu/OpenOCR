@@ -1,6 +1,6 @@
 # UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters
 
-\[Paper coming soon\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](#local-demo)\]
+\[[Paper](https://arxiv.org/pdf/2512.21095)\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](#local-demo)\]
 
 ## Introduction
 
@@ -23,15 +23,15 @@ conda install pytorch torchvision torchaudio cpuonly -c pytorch
 git clone https://github.com/Topdu/OpenOCR.git
 ```
 
-### Downloding the UniRec Model by Hugging Face
+### Downloding the UniRec Model from ModelScope or Hugging Face
 
 ```shell
-
 cd OpenOCR
 pip install -r requirements.txt
-# Make sure git-lfs is installed (https://git-lfs.com)
-git lfs install
-git clone https://huggingface.co/topdu/unirec-0.1b
+# download model from modelscope
+modelscope download topdktu/unirec-0.1b --local_dir ./unirec-0.1b
+# or download model from huggingface
+huggingface-cli download topdu/unirec-0.1b --local-dir ./unirec-0.1b
 ```
 
 ### Inference
@@ -49,8 +49,13 @@ python demo_unirec.py
 
 ## Citation
 
-If you find our method useful for your reserach, please cite:
+If you find our method useful for your research, please cite:
 
 ```bibtex
-
+@article{du2025unirec,
+  title={UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters},
+  author={Yongkun Du and Zhineng Chen and Yazhen Xie and Weikang Bai and Hao Feng and Wei Shi and Yuchen Su and Can Huang and Yu-Gang Jiang},
+  journal={arXiv preprint arXiv:2512.21095},
+  year={2025}
+}
 ```

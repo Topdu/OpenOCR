@@ -149,6 +149,8 @@ def set_device(device, numId=0):
     import torch
     if device == 'gpu' and torch.cuda.is_available():
         device = torch.device(f'cuda:{numId}')
+    elif device == 'mps' and torch.backends.mps.is_available():
+        device = torch.device('mps')
     else:
         logger.info('GPU is not available, using CPU.')
         device = torch.device('cpu')

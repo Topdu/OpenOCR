@@ -281,11 +281,18 @@ ______________________________________________________________________
 
 ```bibtex
 @inproceedings{Du2025SVTRv2,
-      title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
-      author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
-      booktitle={ICCV},
-      year={2025},
-      pages={20147-20156}
+  title={SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition},
+  author={Yongkun Du and Zhineng Chen and Hongtao Xie and Caiyan Jia and Yu-Gang Jiang},
+  booktitle={ICCV},
+  year={2025},
+  pages={20147-20156}
+}
+
+@article{du2025unirec,
+  title={UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters},
+  author={Yongkun Du and Zhineng Chen and Yazhen Xie and Weikang Bai and Hao Feng and Wei Shi and Yuchen Su and Can Huang and Yu-Gang Jiang},
+  journal={arXiv preprint arXiv:2512.21095},
+  year={2025}
 }
 ```
 
