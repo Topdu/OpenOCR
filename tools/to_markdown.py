@@ -1,8 +1,7 @@
 import json
 import os
 import re
-import base64
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 def truncate_repeated_tail(s, threshold=20, keep=1):
