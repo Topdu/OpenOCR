@@ -26,12 +26,21 @@ ______________________________________________________________________
 
 ## 核心特性
 
-- 🔥**UniRec: Unified Text and Formula Recognition with 0.1B Parameters**
+- 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
 
-  - ⚡\[[使用文档](./docs/unirec.md)\] \[[ModelScope模型下载](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace模型下载](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[本地Demo](./docs/unirec.md#local-demo)\] \[论文coming soon\]
+  - ⚡\[[快速开始](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-Demo)\] \[[本地Demo](./docs/opendoc.md#local-demo)\]
+    - 仅有0.1B参数的超轻量文档解析系统
+    - 两阶段：版面分析[PP-DocLayoutV2](https://www.paddleocr.ai/latest/version3.x/module_usage/layout_analysis.html) + 文本、公式和表格统一识别自研模型[UniRec-0.1B](./docs/unirec.md)
+      - 在UniRec-0.1B的原始版本中，仅支持文本和公式识别。在OpenDoc-0.1B中，我们重建了UniRec-0.1B，使其支持文本、公式和表格识别
+    - 支持中、英文文档解析
+    - 在[OmniDocBench (v1.5)](https://github.com/opendatalab/OmniDocBench/tree/main?tab=readme-ov-file#end-to-end-evaluation)上指标为90.57%，超越众多基于多模态大模型的文档解析模型
+
+- 🔥**UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters**
+
+  - ⚡\[[使用文档](./docs/unirec.md)\] \[[ModelScope模型下载](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[HuggingFace模型下载](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[本地Demo](./docs/unirec.md#local-demo)\] \[[论文](https://arxiv.org/pdf/2512.21095)\]
     - 识别纯文本（单词、行、段落）、公式（单行、多行）、以及文本与公式混合的内容
     - 0.1B 参数量
-    - 在 5000 万数据上从零开始训练，不使用任何预训练
+    - 在 4000 万数据上从零开始训练，不使用任何预训练
     - 支持中文和英文文本/公式识别
 
 - 🔥**OpenOCR: A general OCR system with accuracy and efficiency**
@@ -56,8 +65,9 @@ ______________________________________________________________________
     - 在精度与速度上全面超越基于Attention的编解码模型
     - [从零训练SOTA模型指南](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch)
 
-## 自研STR算法
+## 自研OCR算法
 
+- [**UniRec-0.1B**](./configs/rec/unirec/) (*Yongkun Du, Zhineng Chen, Yazhen Xie, Weikang Bai, Hao Feng, Wei Shi, Yuchen Su, Can Huang, Yu-Gang Jiang. UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters,* Preprint. [Doc](./configs/rec/unirec/), [Paper](https://arxiv.org/pdf/2512.21095))
 - [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
 - **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Paper](https://arxiv.org/abs/2512.13731), Code is coming soon.)
 - **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
@@ -74,8 +84,10 @@ ______________________________________________________________________
 
 ## 近期更新
 
-- **2025.11.08**: [MDiff4STR](https://arxiv.org/abs/2512.01422)被AAAI 2026接收为Oral. 详见[Doc](./configs/rec/mdiff4str/).
-- **2025.11.08**: [CMER](https://arxiv.org/abs/2512.13731)被AAAI 2026接收. 代码即将开源.
+- **2025.12.25**: 🔥 新增超轻量级文档解析系统[OpenDoc-0.1B](./docs/opendoc.md)
+- **2025.11.08**: [MDiff4STR](https://arxiv.org/abs/2512.01422)被AAAI 2026接收为Oral. 详见[Doc](./configs/rec/mdiff4str/)
+- **2025.11.08**: [CMER](https://arxiv.org/abs/2512.13731)被AAAI 2026接收. 代码即将开源
+- **2025.08.20**: 🔥 新增文本和公式识别模型[UniRec-0.1B](https://arxiv.org/pdf/2512.21095)
 - **2025.07.10**: [SVTRv2](https://arxiv.org/abs/2411.15858)被ICCV 2025接收. 详见[文档](./configs/rec/svtrv2/)
 - **2025.07.10**: [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) 被ICCV 2025接收. 详见[Code](https://github.com/YesianRohn/TextSSR).
 - **2025.03.24**: 🔥 发布自定义数据集微调功能: [检测模型微调](./docs/finetune_det.md), [识别模型微调](./docs/finetune_rec.md)

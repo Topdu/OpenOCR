@@ -26,9 +26,21 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Features
 
+- 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
+
+  - \[[Quick Start](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-Demo)\] \[[Local Demo](./docs/opendoc.md#local-demo)\]
+
+    - An ultra-lightweight document parsing system with only 0.1B parameters
+    - Two-stage pipeline:
+      1. Layout analysis via **[PP-DocLayoutV2](https://www.paddleocr.ai/latest/version3.x/module_usage/layout_analysis.html)**
+      2. Unified recognition of text, formulas, and tables using the in-house model **[UniRec-0.1B](./docs/unirec.md)**
+         - In the original version of **UniRec-0.1B**, only **text and formula recognition** were supported. In **OpenDoc-0.1B**, we **rebuilt UniRec-0.1B** to enable **unified recognition of text, formulas, and tables**.
+    - Supports document parsing for **Chinese and English**
+    - Achieves **90.57% on [OmniDocBench (v1.5)](https://github.com/opendatalab/OmniDocBench/tree/main?tab=readme-ov-file#end-to-end-evaluation)**, outperforming many document parsing models based on multimodal large language models
+
 - 🔥**UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters**
 
-  - ⚡\[[Doc](./docs/unirec.md)\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[Hugging Face Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[Paper coming soon\]
+  - ⚡\[[Doc](./docs/unirec.md)\] \[[ModelScope Model](https://www.modelscope.cn/models/topdktu/unirec-0.1b)\] \[[Hugging Face Model](https://huggingface.co/topdu/unirec-0.1b)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\] \[[Local Demo](./docs/unirec.md#local-demo)\] \[[Paper](https://arxiv.org/pdf/2512.21095)\]
     - Recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content.
     - 0.1B parameters.
     - Trained from scratch on 40M data without pre-training.
@@ -56,8 +68,9 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
     - Surpasses Attention-based Encoder-Decoder Methods across challenging scenarios in terms of accuracy and speed
   - [Get Started](./docs/svtrv2.md#get-started-with-training-a-sota-scene-text-recognition-model-from-scratch) with training a SOTA Scene Text Recognition model from scratch.
 
-## Ours STR algorithms
+## Ours OCR algorithms
 
+- [**UniRec-0.1B**](./configs/rec/unirec/) (*Yongkun Du, Zhineng Chen, Yazhen Xie, Weikang Bai, Hao Feng, Wei Shi, Yuchen Su, Can Huang, Yu-Gang Jiang. UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters,* Preprint. [Doc](./configs/rec/unirec/), [Paper](https://arxiv.org/pdf/2512.21095))
 - [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
 - **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Paper](https://arxiv.org/abs/2512.13731), Code is coming soon.)
 - **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
@@ -74,8 +87,10 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 ## Recent Updates
 
+- **2025.12.25**: 🔥 Releasing [OpenDoc-0.1B](./docs/opendoc.md): Ultra-Lightweight Document Parsing System with 0.1B Parameters
 - **2025.11.08**: Our paper [MDiff4STR](https://arxiv.org/abs/2512.01422) is accepted by AAAI 2026 (Oral). Accessible in [Doc](./configs/rec/mdiff4str/).
 - **2025.11.08**: Our paper [CMER](https://arxiv.org/abs/2512.13731) is accepted by AAAI 2026. Code is coming soon.
+- **2025.08.20**: 🔥 Releasing [UniRec-0.1B](https://arxiv.org/pdf/2512.21095): Unified Text and Formula Recognition with 0.1B Parameters
 - **2025.07.10**: Our paper [SVTRv2](https://arxiv.org/abs/2411.15858) is accepted by ICCV 2025. Accessible in [Doc](./configs/rec/svtrv2/).
 - **2025.07.10**: Our paper [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) is accepted by ICCV 2025. Accessible in [Code](https://github.com/YesianRohn/TextSSR).
 - **2025.03.24**: 🔥 Releasing the feature of fine-tuning OpenOCR on a custom dataset: [Fine-tuning Det](./docs/finetune_det.md), [Fine-tuning Rec](./docs/finetune_rec.md)
