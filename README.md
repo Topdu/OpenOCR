@@ -28,7 +28,7 @@ We sincerely welcome the researcher to recommend OCR or relevant algorithms and 
 
 - 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
 
-  - \[[Quick Start](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-Demo)\] \[[Local Demo](./docs/opendoc.md#local-demo)\]
+  - \[[Quick Start](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-0.1B-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-0.1B-Demo)\] \[[Local Demo](./docs/opendoc.md#local-demo)\]
 
     - An ultra-lightweight document parsing system with only 0.1B parameters
     - Two-stage pipeline:

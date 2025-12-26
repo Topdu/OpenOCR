@@ -1,6 +1,6 @@
 # OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters
 
-- \[[Quick Start](#quick-start)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-Demo)\] \[[Local Demo](#local-demo)\]
+- \[[Quick Start](#quick-start)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-0.1B-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-0.1B-Demo)\] \[[Local Demo](#local-demo)\]
 
 ## Introduction
 
@@ -22,6 +22,9 @@ python -m pip install paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn
 python -m pip install paddlex
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 pip install transformers==4.49.0
+pip uninstall opencv-python
+pip install pypdfium2
+pip install opencv-contrib-python
 ```
 
 ### Download UniRec-0.1B model
@@ -47,7 +50,7 @@ python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output 
 ## Local Demo
 
 ```shell
-pip install gradio==4.20.0
+pip install gradio
 python demo_opendoc.py
 ```
 

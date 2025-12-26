@@ -28,7 +28,7 @@ ______________________________________________________________________
 
 - 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
 
-  - ⚡\[[快速开始](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-Demo)\] \[[本地Demo](./docs/opendoc.md#local-demo)\]
+  - ⚡\[[快速开始](./docs/opendoc.md)\] \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenDoc-0.1B-Demo)\] \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenDoc-0.1B-Demo)\] \[[本地Demo](./docs/opendoc.md#local-demo)\]
     - 仅有0.1B参数的超轻量文档解析系统
     - 两阶段：版面分析[PP-DocLayoutV2](https://www.paddleocr.ai/latest/version3.x/module_usage/layout_analysis.html) + 文本、公式和表格统一识别自研模型[UniRec-0.1B](./docs/unirec.md)
       - 在UniRec-0.1B的原始版本中，仅支持文本和公式识别。在OpenDoc-0.1B中，我们重建了UniRec-0.1B，使其支持文本、公式和表格识别
