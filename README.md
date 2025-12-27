@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1> OpenOCR: An Open-Source Toolkit for General OCR Research and Applications </h1>
+<h1> OpenOCR: An Open-Source Toolkit for General-OCR Research and Applications </h1>
 
 <h5 align="center"> If you find this project useful, please give us a star🌟. </h5>
 
@@ -18,7 +18,7 @@ English | [简体中文](./README_ch.md)
 
 ______________________________________________________________________
 
-OpenOCR is an open-source toolkit developed by the OCR team from [FVL Lab](https://fvl.fudan.edu.cn), Fudan University, under the supervision of Prof. [Yu-Gang Jiang](https://scholar.google.com/citations?user=f3_FP8AAAAAJ) and Prof. [Zhineng Chen](https://zhinchenfd.github.io). It focuses on 「General-OCR」 tasks, including **Text Detection and Recognition, Formula and Table Recognition**, as well as **Document Parsing and Understanding**. The toolkit integrates a unified training and evaluation benchmark, commercial-grade OCR and Document Parsing systems, and faithful reproductions of the core implementations from a wide range of academic papers.
+OpenOCR is an open-source toolkit developed by the OCR team from [FVL Lab](https://fvl.fudan.edu.cn), Fudan University, under the guidance of Prof. [Yu-Gang Jiang](https://scholar.google.com/citations?user=f3_FP8AAAAAJ) and Prof. [Zhineng Chen](https://zhinchenfd.github.io). It focuses on 「General-OCR」 tasks, including **Text Detection and Recognition, Formula and Table Recognition**, as well as **Document Parsing and Understanding**. The toolkit integrates a unified training and evaluation benchmark, commercial-grade OCR and Document Parsing systems, and faithful reproductions of the core implementations from a wide range of academic papers.
 
 OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bridging academic research and real-world applications, and fostering the collaborative development and widespread deployment of OCR technologies across both research frontiers and industrial scenarios. We welcome researchers, developers, and industry partners to explore the toolkit and share feedback.
 
