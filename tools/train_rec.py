@@ -19,6 +19,13 @@ def parse_args():
         default=True,
         help='Whether to perform evaluation in train',
     )
+    parser.add_argument(
+        '--task',
+        type=str,
+        default='rec',
+        choices=['rec', 'formula_rec'],
+        help='Task type: rec or formula_rec',
+    )
     args = parser.parse_args()
     return args
 
@@ -30,10 +37,12 @@ def main():
     opt = FLAGS.pop('opt')
     cfg.merge_dict(FLAGS)
     cfg.merge_dict(opt)
+    task_type = FLAGS.get('task', 'rec')
     trainer = Trainer(cfg,
                       mode='train_eval' if FLAGS['eval'] else 'train',
-                      task='rec')
+                      task=task_type)
     trainer.train()
+
 
 
 if __name__ == '__main__':

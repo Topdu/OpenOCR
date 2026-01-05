@@ -1,0 +1,166 @@
+Global:
+  device: gpu
+  epoch_num: 200
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: /path/to/your/output/cmer
+  save_epoch_step: [50, 5]
+  eval_epoch_step: [50, 5]
+  eval_batch_step: [0, 1000]
+  cal_metric_during_train: True
+  use_tensorboard: false
+  # pretrained_model: /path/to/your/pretrained/model.pth
+  infer_weight: /path/to/your/output/cmer/best.pth
+  save_res_path: /path/to/your/output/cmer/infer_results.txt
+  infer_img_root: /path/to/your/cmer_test_image
+  infer_label_file: /path/to/your/cmer_test_image/eval_labels.txt
+  rec_inference_model_path: &processor_path ./openrec/modeling/cmer_modeling
+  tokenizer_path: ./openrec/modeling/cmer_modeling/tokenizer.json
+  max_text_length: &max_text_length 1024
+  beam_size: &beam_size 1
+  character_dict_path: *processor_path
+  use_space_char: True
+  distributed: True
+
+  gen_kwargs:
+    #max_new_tokens: 512
+    max_length: 1024
+    num_beams: 1
+    do_sample: false
+    top_k: 50
+    #top_p: 0.95
+    temperature: 1.0
+    repetition_penalty: 1.0
+    bos_token_id: 2
+    eos_token_id: 3
+    pad_token_id: 1
+  Tokenizer:
+    module: "openrec.modeling.cmer_modeling.tokenizer" 
+    class: "CMERTokenizerBuilder" 
+    args:
+      tokenizer_path: "./openrec/modeling/cmer_modeling/tokenizer.json"
+      padding_side: "right"
+      truncation_side: "right"
+      pad_token: "<|pad|>"
+      bos_token: "<|bos|>"
+      eos_token: "<|eos|>"
+      unk_token: "<|unk|>"
+    
+PreProcess:
+  ImageProcessor:
+    module: "openrec.preprocess.cmer_label_encode" 
+    class: "CMERImageProcessor"
+    args:
+      down_sample_ratio: 32  
+      do_augment: True      
+
+  Processor:
+    module: "openrec.preprocess.cmer_label_encode"
+    class: "CMERProcessor"
+
+Train:
+  dataset:
+    name: CMERDataSet
+    data_dir: "/path/to/your/cmer_train"
+    label_file_list:
+      - "/path/to/your/cmer_train/train_labels.txt"
+    max_text_length: 1024
+
+  loader:
+    batch_size_per_card: 4
+    drop_last: True
+    shuffle: True
+    num_workers: 4
+    pin_memory: True
+
+
+Eval:
+  dataset:
+    name: CMERDataSet
+    data_dir: "/path/to/your/cmer_eval"
+    label_file_list:
+      - "/path/to/your/cmer_eval/eval_labels.txt"
+    max_text_length: 1024
+
+  loader:
+    batch_size_per_card: 8
+    drop_last: False
+    shuffle: False
+    num_workers: 4
+    pin_memory: False
+
+
+PostProcess:
+  module: "openrec.postprocess.cmer_postprocess"
+  class: "CMERLabelDecode"
+  name: "CMERLabelDecode"
+  args:
+    remove_spaces: True
+  Tokenizer:
+    module: "openrec.modeling.cmer_modeling.tokenizer"
+    class: "CMERTokenizerBuilder"
+    args:
+      tokenizer_path: "./openrec/modeling/cmer_modeling/tokenizer.json"
+      padding_side: "right"
+      truncation_side: "right"
+      pad_token: "<|pad|>"
+      bos_token: "<|bos|>"
+      eos_token: "<|eos|>"
+      unk_token: "<|unk|>"
+
+
+
+Optimizer:
+  name: AdamW
+  lr: 0.0001 # for 4gpus bs256/gpu
+  weight_decay: 0.05
+  filter_bias_and_bn: True
+
+LRScheduler:
+  name: CosineAnnealingLR
+  warmup_epoch: 5
+
+Metric:
+  module: "openrec.metrics.rec_metric_cmer"
+  class: "CMERMetric"
+  name: "CMERMetric"
+  args:
+    main_indicator: bleu
+
+Architecture:
+  model_type: rec
+  algorithm: CMER
+  
+  Backbone:
+    name: openrec.modeling.cmer_modeling.modeling_cmer.CMER
+    vision_config:
+      num_layers: 8
+      num_heads: 16
+      hidden_dim: 1024
+      down_sample_ratio: 32
+      
+    decoder_config:
+      attention_bias: false
+      attention_dropout: 0.0
+      bos_token_id: 2
+      decoder_layers: 8
+      eos_token_id: 3
+      head_dim: 16
+      hidden_act: "gelu"
+      hidden_size: 1024
+      initializer_range: 0.02
+      intermediate_size: 3072
+      layer_types: null
+      max_position_embeddings: 4096
+      max_window_layers: 28
+      num_attention_heads: 16
+      num_key_value_heads: 16
+      pad_token_id: 1
+      rms_norm_eps: 1.0e-06
+      rope_scaling: null
+      rope_theta: 100000.0
+      sliding_window: 4096
+      tie_word_embeddings: false
+      use_cache: true
+      use_sliding_window: true
+      vocab_size: 23948

@@ -19,7 +19,8 @@ module_mapping = {
     'LISTERLabelDecode': '.lister_postprocess',
     'MPGLabelDecode': '.mgp_postprocess',
     'UniRecLabelDecode': '.unirec_postprocess',
-    'GTCLabelDecode': '.'  # 当前模块中的类
+    'GTCLabelDecode': '.'  ,
+    'CMERLabelDecode': '.cmer_postprocess',
 }
 
 
@@ -28,7 +29,6 @@ def build_post_process(config, global_config=None):
     module_name = config.pop('name')
     if global_config is not None:
         config.update(global_config)
-
     assert module_name in module_mapping, Exception(
         'post process only support {}'.format(list(module_mapping.keys())))
 

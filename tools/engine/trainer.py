@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 from tqdm import tqdm
-
+from collections.abc import Mapping
 import torch
 import torch.distributed
 from tools.data import build_dataloader
@@ -58,11 +58,9 @@ class Trainer(object):
 
             self.writer = SummaryWriter(self.cfg['Global']['output_dir'])
 
-        self.logger = get_logger(
-            'openrec' if task == 'rec' else 'opendet',
-            os.path.join(self.cfg['Global']['output_dir'], 'train.log')
-            if 'train' in mode else None,
-        )
+        log_name = 'openrec' if task in ['rec', 'formula_rec'] else 'opendet'
+        log_file = os.path.join(self.cfg['Global']['output_dir'], 'train.log') if 'train' in mode else None
+        self.logger = get_logger(log_name, log_file)
 
         cfg.print_cfg(self.logger.info)
 
@@ -92,10 +90,14 @@ class Trainer(object):
             self.logger.info(
                 f'valid dataloader has {len(self.valid_dataloader)} iters')
 
+
+        # Model Initialization
         if task == 'rec':
             self._init_rec_model()
         elif task == 'det':
             self._init_det_model()
+        elif task == 'formula_rec':
+            self._init_cmer_model()
         else:
             raise NotImplementedError
 
@@ -135,6 +137,16 @@ class Trainer(object):
         self.logger.info(
             f'run with torch {torch.__version__} and device {self.device}')
 
+    def _init_cmer_model(self):
+        from openrec.metrics import build_metric as build_rec_metric
+        from openrec.modeling import build_cmer_model as build_rec_model
+        from openrec.postprocess import build_post_process as build_rec_post_process
+
+        self.post_process_class = build_rec_post_process(self.cfg['PostProcess'], self.cfg['Global'])
+        self.model = build_rec_model(self.cfg['Architecture'])
+        self.eval_class = build_rec_metric(self.cfg['Metric'])
+        self.tokenizer = getattr(self.post_process_class, 'tokenizer', None)
+        
     def _init_rec_model(self):
         from openrec.losses import build_loss as build_rec_loss
         from openrec.metrics import build_metric as build_rec_metric
@@ -189,6 +201,55 @@ class Trainer(object):
             device = torch.device('cpu')
         self.device = device
 
+
+    def _parse_batch(self, batch):
+        """
+        Standardize batch parsing for Dict/BatchFeature vs List/Tuple.
+        Returns a dictionary of inputs ready for the model.
+        """
+        parsed_data = {}
+        batch_size = 0
+        raw_batch_numpy = None # For metric calculation
+
+        if isinstance(batch, Mapping):
+            # Handle Dict / BatchFeature
+            if hasattr(batch, 'to'):
+                batch = batch.to(self.device)
+            
+            # Extract main inputs
+            if 'pixel_values' in batch:
+                parsed_data['pixel_values'] = batch['pixel_values']
+                if parsed_data['pixel_values'].device != self.device:
+                    parsed_data['pixel_values'] = parsed_data['pixel_values'].to(self.device)
+                batch_size = parsed_data['pixel_values'].shape[0]
+            elif 'images' in batch:
+                parsed_data['pixel_values'] = batch['images'].to(self.device)
+                batch_size = parsed_data['pixel_values'].shape[0]
+
+            # Extract optional inputs
+            for key in ['decoder_input_ids', 'labels']:
+                if key in batch:
+                    val = batch[key]
+                    if val is not None and val.device != self.device:
+                        val = val.to(self.device)
+                    parsed_data[key] = val
+            
+            # For legacy list-based metric calculation if needed
+            # (This part depends on how your metrics are implemented)
+            raw_batch_numpy = [] # Placeholder if dicts don't support old metrics
+
+        else:
+            # Handle List / Tuple (Legacy OpenOCR format)
+            # Structure usually: [images, labels, ...]
+            batch_tensor = [t.to(self.device) for t in batch]
+            raw_batch_numpy = [t.numpy() for t in batch]
+            batch_size = len(batch[0])
+            
+            parsed_data['batch_tensor'] = batch_tensor
+            parsed_data['batch_numpy'] = raw_batch_numpy
+
+        return parsed_data, batch_size, raw_batch_numpy
+    
     def train(self):
         cal_metric_during_train = self.cfg['Global'].get(
             'cal_metric_during_train', False)
@@ -255,58 +316,76 @@ class Trainer(object):
                                                          self.logger,
                                                          epoch=epoch,
                                                          task=self.task)
-
             for idx, batch in enumerate(self.train_dataloader):
-                batch_tensor = [t.to(self.device) for t in batch]
-                batch_numpy = [t.numpy() for t in batch]
                 self.optimizer.zero_grad()
                 train_reader_cost += time.time() - reader_start
-                # use amp
+                
+                # Prepare Data
+                parsed_data, current_batch_size, batch_numpy = self._parse_batch(batch)
+
+                # Define Forward Pass Closure
+                def forward_step():
+                    if self.task == 'formula_rec':
+                        # CMER / Transformer style
+                        outputs = self.model(
+                            pixel_values=parsed_data.get('pixel_values'),
+                            decoder_input_ids=parsed_data.get('decoder_input_ids'),
+                            labels=parsed_data.get('labels')
+                        )
+                        return {'loss': outputs.loss}, None
+                    else:
+                        # Traditional Rec/Det style
+                        batch_tensor = parsed_data['batch_tensor']
+                        preds = self.model(batch_tensor[0], data=batch_tensor[1:])
+                        loss_out = self.loss_class(preds, batch_tensor)
+                        return loss_out, preds
+
+
+                loss_dict = {}
+                preds = None
+
                 if self.scaler:
-                    with torch.cuda.amp.autocast(
-                            enabled=self.device.type == 'cuda'):
-                        preds = self.model(batch_tensor[0],
-                                           data=batch_tensor[1:])
-                        loss = self.loss_class(preds, batch_tensor)
-                    self.scaler.scale(loss['loss']).backward()
+                    with torch.cuda.amp.autocast(enabled=self.device.type == 'cuda'):
+                        loss_dict, preds = forward_step() 
+                        loss = loss_dict['loss']
+                    
+                    self.scaler.scale(loss).backward()
                     if self.grad_clip_val > 0:
+                        self.scaler.unscale_(self.optimizer)
                         torch.nn.utils.clip_grad_norm_(
                             self.model.parameters(),
                             max_norm=self.grad_clip_val)
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
                 else:
-                    preds = self.model(batch_tensor[0], data=batch_tensor[1:])
-                    loss = self.loss_class(preds, batch_tensor)
-                    avg_loss = loss['loss']
-                    avg_loss.backward()
+                    loss_dict, preds = forward_step()
+                    loss = loss_dict['loss']
+                    loss.backward()
                     if self.grad_clip_val > 0:
                         torch.nn.utils.clip_grad_norm_(
                             self.model.parameters(),
                             max_norm=self.grad_clip_val)
                     self.optimizer.step()
 
-                if cal_metric_during_train:  # only rec and cls need
+                if cal_metric_during_train and self.task != 'formula_rec':
                     post_result = self.post_process_class(preds,
                                                           batch_numpy,
                                                           training=True)
                     self.eval_class(post_result, batch_numpy, training=True)
                     metric = self.eval_class.get_metric()
                     train_stats.update(metric)
-
                 train_batch_time = time.time() - reader_start
                 train_batch_cost += train_batch_time
                 eta_meter.update(train_batch_time)
                 global_step += 1
-                total_samples += len(batch[0])
+                total_samples += current_batch_size 
 
                 self.lr_scheduler.step()
 
-                # logger
                 stats = {
                     k: float(v)
                     if v.shape == [] else v.detach().cpu().numpy().mean()
-                    for k, v in loss.items()
+                    for k, v in loss_dict.items() 
                 }
                 stats['lr'] = self.lr_scheduler.get_last_lr()[0]
                 train_stats.update(stats)
@@ -425,25 +504,53 @@ class Trainer(object):
             )
             sum_images = 0
             for idx, batch in enumerate(self.valid_dataloader):
-                batch_tensor = [t.to(self.device) for t in batch]
-                batch_numpy = [t.numpy() for t in batch]
+                parsed_data, batch_size, batch_numpy = self._parse_batch(batch)
+                
                 start = time.time()
-                if self.scaler:
-                    with torch.cuda.amp.autocast(
-                            enabled=self.device.type == 'cuda'):
-                        preds = self.model(batch_tensor[0],
-                                           data=batch_tensor[1:])
+                if self.task == 'formula_rec':
+                    gen_kwargs = self.cfg['Global'].get('gen_kwargs', {})
+                    max_length = self.cfg['Global'].get('max_text_length', 1024)
+                    model_to_run = self.model.module if hasattr(self.model, "module") else self.model
+                    preds = model_to_run.generate(
+                        pixel_values=parsed_data['pixel_values'],
+                        max_new_tokens=max_length,
+                        **gen_kwargs
+                    )
                 else:
-                    preds = self.model(batch_tensor[0], data=batch_tensor[1:])
+                    if 'batch_tensor' in parsed_data:
+                        inp = parsed_data['batch_tensor'][0]
+                        others = parsed_data['batch_tensor'][1:]
+                    else:
+                        inp = parsed_data['pixel_values']
+                        others = None 
+
+                    if self.scaler:
+                        with torch.cuda.amp.autocast(enabled=self.device.type == 'cuda'):
+                            preds = self.model(inp, data=others)
+                    else:
+                        preds = self.model(inp, data=others)
+
 
                 total_time += time.time() - start
                 # Obtain usable results from post-processing methods
                 # Evaluate the results of the current batch
                 post_result = self.post_process_class(preds, batch_numpy)
-                self.eval_class(post_result, batch_numpy)
+                if self.task == 'formula_rec':
+                    labels = parsed_data.get('labels')
+                    if labels is not None:
+                        tokenizer = self.post_process_class.tokenizer
+                        labels_clean = labels.clone()
+                        labels_clean[labels_clean == -100] = tokenizer.pad_token_id
+                        raw_label_texts = tokenizer.batch_decode(labels_clean, skip_special_tokens=True)
+                        label_texts = [text.replace(" ", "").strip() for text in raw_label_texts]
+                    else:
+                        label_texts = [""] * len(post_result)
+                    self.eval_class(post_result, label_texts)
+                else:
+                    self.eval_class(post_result, batch_numpy)
 
                 pbar.update(1)
-                total_frame += len(batch[0])
+                total_frame += batch_size
                 sum_images += 1
             # Get final metric，eg. acc or hmean
             metric = self.eval_class.get_metric()
