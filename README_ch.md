@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1> OpenOCR: An Open-Source Toolkit for General OCR Research and Applications </h1>
+<h1> OpenOCR: An Open-Source Toolkit for General-OCR Research and Applications </h1>
 
 <h5 align="center"> 如果您觉得本项目有帮助，请为我们点亮Star🌟 </h5>
 

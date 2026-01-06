@@ -5,6 +5,7 @@ Global:
   print_batch_step: 20
   output_dir: ./output/rec/unirec-0.1b/
   save_epoch_step: [0, 1] # save every 1 epoch after 7 epochs
+  save_iter_step: [0, 2000]
   # evaluation is run every 2000 iterations
   eval_batch_step: [2000000, 4000]
   eval_epoch_step: [150, 1]
@@ -17,13 +18,12 @@ Global:
   # for data or label process
   character_dict_path: &character_dict_path ./tools/utils/EN_symbol_dict.txt # 96en
   # ./tools/utils/ppocr_keys_v1.txt  # ch
-  max_text_length: &max_text_length 1024
+  max_text_length: &max_text_length 2048
   use_space_char: &use_space_char False
   save_res_path: ./output/rec/unirec-0.1b/predicts_unirec-0.1b.txt
   use_amp: True
   use_ema: False
   use_transformers: True
-  use_vlmocr: True
   grad_clip_val: 1.0
   vlm_ocr_config: &vlm_ocr_config ./configs/rec/unirec/unirec-0.1b
 
@@ -40,7 +40,7 @@ LRScheduler:
 
 Architecture:
   model_type: rec
-  algorithm: AR
+  algorithm: UniRec
   in_channels: 3
   Transform:
   Encoder:
@@ -48,8 +48,7 @@ Architecture:
     out_channels: -1 # for inference, set to -1
 
 Loss:
-  name: VLMLoss
-  label_smoothing: 0.1
+  name: UniRecLoss
 
 PostProcess:
   name: UniRecLabelDecode
@@ -66,15 +65,14 @@ Train:
     name: NaSizeDataSet
     divided_factor: &divided_factor [64, 64] # w, h
     max_side: &max_side [960, 1408] # [64*30, 64*44] # w, h [960, 1408] #
+    root_path: path/to/UniRec40M/
     add_return: True
     zoom_min_factor: 4
-    rm_indent: True
     use_zoom: True
     all_data: True
-    use_region: False
     transforms:
       - DocAug:
-      - DocLabelEncode: # Class handling label
+      - UniRecLabelEncode: # Class handling label
           max_text_length: *max_text_length
           vlmocr: True
           tokenizer_path: *vlm_ocr_config # path to tokenizer, e.g. 'vocab.json', 'merges.txt'
@@ -98,8 +96,10 @@ Eval:
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - DocLabelEncode: # Class handling label
+      - UniRecLabelEncode: # Class handling label
           max_text_length: *max_text_length
+          vlmocr: True
+          tokenizer_path: *vlm_ocr_config # path to tokenizer, e.g. 'vocab.json', 'merges.txt'
       - NaSizeResize:
           max_side: *max_side
           divided_factor: *divided_factor

@@ -22,8 +22,8 @@ cfg = Config('configs/rec/unirec/focalsvtr_ardecoder_unirec.yml')
 cfg = cfg.cfg
 global_config = cfg['Global']
 
-from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
-from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
+from openrec.modeling.unirec_modeling.modeling_unirec import UniRecForConditionalGenerationNew
+from openrec.modeling.unirec_modeling.configuration_unirec import UniRecConfig
 from transformers import AutoTokenizer, TextIteratorStreamer
 
 tokenizer = AutoTokenizer.from_pretrained(global_config['vlm_ocr_config'])

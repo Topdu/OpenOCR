@@ -21,6 +21,7 @@ name_to_module = {
     'VisionLANLoss': '.visionlan_loss',
     'CAMLoss': '.cam_loss',
     'MDiffLoss': '.mdiff_loss',
+    'UniRecLoss': '.unirec_loss'
 }
 
 

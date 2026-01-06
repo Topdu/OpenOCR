@@ -19,13 +19,15 @@ DATASET_MODULES = {
     'RatioDataSet': 'tools.data.ratio_dataset',
     'RatioDataSetTest': 'tools.data.ratio_dataset_test',
     'RatioDataSetTVResize': 'tools.data.ratio_dataset_tvresize',
-    'RatioDataSetTVResizeTest': 'tools.data.ratio_dataset_tvresize_test'
+    'RatioDataSetTVResizeTest': 'tools.data.ratio_dataset_tvresize_test',
+    'NaSizeDataSet': 'tools.data.native_size_dataset',
 }
 
 # 定义支持的 Sampler 类及其对应的模块路径
 SAMPLER_MODULES = {
     'MultiScaleSampler': 'tools.data.multi_scale_sampler',
-    'RatioSampler': 'tools.data.ratio_sampler'
+    'RatioSampler': 'tools.data.ratio_sampler',
+    'NaSizeSampler': 'tools.data.native_size_sampler',
 }
 
 __all__ = [
@@ -33,7 +35,7 @@ __all__ = [
 ]
 
 
-def build_dataloader(config, mode, logger, seed=None, epoch=3, task='rec'):
+def build_dataloader(config, mode, logger, seed=None, epoch=1, task='rec'):
     config = copy.deepcopy(config)
     mode = mode.capitalize()  # 确保 mode 是首字母大写形式（Train/Eval/Test）
 

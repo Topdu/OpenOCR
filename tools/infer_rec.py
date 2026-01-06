@@ -224,20 +224,19 @@ class OpenRecognizer:
 
     def _init_torch_model(self, numId):
         from tools.utils.ckpt import load_ckpt
-
+        algorithm_name = self.cfg['Architecture']['algorithm']
         if self.cfg['Global'].get('use_transformers', False):
-            algorithm_name = 'unirec'  # 使用transformers模型
-            from openrec.modeling.transformers_modeling.modeling_unirec import UniRecForConditionalGenerationNew
-            from openrec.modeling.transformers_modeling.configuration_unirec import UniRecConfig
-            cfg_model = UniRecConfig.from_pretrained(
-                self.cfg['Global']['vlm_ocr_config'])
-            # cfg_model._attn_implementation = "flash_attention_2"
-            cfg_model._attn_implementation = 'eager'
-            self.model = UniRecForConditionalGenerationNew(config=cfg_model)
-
+            if algorithm_name == 'UniRec':
+                from openrec.modeling.unirec_modeling.modeling_unirec import UniRecForConditionalGenerationNew
+                from openrec.modeling.unirec_modeling.configuration_unirec import UniRecConfig
+                cfg_model = UniRecConfig.from_pretrained(
+                    self.cfg['Global']['vlm_ocr_config'])
+                # cfg_model._attn_implementation = "flash_attention_2"
+                cfg_model._attn_implementation = 'eager'
+                self.model = UniRecForConditionalGenerationNew(
+                    config=cfg_model)
         else:
             # PyTorch专用初始化
-            algorithm_name = self.cfg['Architecture']['algorithm']
             if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:
                 if not os.path.exists(self.cfg['Global']['pretrained_model']):
                     pretrained_model = check_and_download_model(

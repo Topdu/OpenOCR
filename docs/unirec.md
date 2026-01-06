@@ -14,7 +14,7 @@
 - Python version >= 3.7
 
 ```shell
-conda create -n openocr python==3.9
+conda create -n openocr python==3.10
 conda activate openocr
 # install gpu version torch >=1.13.0
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
@@ -45,6 +45,19 @@ python tools/infer_rec.py --c ./configs/rec/unirec/focalsvtr_ardecoder_unirec.ym
 ```shell
 pip install gradio==4.20.0
 python demo_unirec.py
+```
+
+### Training
+
+Additional dependencies:
+
+```shell
+pip install PyMuPDF
+pip install pdf2image
+pip install numpy==1.26.4
+pip install albumentations==1.4.24
+pip install transformers==4.49.0
+pip install -U flash-attn --no-build-isolation
 ```
 
 ## Citation

@@ -309,10 +309,6 @@ def create_demo() -> gr.Blocks:
                 Powered by <a href="https://www.paddleocr.ai/latest/version3.x/module_usage/layout_analysis.html" target="_blank">PP-DocLayoutV2</a> for layout analysis and <a href="https://arxiv.org/pdf/2512.21095" target="_blank">UniRec-0.1B</a> for unified recognition of text, formulas, and tables
             </p>
         </div>
-        """)
-
-        # Quick links
-        gr.HTML("""
         <div class="quick-links">
             <a href="https://github.com/Topdu/OpenOCR" target="_blank">📖 GitHub</a>
             <a href="https://arxiv.org/pdf/2512.21095" target="_blank">📄 Paper</a>
@@ -390,4 +386,5 @@ def create_demo() -> gr.Blocks:
 
 if __name__ == '__main__':
     demo = create_demo()
-    demo.queue(max_size=20).launch(share=False)
+    # Launch with larger interface settings
+    demo.launch(share=False)
