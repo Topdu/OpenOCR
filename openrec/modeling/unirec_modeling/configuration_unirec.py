@@ -15,6 +15,7 @@
 
 from transformers.configuration_utils import PretrainedConfig
 
+
 class UniRecConfig(PretrainedConfig):
     r"""
     This is the configuration class to store the configuration of a [`M2M100Model`]. It is used to instantiate an

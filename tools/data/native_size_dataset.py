@@ -248,7 +248,7 @@ class NaSizeDataSet(Dataset):
                                                  [64., 64.])  # w, h
         self.use_region = dataset_config.get('use_region', False)
         self.use_ch = dataset_config.get('use_ch', False)
-        logger.info(f'Initialize indexs of doc datasets')
+        logger.info('Initialize indexs of doc datasets')
         list_file_json = []
         if self.all_data:
             self.__init_lmdb()
