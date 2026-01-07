@@ -4,12 +4,27 @@
 
 ## Introduction
 
-**UniRec-0.1B** is a unified recognition model with only 0.1B parameters, designed for high-accuracy and efficient recognition of plain text (words, lines, paragraphs), mathematical formulas (single-line, multi-line), and mixed content in both Chinese and English. 
+**UniRec-0.1B** is a unified recognition model with only 0.1B parameters, designed for high-accuracy and efficient recognition of plain text (words, lines, paragraphs), mathematical formulas (single-line, multi-line), and mixed content in both Chinese and English.
 
 It addresses structural variability and semantic entanglement by using a hierarchical supervision training strategy and a semantic-decoupled tokenizer. Despite its small size, it achieves performance comparable to or better than much larger vision-language models.
 
+## Get Started with ONNX
 
-## Get Started with the UniRec
+### Install OpenOCR and Dependencies:
+
+```shell
+git clone https://github.com/Topdu/OpenOCR.git
+pip install onnxruntime
+huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
+```
+
+### Inference
+
+```shell
+python ./tools/depolyment/unirec_onnx/infer_onnx.py --image /path/to/image
+```
+
+## Get Started with Pytorch
 
 ### Dependencies:
 
