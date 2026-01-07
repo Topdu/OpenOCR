@@ -409,7 +409,7 @@ class NaSizeDataSet(Dataset):
             # Set max_readers high enough for potential multi-process data loading
             # map_size should be large enough to hold your entire dataset
             # self.env = lmdb.open(self.lmdb_path, readonly=True, create=False) # create=False 表示如果不存在则报错
-            en_lmdb_path = f'{self.root_path}/output_pdf_lmdb'
+            en_lmdb_path = f'{self.root_path}/en_pdf_lmdb'
             self.env = lmdb.open(
                 en_lmdb_path,
                 max_readers=32,

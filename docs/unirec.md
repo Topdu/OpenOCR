@@ -4,7 +4,10 @@
 
 ## Introduction
 
-**UniRec** is good at recognizing plain text (words, lines, paragraphs), formulas (single-line, multi-line), and mixed text-and-formulas content. You only need to use a screenshot tool to select the text area from a paper and paste it into the \[[ModelScope Demo](https://www.modelscope.cn/studios/topdktu/OpenOCR-UniRec-Demo)\] or \[[Hugging Face Demo](https://huggingface.co/spaces/topdu/OpenOCR-UniRec-Demo)\]. After clicking Run, the recognition will be completed automatically
+**UniRec-0.1B** is a unified recognition model with only 0.1B parameters, designed for high-accuracy and efficient recognition of plain text (words, lines, paragraphs), mathematical formulas (single-line, multi-line), and mixed content in both Chinese and English. 
+
+It addresses structural variability and semantic entanglement by using a hierarchical supervision training strategy and a semantic-decoupled tokenizer. Despite its small size, it achieves performance comparable to or better than much larger vision-language models.
+
 
 ## Get Started with the UniRec
 
@@ -82,7 +85,7 @@ Run the following command to train the model quickly:
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -m torch.distributed.launch --master_port=23333 --nproc_per_node=8 tools/train_rec.py --c configs/rec/unirec/focalsvtr_ardecoder_unirec.yml
 ```
 
-To download the full dataset, you need to merge the split files named `data.mdb.part_*` (located in `HWDB2Train`, `ch_pdf_lmdb`, and `en_pdf_lmdb`) into a single `data.mdb` file. Execute the commands below step by step:
+Downloading the full dataset requires 3.5 TB of available storage space. Then, you need to merge the split files named `data.mdb.part_*` (located in `HWDB2Train`, `ch_pdf_lmdb`, and `en_pdf_lmdb`) into a single `data.mdb` file. Execute the commands below step by step:
 
 ```shell
 # downloading full data
