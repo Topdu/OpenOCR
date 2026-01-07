@@ -65,13 +65,15 @@ Train:
     name: NaSizeDataSet
     divided_factor: &divided_factor [64, 64] # w, h
     max_side: &max_side [960, 1408] # [64*30, 64*44] # w, h [960, 1408] #
-    root_path: path/to/UniRec40M/
+    root_path: path/to/UniRec40M
     add_return: True
     zoom_min_factor: 4
     use_zoom: True
-    all_data: True
+    # all_data: True
+    test_data: True
+    use_aug: false
+    use_linedata: False
     transforms:
-      - DocAug:
       - UniRecLabelEncode: # Class handling label
           max_text_length: *max_text_length
           vlmocr: True

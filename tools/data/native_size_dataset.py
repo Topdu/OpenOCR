@@ -1,7 +1,6 @@
 import io
 import json
 import re
-import os
 import random
 import traceback
 import ast
@@ -182,6 +181,8 @@ def rm_indent_in_latex(text):
 
 def resize_image(original_width, original_height, max_width, max_height):
     # 计算宽高比
+    original_width = max(original_width, 64)
+    original_height = max(original_height, 64)
     aspect_ratio = original_width / original_height
 
     # 计算新的宽度和高度
@@ -236,8 +237,6 @@ class NaSizeDataSet(Dataset):
         self.root_path = dataset_config.get('root_path', None)
         if self.root_path is None:
             assert False, 'root_path is None'
-        self.lmdb_path = dataset_config.get(
-            'lmdb_path', f'{self.root_path}/output_pdf_lmdb/pdf_lmdb')
         self.env = None  # LMDB environment
         img_label_pair_list = {}
         self.do_shuffle = loader_config['shuffle']
@@ -249,116 +248,49 @@ class NaSizeDataSet(Dataset):
         self.use_region = dataset_config.get('use_region', False)
         self.use_ch = dataset_config.get('use_ch', False)
         logger.info('Initialize indexs of doc datasets')
-        list_file_json = []
         if self.all_data:
             self.__init_lmdb()
 
+        label_json_list = []
         if self.test_data:
-            epoch_current = (epoch - 1) % 4
-            region_4ep_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch/region_4ep/{epoch_current}'
-            for file_na in os.listdir(region_4ep_ch):
-                if file_na.endswith('.json'):
-                    list_file_json.append(os.path.join(region_4ep_ch, file_na))
-        else:
-            label_path_block_pymu = f'{self.root_path}/40w_e2e_test1_copy/block_pymu_fix_none_line/'
-            for file_na in os.listdir(label_path_block_pymu):
-                if file_na.endswith('.json'):
-                    list_file_json.append(
-                        os.path.join(label_path_block_pymu, file_na))
             epoch_current = (epoch - 1) % 10
-            block_pymu_case_title_10ep = f'{self.root_path}/40w_e2e_test1_copy/block_pymu_case_fix_none_line_10ep/{epoch_current}'
-            for file_na in os.listdir(block_pymu_case_title_10ep):
-                if file_na.endswith('.json'):
-                    list_file_json.append(
-                        os.path.join(block_pymu_case_title_10ep, file_na))
-            epoch_current = (epoch - 1) % 20
-            rec_label_all_region_10ep = f'{self.root_path}/40w_e2e_test1_copy/rec_label_all_region_fix_none_line_20ep/{epoch_current}'
-            for file_na in os.listdir(rec_label_all_region_10ep):
-                if file_na.endswith('.json'):
-                    list_file_json.append(
-                        os.path.join(rec_label_all_region_10ep, file_na))
-            epoch_current = (epoch - 1) % 5
-            math_all_5ep = f'{self.root_path}/40w_e2e_test1_copy/math_all_5ep/{epoch_current}'
-            for file_na in os.listdir(math_all_5ep):
-                if file_na.endswith('.json'):
-                    list_file_json.append(os.path.join(math_all_5ep, file_na))
-
+            label_json_list = [
+                f'{self.root_path}/hiertext_lmdb/label_key_char_line_para.json',
+                f'{self.root_path}/hiertext_lmdb/label_key_word_{epoch_current}ep.json'
+            ]
+            test_lmdb_path = f'{self.root_path}/hiertext_lmdb/image_lmdb'
+            self.env_test = lmdb.open(test_lmdb_path,
+                                      max_readers=32,
+                                      readonly=True,
+                                      lock=False,
+                                      readahead=False,
+                                      meminit=False)
+            self.txn_test = self.env_test.begin()
+        else:
+            epoch_current_10ep = (epoch - 1) % 10
+            epoch_current_20ep = (epoch - 1) % 20
+            epoch_current_5ep = (epoch - 1) % 5
+            label_json_list = [
+                f'{self.root_path}/tex_en_label/block_pymu_fix_none_line/label_key.json',
+                f'{self.root_path}/tex_en_label/block_pymu_case_fix_none_line_10ep/{epoch_current_10ep}/label_key.json',
+                f'{self.root_path}/tex_en_label/rec_label_all_region_fix_none_line_20ep/{epoch_current_20ep}/label_key.json',
+                f'{self.root_path}/tex_en_label/math_all_5ep/{epoch_current_5ep}/label_key.json'
+            ]
             if self.use_ch:
-                math_inline_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch/math_inline/'
-                for file_na in os.listdir(math_inline_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(math_inline_ch, file_na))
-
-                math_display_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch/math_display/'
-                for file_na in os.listdir(math_display_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(math_display_ch, file_na))
                 epoch_current = (epoch - 1) % 4
-                plain_text_4ep_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch/plain_text_4ep/{epoch_current}'
-                for file_na in os.listdir(plain_text_4ep_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(plain_text_4ep_ch, file_na))
+                label_json_list += [
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch/math_inline/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch/math_display/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch/plain_text_4ep/{epoch_current}/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch/region_4ep/{epoch_current}/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch_random_new/math_inline/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch_random_new/math_display/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch_random_new/plain_text_4ep/{epoch_current}/label_key.json',
+                    f'{self.root_path}/tex_ch_label/40w_e2e_test1_croppdf_ch_random_new/region_4ep/{epoch_current}/label_key.json'
+                ]
 
-                region_4ep_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch/region_4ep/{epoch_current}'
-                for file_na in os.listdir(region_4ep_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(region_4ep_ch, file_na))
+        ratio_sample = [1 for _ in label_json_list]
 
-                math_inline_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch_random_new/math_inline/'
-                for file_na in os.listdir(math_inline_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(math_inline_ch, file_na))
-
-                math_display_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch_random_new/math_display/'
-                for file_na in os.listdir(math_display_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(math_display_ch, file_na))
-                epoch_current = (epoch - 1) % 4
-                plain_text_4ep_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch_random_new/plain_text_4ep/{epoch_current}'
-                for file_na in os.listdir(plain_text_4ep_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(plain_text_4ep_ch, file_na))
-
-                region_4ep_ch = f'{self.root_path}/ch_pdf_label/40w_e2e_test1_croppdf_ch_random_new/region_4ep/{epoch_current}'
-                for file_na in os.listdir(region_4ep_ch):
-                    if file_na.endswith('.json'):
-                        list_file_json.append(
-                            os.path.join(region_4ep_ch, file_na))
-
-        for file_json in list_file_json:
-            w_r, h_r = os.path.basename(file_json)[:-5].split('_')[2:]
-            w_r = int(w_r)
-            h_r = int(h_r)
-            if w_r < self.divided_factor[1] or h_r < self.divided_factor[0]:
-                continue
-            try:
-                with open(file_json, 'r') as f:
-                    # print(f'Loading {file_json}...')
-                    json_data_list = json.load(f)
-            except:
-                print(f'Loading {file_json} ... error')
-                continue
-            w_r, h_r = resize_image(w_r, h_r, self.max_side[0],
-                                    self.max_side[1])
-            h_r = max(
-                int(h_r // self.divided_factor[1] * self.divided_factor[1]),
-                self.divided_factor[1])
-            w_r = max(
-                int(w_r // self.divided_factor[0] * self.divided_factor[0]),
-                self.divided_factor[0])
-
-            key = str(w_r) + '_' + str(h_r)
-            if key in img_label_pair_list:
-                img_label_pair_list[key].extend(json_data_list)
-            else:
-                img_label_pair_list[key] = json_data_list
         self.docaug = DocAug()
         if self.use_linedata and self.all_data:
             epoch_current = (epoch - 1) % 10
@@ -366,7 +298,7 @@ class NaSizeDataSet(Dataset):
                 f'{self.root_path}/K-12/label_key_qwen.json',  # 25w tex_norm 1
                 f'{self.root_path}/LSVT-2019/label_key.json',  # 260868 5
                 f'{self.root_path}/webdata_MTWI/label_key.json',  # 147160 7
-                f'{self.root_path}/HWDB2Train/label_key.json',  # 376029 1
+                f'{self.root_path}/HWDB2Train/label_key.json',  # 376029 1 largefile 180g
                 f'{self.root_path}/HWDB2Train/label_key_region.json',  # 36684 10
                 f'{self.root_path}/TAL_OCR_HW/label_key.json',  # 2w 10
                 f'{self.root_path}/K-12_exam/label_key_qwen.json',  # 5w tex_norm 3
@@ -380,8 +312,9 @@ class NaSizeDataSet(Dataset):
                 f'{self.root_path}/hiertext_lmdb/label_key_char_line_para.json',  # 25w 1
                 f'{self.root_path}/hiertext_lmdb/label_key_word_{epoch_current}ep.json',  # 8w 1
             ]
-            ratio_sample = [1, 5, 7, 1, 10, 10, 3, 10, 5, 5, 3, 5, 5, 2, 1,
-                            1]  # ratio_sample for line_json_list
+            ratio_sample += [
+                1, 5, 7, 1, 10, 10, 3, 10, 5, 5, 3, 5, 5, 2, 1, 1
+            ]  # ratio_sample for line_json_list
             if self.use_table:
                 line_json_list += [
                     f'{self.root_path}/hw_pdf_table/label_key.json',  #677
@@ -392,35 +325,10 @@ class NaSizeDataSet(Dataset):
                 ratio_sample += [50, 3, 50, 3]  # for table
 
             self.__init_line_lmdb(epoch_current)
-            for line_json, rti_sam in zip(line_json_list, ratio_sample):
-                with open(line_json, 'r') as f:
-                    json_data_list = json.load(f)
-                    for keywh, value_list in json_data_list.items():
-                        if rti_sam > 1:
-                            value_list = value_list * rti_sam
-                        elif rti_sam < 1:
-                            value_list = value_list[:int(
-                                len(value_list) * rti_sam)]
+            label_json_list += line_json_list
 
-                        w_r, h_r = keywh.split('_')
-                        w_r = int(w_r)
-                        h_r = int(h_r)
-                        w_r, h_r = resize_image(w_r, h_r, self.max_side[0],
-                                                self.max_side[1])
-                        h_r = max(
-                            int(h_r // self.divided_factor[1] *
-                                self.divided_factor[1]),
-                            self.divided_factor[1])
-                        w_r = max(
-                            int(w_r // self.divided_factor[0] *
-                                self.divided_factor[0]),
-                            self.divided_factor[0])
-
-                        key = str(w_r) + '_' + str(h_r)
-                        if key in img_label_pair_list:
-                            img_label_pair_list[key].extend(value_list)
-                        else:
-                            img_label_pair_list[key] = value_list
+        img_label_pair_list = self.load_label_json(label_json_list,
+                                                   ratio_sample)
 
         self.need_reset = True
         self.img_label_pair_list = {}
@@ -467,14 +375,43 @@ class NaSizeDataSet(Dataset):
             (r'\.{6,}', '......'),
         ]
 
+    def load_label_json(self, label_json_list, ratio_sample):
+        img_label_pair_list = {}
+        for line_json, rti_sam in zip(label_json_list, ratio_sample):
+            with open(line_json, 'r') as f:
+                json_data_list = json.load(f)
+                for keywh, value_list in json_data_list.items():
+                    if rti_sam > 1:
+                        value_list = value_list * rti_sam
+
+                    w_r, h_r = keywh.split('_')
+                    w_r = int(w_r)
+                    h_r = int(h_r)
+                    w_r, h_r = resize_image(w_r, h_r, self.max_side[0],
+                                            self.max_side[1])
+                    h_r = max(
+                        int(h_r // self.divided_factor[1] *
+                            self.divided_factor[1]), self.divided_factor[1])
+                    w_r = max(
+                        int(w_r // self.divided_factor[0] *
+                            self.divided_factor[0]), self.divided_factor[0])
+
+                    key = str(w_r) + '_' + str(h_r)
+                    if key in img_label_pair_list:
+                        img_label_pair_list[key].extend(value_list)
+                    else:
+                        img_label_pair_list[key] = value_list
+        return img_label_pair_list
+
     def __init_lmdb(self):
         """Initializes the LMDB environment."""
         if self.env is None:
             # Set max_readers high enough for potential multi-process data loading
             # map_size should be large enough to hold your entire dataset
             # self.env = lmdb.open(self.lmdb_path, readonly=True, create=False) # create=False 表示如果不存在则报错
+            en_lmdb_path = f'{self.root_path}/output_pdf_lmdb'
             self.env = lmdb.open(
-                self.lmdb_path,
+                en_lmdb_path,
                 max_readers=32,
                 readonly=True,
                 lock=False,
@@ -482,6 +419,16 @@ class NaSizeDataSet(Dataset):
                 meminit=False,
             )
             self.txn = self.env.begin()
+            ch_lmdb_path = f'{self.root_path}/ch_pdf_lmdb'
+            self.env_ch = lmdb.open(
+                ch_lmdb_path,
+                max_readers=32,
+                readonly=True,
+                lock=False,
+                readahead=False,
+                meminit=False,
+            )
+            self.txn_ch = self.env_ch.begin()
 
     def __init_line_lmdb(self, epoch_current):
         """Initializes the LMDB environment."""
@@ -545,26 +492,15 @@ class NaSizeDataSet(Dataset):
         else:
             bbox = bbox_crop
 
-        if self.env is not None:
-            if '/home/ubuntu/bigdiskdata/' in file_name:  # for ch pdf
-                doc = fitz.open(
-                    file_name.replace('/home/ubuntu/bigdiskdata/',
-                                      f'{self.root_path}/ch_pdf_label/') +
-                    '.pdf')
-            else:
-                # Use LMDB to read the PDF file
-                pdf_data = self.txn.get(file_name.encode('utf-8'))
-                if pdf_data is None:
-                    return None
-                doc = fitz.open(stream=pdf_data, filetype='pdf')
+        # Use LMDB to read the PDF file
+        if '/home/ubuntu/bigdiskdata/' in file_name:  # for ch pdf
+            pdf_data = self.txn_ch.get(file_name.encode('utf-8'))
         else:
-            if '/home/ubuntu/bigdiskdata/' in file_name:  # for ch pdf
-                doc = fitz.open(
-                    file_name.replace('/home/ubuntu/bigdiskdata/',
-                                      f'{self.root_path}/ch_pdf_label/') +
-                    '.pdf')
-            else:
-                doc = fitz.open(self.root_path + file_name + '.pdf')
+            pdf_data = self.txn.get(file_name.encode('utf-8'))
+        if pdf_data is None:
+            return None
+        doc = fitz.open(stream=pdf_data, filetype='pdf')
+
         # crop pdf with bbox
         page = doc[0]
         rect = fitz.Rect(*[x * 72. / dpi for x in bbox])
@@ -705,15 +641,15 @@ class NaSizeDataSet(Dataset):
             file_name = data_info['file_name']
             img_data = None
             if self.test_data:
-                image, line_data = self.crop_pdf_as_image(
-                    data_info,
-                    dpi=300,
-                    is_math=self.math_pattern.search(label))
+                img_data = self.txn_test.get(file_name.encode('utf-8'))
+                image = Image.open(io.BytesIO(img_data)).convert('RGB')
+                line_data = True
             else:
-                for prefix, txn in self.txns.items():
-                    if file_name.startswith(prefix):
-                        img_data = txn.get(file_name.encode('utf-8'))
-                        break
+                if self.use_linedata:
+                    for prefix, txn in self.txns.items():
+                        if file_name.startswith(prefix):
+                            img_data = txn.get(file_name.encode('utf-8'))
+                            break
                 if img_data is not None or 'bbox' not in data_info:
                     image = Image.open(io.BytesIO(img_data)).convert('RGB')
                     line_data = True
