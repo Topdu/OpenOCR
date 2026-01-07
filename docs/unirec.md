@@ -15,6 +15,7 @@ It addresses structural variability and semantic entanglement by using a hierarc
 ```shell
 git clone https://github.com/Topdu/OpenOCR.git
 pip install onnxruntime
+cd OpenOCR
 huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
 ```
 
