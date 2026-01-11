@@ -127,7 +127,7 @@ def build_rec_process(cfg):
     ratio_resize_flag = True
     for op in cfg['Eval']['dataset']['transforms']:
         op_name = list(op)[0]
-        if 'Resize' in op_name:
+        if 'Resize' in op_name or 'Processor' in op_name:
             ratio_resize_flag = False
         if 'Label' in op_name:
             continue
@@ -235,6 +235,12 @@ class OpenRecognizer:
                 cfg_model._attn_implementation = 'eager'
                 self.model = UniRecForConditionalGenerationNew(
                     config=cfg_model)
+            elif algorithm_name == 'CMER':
+                from openrec.modeling.cmer_modeling.modeling_cmer import CMER, CMERConfig
+                cfg_model = CMERConfig(
+                    self.cfg['Architecture']['vision_config'],
+                    self.cfg['Architecture']['decoder_config'])
+                self.model = CMER(config=cfg_model)
         else:
             # PyTorch专用初始化
             if algorithm_name in ['SVTRv2_mobile', 'SVTRv2_server']:

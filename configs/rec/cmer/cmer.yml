@@ -1,0 +1,131 @@
+Global:
+  device: gpu
+  epoch_num: 10
+  log_smooth_window: 20
+  print_batch_step: 10
+  output_dir: ./output/cmer
+  save_epoch_step: [0, 1]
+  eval_epoch_step: [200, 1]
+  eval_batch_step: [100000000, 2000]
+  cal_metric_during_train: False
+  # pretrained_model: /path/to/pretrained/model.pth
+  checkpoints:
+  resume_from_iter: False
+  use_tensorboard: false
+  infer_img: ./cmer_test_image
+  max_text_length: &max_text_length 1024
+  use_space_char: &use_space_char True
+  save_res_path: ./output/cmer/infer_results.txt
+  use_amp: True
+  use_ema: False
+  use_transformers: True
+  grad_clip_val: 1.0
+
+Optimizer:
+  name: AdamW
+  lr: 0.0001
+  weight_decay: 0.01
+  filter_bias_and_bn: True
+
+LRScheduler:
+  name: CosineAnnealingLR
+  warmup_epoch: 0.3
+
+
+Architecture:
+  model_type: rec
+  algorithm: CMER
+  in_channels: 3
+  Transform:
+  Encoder:
+  Decoder:
+    out_channels: -1
+  vision_config:
+      num_layers: 8
+      num_heads: 16
+      hidden_dim: 1024
+      down_sample_ratio: 32
+  decoder_config:
+    attention_bias: false
+    attention_dropout: 0.0
+    bos_token_id: 2
+    decoder_layers: 8
+    eos_token_id: 3
+    head_dim: 16
+    hidden_act: "gelu"
+    hidden_size: 1024
+    initializer_range: 0.02
+    intermediate_size: 3072
+    layer_types: null
+    max_position_embeddings: 4096
+    max_window_layers: 28
+    num_attention_heads: 16
+    num_key_value_heads: 16
+    pad_token_id: 1
+    rms_norm_eps: 1.0e-06
+    rope_scaling: null
+    rope_theta: 100000.0
+    sliding_window: 4096
+    tie_word_embeddings: false
+    use_cache: true
+    use_sliding_window: true
+    vocab_size: 23948
+
+Loss:
+  name: UniRecLoss
+
+PostProcess:
+  name: CMERLabelDecode
+
+Train:
+  dataset:
+    name: RawImageDataSet
+    data_dir: "/path/to/cmer_train_image"
+    label_file_list:
+      - "/path/to/cmer_train_image/train_labels.txt"
+    max_text_length: 1024
+
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - CMERProcessor:
+      - KeepKeys:
+          keep_keys: ['image','label','length'] # dataloader will return list in this order
+
+  loader:
+    batch_size_per_card: 4
+    drop_last: True
+    shuffle: True
+    num_workers: 4
+    pin_memory: True
+    collate_fn: CMERProcessor
+    collate_fn_source: openrec.preprocess.cmer_label_encode
+
+
+Eval:
+  dataset:
+    name: RawImageDataSet
+    data_dir: "/path/to/cmer_test_image"
+    label_file_list:
+      - "/path/to/cmer_test_image/eval_labels.txt"
+    max_text_length: 1024
+    transforms:
+      - DecodeImagePIL: # load image
+          img_mode: RGB
+      - CMERProcessor:
+      - KeepKeys:
+          keep_keys: ['image','label','length'] # dataloader will return list in this order
+
+  loader:
+    batch_size_per_card: 8
+    drop_last: False
+    shuffle: False
+    num_workers: 4
+    pin_memory: False
+    collate_fn: CMERProcessor
+    collate_fn_source: openrec.preprocess.cmer_label_encode
+
+Metric:
+  name: "CMERMetric"
+  args:
+    main_indicator: bleu

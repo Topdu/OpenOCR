@@ -21,6 +21,7 @@ DATASET_MODULES = {
     'RatioDataSetTVResize': 'tools.data.ratio_dataset_tvresize',
     'RatioDataSetTVResizeTest': 'tools.data.ratio_dataset_tvresize_test',
     'NaSizeDataSet': 'tools.data.native_size_dataset',
+    'RawImageDataSet': 'tools.data.raw_image_dataset',
 }
 
 # 定义支持的 Sampler 类及其对应的模块路径
@@ -78,11 +79,15 @@ def build_dataloader(config, mode, logger, seed=None, epoch=1, task='rec'):
     elif config['Global']['distributed'] and mode == 'Train':
         sampler = DistributedSampler(dataset=dataset, shuffle=shuffle)
 
-    if 'collate_fn' in loader_config:
-        from . import collate_fn
-        collate_fn = getattr(collate_fn, loader_config['collate_fn'])()
+    if hasattr(dataset, 'collate_fn'):
+        collate_fn = dataset.collate_fn
+        logger.info(f'Using collate_fn defined in {mode} dataset.')
     else:
-        collate_fn = None
+        if 'collate_fn' in loader_config:
+            from . import collate_fn
+            collate_fn = getattr(collate_fn, loader_config['collate_fn'])()
+        else:
+            collate_fn = None
 
     if batch_sampler is None:
         data_loader = DataLoader(

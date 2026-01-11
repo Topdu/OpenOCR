@@ -155,7 +155,8 @@ class SMTRDecoder(nn.Module):
                          mlp_ratio=4.0,
                          qkv_bias=True,
                          drop_path=dpr[i],
-                         is_last_layer=i==num_layer-1) for i in range(num_layer)
+                         is_last_layer=i == num_layer - 1)
+            for i in range(num_layer)
         ])
 
         self.ds = ds
@@ -354,7 +355,6 @@ class SMTRDecoder(nn.Module):
             else:
                 return torch.concat(next_logits_all + pre_logits_all[::-1], 1)
 
-
     def forward_test_bi_attn(self, x):
         self.attn_maps = []
         if not self.ds:
@@ -369,81 +369,122 @@ class SMTRDecoder(nn.Module):
             next = self.next_token
             pre = self.pre_token
             next_pre = torch.concat([next, pre], 0)
-            next_pre = next_pre.squeeze(1) #2, 1, dim
+            next_pre = next_pre.squeeze(1)  #2, 1, dim
 
             prompt_next_embed = self.prompt_next_embed.squeeze(1)
             prompt_pre_embed = self.prompt_pre_embed.squeeze(1)
 
-            next_id = torch.full([1, self.sub_str_len], self.bos_next, dtype=torch.long, device=x.device)
-            pre_id = torch.full([1, self.sub_str_len], self.bos_pre, dtype=torch.long, device=x.device)
+            next_id = torch.full([1, self.sub_str_len],
+                                 self.bos_next,
+                                 dtype=torch.long,
+                                 device=x.device)
+            pre_id = torch.full([1, self.sub_str_len],
+                                self.bos_pre,
+                                dtype=torch.long,
+                                device=x.device)
             # prompt_next_bos = self.char_embed(prompt_id)
             # pred_prob_list = torch.full([bs, self.sub_str_len], self.ignore_index, dtype=torch.long, device=x.device)
-            next_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.device)
-            pre_pred_id_list = torch.full([1, self.max_len], self.ignore_index, dtype=torch.long, device=x.device)
+            next_pred_id_list = torch.full([1, self.max_len],
+                                           self.ignore_index,
+                                           dtype=torch.long,
+                                           device=x.device)
+            pre_pred_id_list = torch.full([1, self.max_len],
+                                          self.ignore_index,
+                                          dtype=torch.long,
+                                          device=x.device)
             next_logits_all = []
             pre_logits_all = []
             attn_map_next = []
             attn_map_pre = []
-            mask_pad = torch.zeros([bs, 1], dtype=torch.float32, device=x.device)
-            for j in range(0, min(70, self.max_len-1)):
-                
-                prompt_char_next = torch.concat([prompt_next_embed[:, :1, :], prompt_next_embed[:, 1:, :] + self.char_embed(next_id)], 1) # b, sub_l, dim
-                prompt_char_pre = torch.concat([prompt_pre_embed[:, :1, :], prompt_pre_embed[:, 1:, :] + self.char_embed(pre_id)], 1) # b, sub_l, dim
-                prompt_char = torch.concat([prompt_char_next, prompt_char_pre], 0) #2, 6, dim
+            mask_pad = torch.zeros([bs, 1],
+                                   dtype=torch.float32,
+                                   device=x.device)
+            for j in range(0, min(70, self.max_len - 1)):
+
+                prompt_char_next = torch.concat([
+                    prompt_next_embed[:, :1, :],
+                    prompt_next_embed[:, 1:, :] + self.char_embed(next_id)
+                ], 1)  # b, sub_l, dim
+                prompt_char_pre = torch.concat([
+                    prompt_pre_embed[:, :1, :],
+                    prompt_pre_embed[:, 1:, :] + self.char_embed(pre_id)
+                ], 1)  # b, sub_l, dim
+                prompt_char = torch.concat([prompt_char_next, prompt_char_pre],
+                                           0)  #2, 6, dim
                 # prompt_char = prompt_char.flatten(0, 1)
 
-                mask_next = torch.where(next_id == self.bos_next, float('-inf'), 0) # b, subs_l
-                mask_pre = torch.where(pre_id == self.bos_pre, float('-inf'), 0) # b, subs_l
-                mask = torch.concat([mask_next, mask_pre], 0) #2, 5
-                mask = torch.concat([mask_pad, mask], 1) # 2, 6
+                mask_next = torch.where(next_id == self.bos_next,
+                                        float('-inf'), 0)  # b, subs_l
+                mask_pre = torch.where(pre_id == self.bos_pre, float('-inf'),
+                                       0)  # b, subs_l
+                mask = torch.concat([mask_next, mask_pre], 0)  #2, 5
+                mask = torch.concat([mask_pad, mask], 1)  # 2, 6
                 pred_token = next_pre
-                visual_f_i = visual_f[:2] # 2 l dim
+                visual_f_i = visual_f[:2]  # 2 l dim
                 for layer in self.cmff_decoder:
-                    pred_token = layer(pred_token, prompt_char, visual_f_i, mask.unsqueeze(1))
-                
-                
+                    pred_token = layer(pred_token, prompt_char, visual_f_i,
+                                       mask.unsqueeze(1))
+
                 logits_next_i = self.ques1_head(self.norm_pred(pred_token))
                 logits = F.softmax(logits_next_i, -1)
-                pred_id_i = logits.argmax(-1) #2, 1
+                pred_id_i = logits.argmax(-1)  #2, 1
                 # print(pred_id_i.shape)
-                
-                next_pred_id_list[:, j:j+1] = pred_id_i[:1]
-                pre_pred_id_list[:, j:j+1] = pred_id_i[1:2]
+
+                next_pred_id_list[:, j:j + 1] = pred_id_i[:1]
+                pre_pred_id_list[:, j:j + 1] = pred_id_i[1:2]
                 if not (next_pred_id_list == self.eos).any(dim=-1).all():
                     next_logits_all.append(logits[:1])
-                    attn_map_next.append(self.cmff_decoder[-1].question_to_images_cross_attn.attn_map[0])
+                    attn_map_next.append(
+                        self.cmff_decoder[-1].question_to_images_cross_attn.
+                        attn_map[0])
                     next_id = torch.concat([next_id[:, 1:], pred_id_i[:1]], 1)
                 if not (pre_pred_id_list == self.eos).any(dim=-1).all():
                     pre_logits_all.append(logits[1:2])
-                    attn_map_pre.append(self.cmff_decoder[-1].question_to_images_cross_attn.attn_map[1])
+                    attn_map_pre.append(
+                        self.cmff_decoder[-1].question_to_images_cross_attn.
+                        attn_map[1])
                     pre_id = torch.concat([pred_id_i[1:2], pre_id[:, :-1]], 1)
-                
-                if (next_pred_id_list == self.eos).any(dim=-1).all() and (pre_pred_id_list == self.eos).any(dim=-1).all():
+
+                if (next_pred_id_list == self.eos).any(dim=-1).all() and (
+                        pre_pred_id_list == self.eos).any(dim=-1).all():
                     break
                 # print(next_id, pre_id)
             # exit(0)
-            if len(next_logits_all) > self.sub_str_len and len(pre_logits_all) > self.sub_str_len:
-                next_logits_all_ = torch.concat(next_logits_all[:-1], 1) # 1, l
-                pre_logits_all_ = torch.concat(pre_logits_all[:-1][::-1], 1) #1, l
+            if len(next_logits_all) > self.sub_str_len and len(
+                    pre_logits_all) > self.sub_str_len:
+                next_logits_all_ = torch.concat(next_logits_all[:-1],
+                                                1)  # 1, l
+                pre_logits_all_ = torch.concat(pre_logits_all[:-1][::-1],
+                                               1)  #1, l
 
                 next_id = next_logits_all_.argmax(-1)[:, -self.sub_str_len:]
                 pre_id = pre_logits_all_.argmax(-1)[:, :self.sub_str_len]
                 next_logits_all_mid = []
                 attn_map_next_mid = []
                 ques_next = self.next_token.tile([1, 1, 1, 1]).squeeze(1)
-                mask_pad = torch.zeros([1, 1], dtype=torch.float32, device=x.device)
-                for j in range(0, min(70, self.max_len-1)):
-                    
-                    prompt_next = torch.concat([prompt_next_embed[:, :1, :], prompt_next_embed[:, 1:, :] + self.char_embed(next_id)], 1) # b, sub_l, dim
-                    mask_next = torch.where(next_id == self.bos_next, float('-inf'), 0) # b, subs_l
+                mask_pad = torch.zeros([1, 1],
+                                       dtype=torch.float32,
+                                       device=x.device)
+                for j in range(0, min(70, self.max_len - 1)):
+
+                    prompt_next = torch.concat([
+                        prompt_next_embed[:, :1, :],
+                        prompt_next_embed[:, 1:, :] + self.char_embed(next_id)
+                    ], 1)  # b, sub_l, dim
+                    mask_next = torch.where(next_id == self.bos_next,
+                                            float('-inf'), 0)  # b, subs_l
                     mask = torch.concat([mask_pad, mask_next], 1)
                     # prompt_next = self.char_embed(prompt_id)
                     ques_next_i = ques_next
                     visual_f_i = visual_f[2:3]
                     for layer in self.cmff_decoder:
-                        ques_next_i = layer(ques_next_i, prompt_next, visual_f_i, mask.unsqueeze(1))
-                    logits_next_i = self.ques1_head(self.norm_pred(ques_next_i))
-                    attn_map_next_mid.append(self.cmff_decoder[-1].question_to_images_cross_attn.attn_map[0])
+                        ques_next_i = layer(ques_next_i, prompt_next,
+                                            visual_f_i, mask.unsqueeze(1))
+                    logits_next_i = self.ques1_head(
+                        self.norm_pred(ques_next_i))
+                    attn_map_next_mid.append(
+                        self.cmff_decoder[-1].question_to_images_cross_attn.
+                        attn_map[0])
                     logits = F.softmax(logits_next_i, -1)
                     pred_id_i = logits.argmax(-1)
                     next_logits_all_mid.append(logits)
@@ -452,12 +493,19 @@ class SMTRDecoder(nn.Module):
                         break
                 next_logits_all_mid = torch.concat(next_logits_all_mid, 1)
                 # next_logits_all_ = torch.concat([next_logits_all_, next_logits_all], 1)
-                self.attn_maps = [attn_map_next, attn_map_next_mid, attn_map_pre[::-1]]
-                return [torch.concat(next_logits_all, 1), next_logits_all_mid, torch.concat(pre_logits_all[::-1], 1)]
+                self.attn_maps = [
+                    attn_map_next, attn_map_next_mid, attn_map_pre[::-1]
+                ]
+                return [
+                    torch.concat(next_logits_all, 1), next_logits_all_mid,
+                    torch.concat(pre_logits_all[::-1], 1)
+                ]
             else:
                 self.attn_maps = [attn_map_next, attn_map_pre[::-1]]
-                return [torch.concat(next_logits_all, 1), torch.concat(pre_logits_all[::-1], 1)]
-
+                return [
+                    torch.concat(next_logits_all, 1),
+                    torch.concat(pre_logits_all[::-1], 1)
+                ]
 
     def forward_test(self, x):
         self.attn_maps = []

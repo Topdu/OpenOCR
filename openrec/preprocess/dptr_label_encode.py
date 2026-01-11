@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pad_sequence
 import unicodedata
 from ..modeling.decoders.dptr_parseq_clip_b_decoder import tokenize
 
+
 class CharsetAdapter:
     """Transforms labels according to the target charset."""
 
@@ -29,8 +30,13 @@ class CharsetAdapter:
 
 
 class BaseTokenizer(ABC):
-# eos=0, a=1, bos=37, pad=38
-    def __init__(self, charset: str, specials_first: tuple = (), specials_last: tuple = ()) -> None:
+    # eos=0, a=1, bos=37, pad=38
+    def __init__(
+        self,
+        charset: str,
+        specials_first: tuple = (),
+        specials_last: tuple = ()
+    ) -> None:
         self._itos = specials_first + tuple(charset) + specials_last
         self._stoi = {s: i for i, s in enumerate(self._itos)}
         # print("stoi:", self._stoi)
@@ -47,7 +53,9 @@ class BaseTokenizer(ABC):
         return ''.join(tokens) if join else tokens
 
     @abstractmethod
-    def encode(self, labels: List[str], device: Optional[torch.device] = None) -> Tensor:
+    def encode(self,
+               labels: List[str],
+               device: Optional[torch.device] = None) -> Tensor:
         """Encode a batch of labels to a representation suitable for the model.
 
         Args:
@@ -64,7 +72,9 @@ class BaseTokenizer(ABC):
         """Internal method which performs the necessary filtering prior to decoding."""
         raise NotImplementedError
 
-    def decode(self, token_dists: Tensor, raw: bool = False) -> Tuple[List[str], List[Tensor]]:
+    def decode(self,
+               token_dists: Tensor,
+               raw: bool = False) -> Tuple[List[str], List[Tensor]]:
         """Decode a batch of token distributions.
 
         Args:
@@ -93,12 +103,16 @@ class Tokenizer(BaseTokenizer):
     PAD = '[P]'
 
     def __init__(self, charset: str) -> None:
-        specials_first = (self.EOS,)
+        specials_first = (self.EOS, )
         specials_last = (self.BOS, self.PAD)
         super().__init__(charset, specials_first, specials_last)
-        self.eos_id, self.bos_id, self.pad_id = [self._stoi[s] for s in specials_first + specials_last]
+        self.eos_id, self.bos_id, self.pad_id = [
+            self._stoi[s] for s in specials_first + specials_last
+        ]
 
-    def encode(self, labels: List[str], device: Optional[torch.device] = None) -> Tensor:
+    def encode(self,
+               labels: List[str],
+               device: Optional[torch.device] = None) -> Tensor:
         batch = [self.bos_id] + self._tok2ids(labels) + [self.eos_id]
         return batch
         # return pad_sequence(batch, batch_first=True, padding_value=self.pad_id)
@@ -114,8 +128,10 @@ class Tokenizer(BaseTokenizer):
         probs = probs[:eos_idx + 1]  # but include prob. for EOS (if it exists)
         return probs, ids
 
+
 class DPTRLabelEncode(Tokenizer):
     """Convert between text-label and text-index."""
+
     def __init__(self, max_text_length=25, character_dict_path=None, **kwargs):
         self.max_length = max_text_length
         charset = get_alpha(character_dict_path)
@@ -127,14 +143,17 @@ class DPTRLabelEncode(Tokenizer):
         text = data['label']
 
         if normalize_unicode:
-            text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode()
+            text = unicodedata.normalize('NFKD',
+                                         text).encode('ascii',
+                                                      'ignore').decode()
         text = ''.join(text.split())
         if len(text) == 0 or len(text) > self.max_length:
             return None
 
         text_ids = self.encode(text)
         clip_ids = tokenize(f"a photo of a '{text}'")
-        text_ids = text_ids + [self.pad_id] * (self.max_length + 2 - len(text_ids))
+        text_ids = text_ids + [self.pad_id
+                               ] * (self.max_length + 2 - len(text_ids))
         # print(text, len(text_ids), len(clip_ids[0]))
         data['clip_label'] = np.array(clip_ids[0])
         data['label'] = np.array(text_ids)
@@ -143,6 +162,7 @@ class DPTRLabelEncode(Tokenizer):
     def add_special_char(self, dict_character):
         dict_character = [self.EOS] + dict_character + [self.BOS, self.PAD]
         return dict_character
+
 
 def get_alpha(alpha_path):
     character_str = []

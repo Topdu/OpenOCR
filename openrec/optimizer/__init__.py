@@ -16,8 +16,8 @@ def param_groups_weight_decay(model: nn.Module,
         if not param.requires_grad:
             continue
 
-        if param.ndim <= 1 or name.endswith(
-                '.bias') or any(nd in name for nd in no_weight_decay_list):
+        if param.ndim <= 1 or name.endswith('.bias') or any(
+                nd in name for nd in no_weight_decay_list):
             no_decay.append(param)
         else:
             decay.append(param)

@@ -174,8 +174,13 @@ class Trainer(object):
                 # cfg_vlm._attn_implementation = "eager"
                 # cfg_vlm._attn_implementation = "sdpa"
                 self.model = UniRecForConditionalGenerationNew(config=cfg_vlm)
+            elif self.cfg['Architecture']['algorithm'] == 'CMER':
+                from openrec.modeling.cmer_modeling.modeling_cmer import CMER, CMERConfig
+                cfg_model = CMERConfig(
+                    self.cfg['Architecture']['vision_config'],
+                    self.cfg['Architecture']['decoder_config'])
+                self.model = CMER(config=cfg_model)
         else:
-
             char_num = self.post_process_class.get_character_num()
             self.cfg['Architecture']['Decoder']['out_channels'] = char_num
             self.model = build_rec_model(self.cfg['Architecture'])
@@ -299,7 +304,8 @@ class Trainer(object):
         for epoch in range(start_epoch, epoch_num + 1):
             if not self.cfg['Global'].get('resume_from_iter',
                                           False):  # for unirec resume training
-                self.cfg['Train']['sampler']['resume_iter'] = 0
+                if 'sampler' in self.cfg['Train']:
+                    self.cfg['Train']['sampler']['resume_iter'] = 0
             if self.train_dataloader.dataset.need_reset and epoch > 1:
                 self.train_dataloader = build_dataloader(self.cfg,
                                                          'Train',

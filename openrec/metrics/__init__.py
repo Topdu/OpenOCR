@@ -6,8 +6,11 @@ from .rec_metric import RecMetric
 from .rec_metric_gtc import RecGTCMetric
 from .rec_metric_long import RecMetricLong
 from .rec_metric_mgp import RecMPGMetric
+from .rec_metric_cmer import CMERMetric
 
-support_dict = ['RecMetric', 'RecMetricLong', 'RecGTCMetric', 'RecMPGMetric']
+support_dict = [
+    'RecMetric', 'RecMetricLong', 'RecGTCMetric', 'RecMPGMetric', 'CMERMetric'
+]
 
 
 def build_metric(config):

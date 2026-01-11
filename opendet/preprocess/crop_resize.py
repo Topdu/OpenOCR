@@ -111,7 +111,8 @@ def crop_area(im, text_polys, min_crop_side_ratio, max_tries):
         else:
             ymin, ymax = random_select(h_axis, h)
 
-        if (xmax - xmin < min_crop_side_ratio * w or ymax - ymin < min_crop_side_ratio * h):
+        if (xmax - xmin < min_crop_side_ratio * w
+                or ymax - ymin < min_crop_side_ratio * h):
             # area too small
             continue
         num_poly_in_rect = 0
