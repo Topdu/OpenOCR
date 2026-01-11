@@ -4,9 +4,6 @@ import torch
 
 from tools.utils.logging import get_logger
 
-from safetensors.torch import load_file
-
-
 def save_ckpt(
     model,
     cfg,
@@ -82,6 +79,7 @@ def load_ckpt(model, cfg, optimizer=None, lr_scheduler=None, logger=None):
 
 def load_pretrained_params(model, pretrained_model, logger):
     if pretrained_model.endswith(".safetensors"):
+        from safetensors.torch import load_file
         logger.info(f"Loading weights from safetensors: {pretrained_model}")
         checkpoint = load_file(pretrained_model)
     else:

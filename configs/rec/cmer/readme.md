@@ -10,14 +10,15 @@ This repository hosts the official implementation of **CMERNet**, a specialized 
 
 ## Get Started with CMER
 
-### Dependencies
+### Dependencies:
 
-To run CMER, ensure your environment meets the following requirements:
-
-- **Python**: 3.10+
-- **PyTorch**: 2.5.1+ (CUDA 12.x recommended)
-- **Core Libraries**: `transformers`, `webdataset`, `albumentations`, `evaluate`, `levenshtein`
-- **requirements**: ./configs/rec/cmer/requirements.txt
+- [PyTorch](http://pytorch.org/) version >= 2.5.1
+- Python version >= 3.10
+- CUDA version 12.x recommended
+- Additional Dependencies:
+  - pip install transformers==4.57.0
+  - pip install safetensors
+  - pip install albumentations
 
 ## Data Download
 
@@ -27,13 +28,13 @@ We provide both the benchmark dataset for evaluation and the large-scale dataset
 
 **CMER-Bench** is a carefully constructed benchmark that categorizes expressions into three difficulty levels: easy, moderate, and complex. It is designed to evaluate the robustness of MER models on complicated spatial layouts.
 
-- **Download Link**: [Hugging Face - CMER-Bench1.5](https://huggingface.co/datasets/Baitlo/CMER-Bench1.5)
+- **Download Link**: [Hugging Face - CMER-Bench1.5](https://huggingface.co/datasets/topdu/CMER-Bench1.5)
 
 ### CMER-3M (Training)
 
 **CMER-3M** is a large-scale dataset emphasizing the recognition of complex mathematical expressions, providing rich and diverse samples to support the development of accurate MER models.
 
-- **Download Link**: [Hugging Face - CMER-3M](https://huggingface.co/datasets/Baitlo/CMER-3M) *(Note: This dataset is currently not open-sourced and will be available soon.)*
+- **Download Link**: [Hugging Face - CMER-3M](https://huggingface.co/datasets/topdu/CMER-3M) *(Note: This dataset is currently not open-sourced and will be available soon.)*
 
 *After downloading, please extract the datasets and update the `data_dir` paths in your configuration file accordingly.*
 
@@ -73,7 +74,7 @@ CMER supports distributed training using `torch.distributed.launch`.
 
 ## Inference
 
-You can evaluate the model or perform inference on custom images using the `tools/infer_cmer.py` script.
+You can evaluate the model or perform inference on custom images using the `tools/infer_rec.py` script.
 
 1. **Configure Inference**:
    Modify `configs/rec/cmer/cmer.yml` to point to your target images and model weights:
@@ -86,7 +87,7 @@ You can evaluate the model or perform inference on custom images using the `tool
    Execute the following command:
 
    ```bash
-   python ./tools/infer_cmer.py -c ./configs/rec/cmer/cmer.yml
+   python ./tools/infer_rec.py -c ./configs/rec/cmer/cmer.yml
    ```
 
 ```

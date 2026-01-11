@@ -72,7 +72,7 @@ Architecture:
     vocab_size: 23948
 
 Loss:
-  name: UniRecLoss
+  name: CMERLoss
 
 PostProcess:
   name: CMERLabelDecode
