@@ -126,13 +126,19 @@ class Trainer(object):
             'accumulation_steps', 1)
         from openrec.optimizer import build_optimizer
         self.optimizer, self.lr_scheduler = None, None
+        epochs = self.cfg['Global']['epoch_num']
+        try:
+            step_each_epoch = len(self.train_dataloader)
+        except TypeError:
+            # 针对 IterableDataset 的处理
+            step_each_epoch = self.cfg['Global'].get('total_iter_steps', 100000)
         if self.train_dataloader is not None:
             # build optim
             self.optimizer, self.lr_scheduler = build_optimizer(
                 self.cfg['Optimizer'],
                 self.cfg['LRScheduler'],
-                epochs=self.cfg['Global']['epoch_num'],
-                step_each_epoch=len(self.train_dataloader),
+                epochs=epochs,
+                step_each_epoch=step_each_epoch,
                 model=self.model,
             )
         self.grad_clip_val = self.cfg['Global'].get('grad_clip_val', 0)
@@ -306,12 +312,13 @@ class Trainer(object):
                                           False):  # for unirec resume training
                 if 'sampler' in self.cfg['Train']:
                     self.cfg['Train']['sampler']['resume_iter'] = 0
-            if self.train_dataloader.dataset.need_reset and epoch > 1:
-                self.train_dataloader = build_dataloader(self.cfg,
-                                                         'Train',
-                                                         self.logger,
-                                                         epoch=epoch,
-                                                         task=self.task)
+            if hasattr(self.train_dataloader, "dataset") and self.train_dataloader.dataset is not None:
+                if self.train_dataloader.dataset.need_reset and epoch > 1:
+                    self.train_dataloader = build_dataloader(self.cfg,
+                                                            'Train',
+                                                            self.logger,
+                                                            epoch=epoch,
+                                                            task=self.task)
 
             for idx, batch in enumerate(self.train_dataloader):
                 if self.cfg['Global'].get('resume_from_iter',

@@ -21,7 +21,7 @@ DATASET_MODULES = {
     'RatioDataSetTVResize': 'tools.data.ratio_dataset_tvresize',
     'RatioDataSetTVResizeTest': 'tools.data.ratio_dataset_tvresize_test',
     'NaSizeDataSet': 'tools.data.native_size_dataset',
-    'RawImageDataSet': 'tools.data.raw_image_dataset',
+    'CMERWebDataSet': 'tools.data.cmer_web_dataset',
 }
 
 # 定义支持的 Sampler 类及其对应的模块路径
@@ -38,7 +38,7 @@ __all__ = [
 
 def build_dataloader(config, mode, logger, seed=None, epoch=1, task='rec'):
     config = copy.deepcopy(config)
-    mode = mode.capitalize()  # 确保 mode 是首字母大写形式（Train/Eval/Test）
+    mode = mode.capitalize()
 
     # 获取 dataset 配置
     dataset_config = config[mode]['dataset']
@@ -56,65 +56,81 @@ def build_dataloader(config, mode, logger, seed=None, epoch=1, task='rec'):
 
     # DataLoader 配置
     loader_config = config[mode]['loader']
-    batch_size = loader_config['batch_size_per_card']
-    drop_last = loader_config['drop_last']
-    shuffle = loader_config['shuffle']
     num_workers = loader_config['num_workers']
     pin_memory = loader_config.get('pin_memory', False)
+    if module_name == 'CMERWebDataSet':
+        logger.info(f"Building WebLoader for {module_name} (IterableDataset mode)...")
+        import webdataset as wds
+        persistent = num_workers > 0
+        data_loader = wds.WebLoader(
+            dataset,
+            batch_size=None,  # 必须为 None，因为 dataset yield 的已经是 batch
+            shuffle=False,    # 外部不打乱，内部处理
+            num_workers=num_workers,
+            pin_memory=True,
+            prefetch_factor=4,
+            persistent_workers=persistent,
+        )
+        total_iter_steps = config['Global'].get('total_iter_steps', 1000000) 
+        data_loader = data_loader.with_length(total_iter_steps)
+        return data_loader
+    else:
+        batch_size = loader_config['batch_size_per_card']
+        drop_last = loader_config['drop_last']
+        shuffle = loader_config['shuffle']
+        sampler = None
+        batch_sampler = None
+        if 'sampler' in config[mode]:
+            sampler_config = config[mode]['sampler']
+            sampler_name = sampler_config.pop('name')
 
-    sampler = None
-    batch_sampler = None
-    if 'sampler' in config[mode]:
-        sampler_config = config[mode]['sampler']
-        sampler_name = sampler_config.pop('name')
+            if sampler_name not in SAMPLER_MODULES:
+                raise ValueError(
+                    f'Unsupported sampler: {sampler_name}. Supported samplers: {list(SAMPLER_MODULES.keys())}'
+                )
 
-        if sampler_name not in SAMPLER_MODULES:
-            raise ValueError(
-                f'Unsupported sampler: {sampler_name}. Supported samplers: {list(SAMPLER_MODULES.keys())}'
+            sampler_module = importlib.import_module(SAMPLER_MODULES[sampler_name])
+            sampler_class = getattr(sampler_module, sampler_name)
+            batch_sampler = sampler_class(dataset, **sampler_config)
+        elif config['Global']['distributed'] and mode == 'Train':
+            sampler = DistributedSampler(dataset=dataset, shuffle=shuffle)
+
+        if hasattr(dataset, 'collate_fn'):
+            collate_fn = dataset.collate_fn
+            logger.info(f'Using collate_fn defined in {mode} dataset.')
+        else:
+            if 'collate_fn' in loader_config:
+                from . import collate_fn
+                collate_fn = getattr(collate_fn, loader_config['collate_fn'])()
+            else:
+                collate_fn = None
+
+        if batch_sampler is None:
+            data_loader = DataLoader(
+                dataset=dataset,
+                sampler=sampler,
+                num_workers=num_workers,
+                pin_memory=pin_memory,
+                collate_fn=collate_fn,
+                batch_size=batch_size,
+                drop_last=drop_last,
+            )
+        else:
+            data_loader = DataLoader(
+                dataset=dataset,
+                batch_sampler=batch_sampler,
+                num_workers=num_workers,
+                pin_memory=pin_memory,
+                collate_fn=collate_fn,
             )
 
-        sampler_module = importlib.import_module(SAMPLER_MODULES[sampler_name])
-        sampler_class = getattr(sampler_module, sampler_name)
-        batch_sampler = sampler_class(dataset, **sampler_config)
-    elif config['Global']['distributed'] and mode == 'Train':
-        sampler = DistributedSampler(dataset=dataset, shuffle=shuffle)
+        # 检查数据加载器是否为空
+        if len(data_loader) == 0:
+            logger.error(
+                f'No Images in {mode.lower()} dataloader. Please check:\n'
+                '\t1. The images num in the train label_file_list should be >= batch size.\n'
+                '\t2. The annotation file and path in the configuration are correct.\n'
+                '\t3. The BatchSize is not larger than the number of images.')
+            sys.exit()
 
-    if hasattr(dataset, 'collate_fn'):
-        collate_fn = dataset.collate_fn
-        logger.info(f'Using collate_fn defined in {mode} dataset.')
-    else:
-        if 'collate_fn' in loader_config:
-            from . import collate_fn
-            collate_fn = getattr(collate_fn, loader_config['collate_fn'])()
-        else:
-            collate_fn = None
-
-    if batch_sampler is None:
-        data_loader = DataLoader(
-            dataset=dataset,
-            sampler=sampler,
-            num_workers=num_workers,
-            pin_memory=pin_memory,
-            collate_fn=collate_fn,
-            batch_size=batch_size,
-            drop_last=drop_last,
-        )
-    else:
-        data_loader = DataLoader(
-            dataset=dataset,
-            batch_sampler=batch_sampler,
-            num_workers=num_workers,
-            pin_memory=pin_memory,
-            collate_fn=collate_fn,
-        )
-
-    # 检查数据加载器是否为空
-    if len(data_loader) == 0:
-        logger.error(
-            f'No Images in {mode.lower()} dataloader. Please check:\n'
-            '\t1. The images num in the train label_file_list should be >= batch size.\n'
-            '\t2. The annotation file and path in the configuration are correct.\n'
-            '\t3. The BatchSize is not larger than the number of images.')
-        sys.exit()
-
-    return data_loader
+        return data_loader

@@ -1,12 +1,14 @@
 Global:
   device: gpu
-  epoch_num: 10
+  epoch_num: 1
   log_smooth_window: 20
   print_batch_step: 10
   output_dir: ./output/cmer
   save_epoch_step: [0, 1]
+  save_batch_step: [30000, 10000]
   eval_epoch_step: [200, 1]
   eval_batch_step: [100000000, 2000]
+  total_iter_steps: 1000000
   cal_metric_during_train: False
   # pretrained_model: /path/to/pretrained/model.pth
   checkpoints:
@@ -23,13 +25,15 @@ Global:
 
 Optimizer:
   name: AdamW
-  lr: 0.0001
-  weight_decay: 0.01
-  filter_bias_and_bn: True
+  lr: 3.0e-5
+  weight_decay: 0.05
+  filter_bias_and_bn: True 
+  fused: True              
 
 LRScheduler:
-  name: CosineAnnealingLR
-  warmup_epoch: 0.3
+  name: WarmupCosine     
+  warmup_steps: 5000
+  eta_min: 3.0e-7
 
 
 Architecture:
@@ -79,51 +83,43 @@ PostProcess:
 
 Train:
   dataset:
-    name: RawImageDataSet
-    data_dir: "/path/to/cmer_train_image"
-    label_file_list:
-      - "/path/to/cmer_train_image/train_labels.txt"
+    name: CMERWebDataSet
+    data_dir: "/path/to/CMER-17M"
     max_text_length: 1024
-
+    processor: CMERProcessor
+    processor_source: openrec.preprocess.cmer_label_encode
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - CMERProcessor:
-      - KeepKeys:
-          keep_keys: ['image','label','length'] # dataloader will return list in this order
+      - CMERProcessor: 
 
   loader:
-    batch_size_per_card: 4
+    batch_size_per_card: 16
     drop_last: True
-    shuffle: True
-    num_workers: 4
+    shuffle: False
+    num_workers: 8
     pin_memory: True
-    collate_fn: CMERProcessor
-    collate_fn_source: openrec.preprocess.cmer_label_encode
 
 
+# no use
 Eval:
   dataset:
-    name: RawImageDataSet
-    data_dir: "/path/to/cmer_test_image"
-    label_file_list:
-      - "/path/to/cmer_test_image/eval_labels.txt"
-    max_text_length: 1024
+    name: CMERWebDataSet
+    data_dir: "/path/to/CMER-17M"
+    processor: CMERProcessor
+    processor_source: openrec.preprocess.cmer_label_encode
     transforms:
       - DecodeImagePIL: # load image
           img_mode: RGB
-      - CMERProcessor:
-      - KeepKeys:
-          keep_keys: ['image','label','length'] # dataloader will return list in this order
+      - CMERProcessor: 
 
   loader:
     batch_size_per_card: 8
     drop_last: False
     shuffle: False
-    num_workers: 4
+    num_workers: 8
     pin_memory: False
-    collate_fn: CMERProcessor
-    collate_fn_source: openrec.preprocess.cmer_label_encode
+
 
 Metric:
   name: "CMERMetric"

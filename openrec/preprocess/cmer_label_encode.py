@@ -21,7 +21,7 @@ from transformers.image_utils import (
 from transformers import PreTrainedTokenizerFast
 from transformers.utils import TensorType, filter_out_non_signature_kwargs, is_vision_available, logging
 from transformers import AutoImageProcessor, ProcessorMixin
-
+import torch
 # Third-party optional imports
 logger = logging.get_logger(__name__)
 
@@ -849,113 +849,177 @@ class CMERImageProcessor(BaseImageProcessor):
 
 AutoImageProcessor.register('CMER',
                             slow_image_processor_class=CMERImageProcessor)
-
-
 class CMERProcessor(ProcessorMixin):
     attributes = ['image_processor', 'tokenizer']
     image_processor_class = 'CMERImageProcessor'
     tokenizer_class = 'PreTrainedTokenizerFast'
 
-    def __init__(self,
-                 image_processor=None,
-                 tokenizer=None,
-                 tokenizer_file:
-                 str = './configs/rec/cmer/cmer_tokenizer/tokenizer.json',
-                 **kwargs):
+    def __init__(
+        self, 
+        image_processor=None, 
+        tokenizer=None, 
+        tokenizer_file: str = './configs/rec/cmer/cmer_tokenizer/tokenizer.json',
+        **kwargs
+    ):
         if image_processor is None:
+            # 确保这里能正确导入你的 CMERImageProcessor
             image_processor = CMERImageProcessor(**kwargs)
 
         if tokenizer is None:
             try:
                 tokenizer = PreTrainedTokenizerFast(
                     tokenizer_file=tokenizer_file,
-                    padding_side='right',
-                    truncation_side='right',
-                    pad_token='<|pad|>',
-                    bos_token='<|bos|>',
-                    eos_token='<|eos|>',
-                    unk_token='<|unk|>',
+                    padding_side="right",
+                    truncation_side="right",
+                    pad_token="<|pad|>",
+                    bos_token="<|bos|>",
+                    eos_token="<|eos|>",
+                    unk_token="<|unk|>",
                 )
             except Exception as e:
-                print(
-                    f'Failed to initialize default tokenizer from {tokenizer_file}. Error: {e}'
-                )
+                # logger 需要外部定义或引入，这里简单用 print 代替
+                print(f"Failed to initialize default tokenizer from {tokenizer_file}. Error: {e}")
                 tokenizer = None
 
         super().__init__(image_processor=image_processor, tokenizer=tokenizer)
 
+
     def __call__(
         self,
-        item: Union[dict, List[dict]],
-        return_tensors: Optional[str] = 'pt',
+        images: ImageInput,
+        text: Union[str, List[str]]=None,
+        ids=None,
+        categorys=None,
+        return_tensors: Optional[Union[str, TensorType]] = "pt",
         padding: Union[bool, str] = True,
         truncation: bool = True,
-        max_length: Optional[int] = 1024,
+        max_length: Optional[int] = None,
         **img_kwargs,
-    ):
-        """
-        Args:
-            item:
-                - 单个样本 (dict): {'image': PIL.Image, 'label': str}
-                - Batch样本 (list): [{'image': PIL.Image, 'label': str}, ...]
-        Returns:
-            list: [image_tensor, label_tensor, length_tensor]  <-- 修改为返回列表
-        """
-
-        if isinstance(item, dict):
-            items = [item]
-        elif isinstance(item, (list, tuple)):
-            items = item
+    ):  
+        if isinstance(images, dict) and "image" in images:
+            images = images["image"]
+        # 情况 2: 列表样本，例如 [{'image': <PIL...>}, {'image': <PIL...>}]
+        elif isinstance(images, (list, tuple)) and len(images) > 0 and isinstance(images[0], dict) and "image" in images[0]:
+            images = [img["image"] for img in images]
+         # 计算输入图片的数量，用于后续生成默认 text
+        if isinstance(images, (list, tuple)):
+            input_batch_size = len(images)
         else:
-            raise ValueError('Input must be a dict or a list of dicts.')
-
-        raw_images = [x['image'] for x in items]
-        raw_labels = [x.get('label', '') for x in items]
-
-        image_outputs = self.image_processor.preprocess(
-            images=raw_images,
+            input_batch_size = 1
+        image_outputs: BatchFeature = self.image_processor.preprocess(
+            images=images,
             return_tensors=return_tensors,
             **img_kwargs,
         )
+        expanded_from = image_outputs.get("expanded_from_indices")
+                # =================================================================
+        # 2. [修复核心报错] 处理 text/ids/categorys 为 None 的情况
+        # =================================================================
+        # 如果 text 为 None (推理模式)，生成空字符串列表
+        if text is None:
+            text_list = [""] * input_batch_size
+        elif isinstance(text, str):
+            text_list = [text]
+        else:
+            text_list = list(text)
 
-        pixel_values = image_outputs['image']
+        # 如果 ids 为 None，生成默认占位符
+        if ids is None:
+            ids_list = [None] * len(text_list)
+        else:
+            ids_list = list(ids)
 
-        expanded_from = image_outputs.get('expanded_from_indices')
+        # 如果 categorys 为 None，生成默认占位符
+        if categorys is None:
+            cats_list = [None] * len(text_list)
+        else:
+            cats_list = list(categorys)
+        # =================================================================
 
         if expanded_from is None:
-            expanded_labels = raw_labels
+            num_in = len(text_list)
+            expanded_from = list(range(num_in))
         else:
-            if hasattr(expanded_from, 'tolist'):
-                expanded_from = expanded_from.tolist()
-            expanded_labels = [raw_labels[idx] for idx in expanded_from]
-
+            num_in = max(expanded_from) + 1
+            
+        # 检查长度一致性
+        if not (len(text_list) == num_in == len(ids_list) == len(cats_list)):
+            raise ValueError(
+                f"[CMERProcessor] Mismatch between base counts: "
+                f"text={len(text_list)}, ids={len(ids_list)}, "
+                f"cats={len(cats_list)}, num_in(from expanded_from)={num_in}"
+            )
+            
         bos_token = self.tokenizer.bos_token
         eos_token = self.tokenizer.eos_token
-
-        texts_with_special = [
-            f'{bos_token}{txt}{eos_token}' for txt in expanded_labels
-        ]
-
+        if bos_token is None or eos_token is None:
+            raise ValueError("Tokenizer must have a `bos_token` and an `eos_token`.")
+            
+        base_texts = text_list
+        base_ids = ids_list
+        base_cats = cats_list
+        
+        try:
+            expanded_texts = [
+                f"{bos_token}{base_texts[src]}{eos_token}" for src in expanded_from
+            ]
+            expanded_ids = [base_ids[src] for src in expanded_from]
+            expanded_cats = [base_cats[src] for src in expanded_from]
+        except IndexError:
+            raise ValueError(
+                f"[CMERProcessor] expanded_from_indices contains index out of range: "
+                f"max={max(expanded_from)}, but num_in={num_in}"
+            )
+            
         text_outputs = self.tokenizer(
-            texts_with_special,
+            expanded_texts,
             return_tensors=return_tensors,
-            add_special_tokens=False,
+            add_special_tokens=True,
             padding=padding,
             truncation=truncation,
             max_length=max_length,
         )
-
-        input_ids = text_outputs['input_ids']
-        attention_mask = text_outputs['attention_mask']
-
-        labels = input_ids.clone()
+        
+        text_outputs["decoder_input_ids"] = text_outputs.pop("input_ids")
+        data = {**image_outputs, **text_outputs}
+        
+        labels = (
+            data["decoder_input_ids"].clone()
+            if return_tensors is not None
+            else list(data["decoder_input_ids"])
+        )
+        
         pad_id = self.tokenizer.pad_token_id
-        if pad_id is not None:
-            labels = labels.masked_fill(labels == pad_id, -100)
+        if pad_id is None:
+            data["labels"] = labels
+        else:
+            if hasattr(labels, "masked_fill"):
+                labels = labels.masked_fill(labels == pad_id, -100)
+            else:
+                labels = [[(-100 if tok == pad_id else tok) for tok in seq] for seq in labels]
+            data["labels"] = labels
 
-        length = attention_mask.sum(dim=1)
+        # bf = BatchFeature(data=data, tensor_type=return_tensors)
+        # bf["ids"] = expanded_ids
+        # bf["categorys"] = expanded_cats
+        input_ids = data["decoder_input_ids"]
+        # return bf
 
-        return {'image': pixel_values, 'label': labels, 'length': length}
+        if "attention_mask" in text_outputs:
+            # attention_mask shape: [batch, seq_len]
+            # sum(dim=1) 得到每个样本的有效长度
+            length = text_outputs["attention_mask"].sum(dim=1)
+            # 确保是 int32 或 int64
+            length = length.to(dtype=torch.int32)
+        else:
+            # 如果没有 attention_mask，假设没有 padding，直接取 shape
+            seq_len = input_ids.shape[1]
+            batch_size = input_ids.shape[0]
+            length = torch.full((batch_size,), seq_len, dtype=torch.int32)
+
+        # 6. 返回 Tuple (pixel_values, labels, length)
+        pixel_values = data['image']    
+        return pixel_values, labels, length
 
     def batch_decode(self, *args, **kwargs):
         return self.tokenizer.batch_decode(*args, **kwargs)
