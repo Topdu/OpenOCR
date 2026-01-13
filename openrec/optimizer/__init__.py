@@ -2,7 +2,6 @@ import copy
 
 import torch
 from torch import nn
-from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 __all__ = ['build_optimizer']
 
 
@@ -65,50 +64,11 @@ def build_optimizer(optim_config, lr_scheduler_config, epochs, step_each_epoch,
     lr_config = copy.deepcopy(lr_scheduler_config)
     scheduler_name = lr_config.pop('name')
     
-    total_steps = epochs * step_each_epoch
+    lr_config.update({
+        'epochs': epochs,
+        'step_each_epoch': step_each_epoch,
+        'lr': config['lr']
+    })
+    lr_scheduler = getattr(lr, scheduler_name)(**lr_config)(optimizer=optim)
 
-    if scheduler_name == "WarmupCosine":
-        warmup_steps = lr_config.get('warmup_steps', 0)
-        eta_min = lr_config.get('eta_min', 0.0)
-        
-        schedulers = []
-        milestones = []
-        
-        # 1. Warmup 阶段
-        if warmup_steps > 0:
-            warmup_scheduler = LinearLR(
-                optim,
-                start_factor=1e-7, 
-                end_factor=1.0,
-                total_iters=warmup_steps
-            )
-            schedulers.append(warmup_scheduler)
-            milestones.append(warmup_steps)
-        
-        remain_steps = max(1, total_steps - warmup_steps)
-        
-        T_max = remain_steps 
-
-        cosine_scheduler = CosineAnnealingLR(
-            optim,
-            T_max=T_max,
-            eta_min=eta_min
-        )
-        schedulers.append(cosine_scheduler)
-        
-        if len(schedulers) == 1:
-            lr_scheduler = schedulers[0]
-        else:
-            lr_scheduler = SequentialLR(optim, schedulers=schedulers, milestones=milestones)
-            
-    else:
-        from . import lr
-        
-        lr_config.update({
-            'epochs': epochs,
-            'step_each_epoch': step_each_epoch,
-            'lr': config['lr']
-        })
-        lr_scheduler = getattr(lr, scheduler_name)(**lr_config)(optimizer=optim)
-    
     return optim, lr_scheduler

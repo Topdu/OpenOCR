@@ -31,7 +31,7 @@ Optimizer:
   fused: True              
 
 LRScheduler:
-  name: WarmupCosine     
+  name: WarmupCosineLR     
   warmup_steps: 5000
   eta_min: 3.0e-7
 
