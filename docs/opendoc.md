@@ -40,11 +40,17 @@ huggingface-cli download topdu/unirec-0.1b --local-dir ./unirec-0.1b
 
 ```bash
 # cpu
-python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus -1
+python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus -1 --is_save_vis_img --is_save_json --is_save_markdown --pretty
 # gpu
-python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0
+python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0 --is_save_vis_img --is_save_json --is_save_markdown --pretty
 # multi gpu
-python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0,1,2,3,4,5,6,7
+python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0,1,2,3,4,5,6,7 --is_save_vis_img --is_save_json --is_save_markdown --pretty
+```
+
+### Reproduce the metrics on OmniDocBench
+
+```
+python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0 --is_save_vis_img --is_save_json --is_save_markdown
 ```
 
 ## Local Demo

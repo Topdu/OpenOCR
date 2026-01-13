@@ -30,11 +30,11 @@ We provide both the benchmark dataset for evaluation and the large-scale dataset
 
 - **Download Link**: [Hugging Face - CMER-Bench1.5](https://huggingface.co/datasets/topdu/CMER-Bench1.5)
 
-### CMER-17M (Training)
+### MER-17M (Training)
 
-**CMER-17M** is a large-scale dataset emphasizing the recognition of complex mathematical expressions, providing rich and diverse samples to support the development of accurate MER models.
+**MER-17M** is a large-scale dataset emphasizing the recognition of complex mathematical expressions, providing rich and diverse samples to support the development of accurate MER models.
 
-- **Download Link**: [Hugging Face - CMER-17M](https://huggingface.co/datasets/topdu/CMER-17M)
+- **Download Link**: [Hugging Face - MER-17M](https://huggingface.co/datasets/topdu/MER-17M)
 
 *After downloading, please extract the datasets and update the `data_dir` paths in your configuration file accordingly.*
 

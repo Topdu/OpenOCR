@@ -840,19 +840,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '--is_save_vis_img',
         action='store_true',
-        default=True,
         help='Save visualized images with layout detection boxes')
     parser.add_argument('--is_save_json',
                         action='store_true',
-                        default=True,
                         help='Save JSON results')
     parser.add_argument('--is_save_markdown',
                         action='store_true',
-                        default=True,
                         help='Save Markdown results')
     parser.add_argument('--pretty',
                         action='store_true',
-                        default=True,
                         help='Pretty print Markdown results')
 
     args = parser.parse_args()

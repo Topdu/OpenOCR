@@ -70,7 +70,7 @@ OpenOCR 致力于构建一个为学术研究与实际应用搭建桥梁的通用
 
 - [**UniRec-0.1B**](./configs/rec/unirec/) (*Yongkun Du, Zhineng Chen, Yazhen Xie, Weikang Bai, Hao Feng, Wei Shi, Yuchen Su, Can Huang, Yu-Gang Jiang. UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters,* Preprint. [Doc](./configs/rec/unirec/), [Paper](https://arxiv.org/pdf/2512.21095))
 - [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
-- **CMER** (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Paper](https://arxiv.org/abs/2512.13731), Code is coming soon.)
+- [**CMER**](./configs/rec/cmer/) (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Doc](./configs/rec/cmer/), [Paper](https://arxiv.org/abs/2512.13731).)
 - **TextSSR** (*Xingsong Ye, Yongkun Du, Yunbo Tao, Zhineng Chen\*. TextSSR: Diffusion-based Data Synthesis for Scene Text Recognition,* ICCV 2025. [Paper](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf), [Code](https://github.com/YesianRohn/TextSSR))
 - [**SVTRv2**](./configs/rec/svtrv2) (*Yongkun Du, Zhineng Chen\*, Hongtao Xie, Caiyan Jia, Yu-Gang Jiang. SVTRv2: CTC Beats Encoder-Decoder Models in Scene Text Recognition,* ICCV 2025. [Doc](./configs/rec/svtrv2/), [Paper](https://openaccess.thecvf.com/content/ICCV2025/html/Du_SVTRv2_CTC_Beats_Encoder-Decoder_Models_in_Scene_Text_Recognition_ICCV_2025_paper.html))
 - [**IGTR**](./configs/rec/igtr/) (*Yongkun Du, Zhineng Chen\*, Yuchen Su, Caiyan Jia, Yu-Gang Jiang. Instruction-Guided Scene Text Recognition,* TPAMI 2025. [Doc](./configs/rec/igtr), [Paper](https://ieeexplore.ieee.org/document/10820836))
@@ -85,10 +85,11 @@ OpenOCR 致力于构建一个为学术研究与实际应用搭建桥梁的通用
 
 ## 近期更新
 
+- **2026.01.13**: 🔥 开源 [CMER](./configs/rec/cmer/) 代码和 and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) 数据集.
 - **2026.01.07**: 🔥 开源 [UniRec40M](https://huggingface.co/datasets/topdu/UniRec40M) 数据集，包含4000万多层次文本、公式和文本公式混合内容识别数据.
 - **2025.12.25**: 🔥 新增超轻量级文档解析系统[OpenDoc-0.1B](./docs/opendoc.md)
 - **2025.11.08**: [MDiff4STR](https://arxiv.org/abs/2512.01422)被AAAI 2026接收为Oral. 详见[Doc](./configs/rec/mdiff4str/)
-- **2025.11.08**: [CMER](https://arxiv.org/abs/2512.13731)被AAAI 2026接收. 代码即将开源
+- **2025.11.08**: [CMER](https://arxiv.org/abs/2512.13731)被AAAI 2026接收. 详见[Doc](./configs/rec/cmer/)
 - **2025.08.20**: 🔥 新增文本和公式识别模型[UniRec-0.1B](https://arxiv.org/pdf/2512.21095)
 - **2025.07.10**: [SVTRv2](https://openaccess.thecvf.com/content/ICCV2025/html/Du_SVTRv2_CTC_Beats_Encoder-Decoder_Models_in_Scene_Text_Recognition_ICCV_2025_paper.html)被ICCV 2025接收. 详见[文档](./configs/rec/svtrv2/)
 - **2025.07.10**: [TextSSR](https://openaccess.thecvf.com/content/ICCV2025/papers/Ye_TextSSR_Diffusion-based_Data_Synthesis_for_Scene_Text_Recognition_ICCV_2025_paper.pdf) 被ICCV 2025接收. 详见[Code](https://github.com/YesianRohn/TextSSR).
