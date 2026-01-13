@@ -103,6 +103,7 @@ MODULE_MAPPING = {
     'CAMLabelEncode': '.cam_label_encode',
     'MDiffLabelEncode': '.mdiff_label_encode',
     'UniRecLabelEncode': '.unirec_label_encode',
+    'CMERProcessor': '.cmer_label_encode',
     'ABINetAug': '.rec_aug',
     'BDA': '.rec_aug',
     'PARSeqAug': '.rec_aug',

@@ -19,7 +19,7 @@ download_links:
   # CUTE80
   - https://drive.usercontent.google.com/download?id=1Zv_91c81tinLy5Je89HPr-5wUSnqXKIB&authuser=0&confirm=t
   - https://drive.usercontent.google.com/download?id=1OuJ6QoJ9AlyNHIM9j2WedAPxTnac7kyY&authuser=0&confirm=t
-filenames: 
+filenames:
   # IC15_1811
   - ../evaluation/IC15_1811/data.mdb
   - ../evaluation/IC15_1811/lock.mdb

@@ -19,6 +19,7 @@ module_mapping = {
     'LISTERLabelDecode': '.lister_postprocess',
     'MPGLabelDecode': '.mgp_postprocess',
     'UniRecLabelDecode': '.unirec_postprocess',
+    'CMERLabelDecode': '.cmer_postprocess',
     'GTCLabelDecode': '.'  # 当前模块中的类
 }
 

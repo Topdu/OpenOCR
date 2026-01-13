@@ -225,3 +225,52 @@ class CdistNetLR(object):
                 np.power(self.n_warmup_steps, -1.5) * current_step,
             ])
         return self.step2_lr / self.init_lr
+
+class WarmupCosineLR(object):
+    def __init__(self,
+                 epochs,
+                 step_each_epoch,
+                 warmup_steps=0,
+                 eta_min=0.0,
+                 last_epoch=-1,
+                 **kwargs):
+        super(WarmupCosineLR, self).__init__()
+        self.total_steps = epochs * step_each_epoch
+        self.warmup_steps = warmup_steps
+        self.eta_min = eta_min
+        self.last_epoch = last_epoch
+
+    def __call__(self, optimizer):
+        schedulers = []
+        milestones = []
+
+        # 1. Warmup Phase
+        if self.warmup_steps > 0:
+            warmup_scheduler = lr_scheduler.LinearLR(
+                optimizer,
+                start_factor=1e-7,
+                end_factor=1.0,
+                total_iters=self.warmup_steps
+            )
+            schedulers.append(warmup_scheduler)
+            milestones.append(self.warmup_steps)
+
+        # 2. Cosine Phase
+        remain_steps = max(1, self.total_steps - self.warmup_steps)
+        
+        cosine_scheduler = lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=remain_steps,
+            eta_min=self.eta_min
+        )
+        schedulers.append(cosine_scheduler)
+
+        if len(schedulers) == 1:
+            return schedulers[0]
+        else:
+            return lr_scheduler.SequentialLR(
+                optimizer, 
+                schedulers=schedulers, 
+                milestones=milestones,
+                last_epoch=self.last_epoch
+            )

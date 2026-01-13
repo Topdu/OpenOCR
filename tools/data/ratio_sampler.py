@@ -56,7 +56,8 @@ class RatioSampler(Sampler):
         self.base_im_w = base_im_w
 
         # Get the GPU and node related information
-        num_replicas = torch.cuda.device_count() if torch.cuda.is_available() else 1
+        num_replicas = torch.cuda.device_count() if torch.cuda.is_available(
+        ) else 1
         # rank = dist.get_rank()
         rank = (int(os.environ['LOCAL_RANK'])
                 if 'LOCAL_RANK' in os.environ else 0)

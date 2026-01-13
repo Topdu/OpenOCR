@@ -186,10 +186,10 @@ class DANDecoder(nn.Module):
                 torch.zeros(nB, dtype=torch.int64, device=feature.device) +
                 self.bos)
             dec_seq = torch.full((nB, nT),
-                                self.ignore_index,
-                                dtype=torch.int64,
-                                device=feature.get_device())
-            
+                                 self.ignore_index,
+                                 dtype=torch.int64,
+                                 device=feature.get_device())
+
             for i in range(0, nT):
                 hidden = self.rnn(torch.cat((C[i, :, :], prev_emb), dim=1),
                                   hidden)

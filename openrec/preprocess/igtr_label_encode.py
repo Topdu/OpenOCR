@@ -121,11 +121,13 @@ class IGTRLabelEncode(BaseRecLabelEncode):
             ques2_answer = []
             for q_2, ques2_idx in enumerate(ques2_char_idx.tolist()):
 
-                if (train_step == 2 or train_step == 3) and q_2 == ques_len - 1:
+                if (train_step == 2
+                        or train_step == 3) and q_2 == ques_len - 1:
                     new_ques2_char_idx.append(ques2_idx)
                     ques2_answer.append(1)
                     continue
-                if ques2_idx[1] != self.dict['<pad>'] and random.random() > 0.5:
+                if ques2_idx[1] != self.dict['<pad>'] and random.random(
+                ) > 0.5:
                     select_idx = random.randint(0, self.num_character - 3)
                     new_ques2_char_idx.append([ques2_idx[0], select_idx])
                     if select_idx == ques2_idx[1]:

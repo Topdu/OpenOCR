@@ -34,10 +34,10 @@ download_links:
   # SVT
   - https://drive.usercontent.google.com/download?id=1p7aVUr9Yr7c4X4YUBvk2-YP28rraHjn9&authuser=0&confirm=t
   - https://drive.usercontent.google.com/download?id=1ALmhvSleZ0yf-lcdbQPP3M9Zc3oqnXij&authuser=0&confirm=t
-  # CUTE80  
+  # CUTE80
   - https://drive.usercontent.google.com/download?id=1Ujr4axHKnu54P2rIGUhkjdM6XlhDYrI_&authuser=0&confirm=t
   - https://drive.usercontent.google.com/download?id=1DvZi9L3MqjO2zRUyCg3YvP4qMAt2bsme&authuser=0&confirm=t
-filenames: 
+filenames:
   # IC13_857
   - ../test/IC13_857/data.mdb
   - ../test/IC13_857/lock.mdb
