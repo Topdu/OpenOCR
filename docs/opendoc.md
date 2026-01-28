@@ -59,7 +59,29 @@ python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output 
 pip install gradio
 python demo_opendoc.py
 ```
+## ONNX
 
+### Download unirec-0.1b and PP-doclayoutV2 onnx model
+
+```
+https://github.com/predict-woo/paddle2onnx-PP-DocLayoutV2.git
+
+huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
+```
+### requirements
+```bash
+conda create -n opendoconnx python==3.12
+conda activate opendoconnx
+
+pip install paddlex
+pip install onnxruntime-gpu
+conda install cudnn
+pip install opencv-python
+```
+### Inference
+```bash
+python tools/infer_doc_onnx.py --input_path ../doc_img_or_pdf --output_path ./output --layout_model ./model_path --encoder_model ./model_path --decoder_model ./model_path --tokenizer_mapping ./path --device {cpu,cuda}
+```
 ## Citation
 
 If you find our method useful for your research, please cite:
