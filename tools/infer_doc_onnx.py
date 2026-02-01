@@ -5,7 +5,6 @@ from pathlib import Path
 
 import os
 import json
-import re
 import time
 import argparse
 from typing import Dict, Optional, Union, List, Tuple
@@ -27,6 +26,11 @@ from utils.opendoc_onnx_utils.utils import (
     untokenize_figure_of_table,
 )
 from to_markdown import MarkdownConverter
+from depolyment.unirec_onnx.infer_onnx import (
+    SimpleImageProcessor,
+    SimpleTokenizer,
+    clean_special_tokens,
+)
 
 # 创建全局 markdown_converter 实例
 markdown_converter = MarkdownConverter()
@@ -48,171 +52,6 @@ def _get_image_name_and_dir(result: Dict, output_path: str):
     os.makedirs(img_dir, exist_ok=True)
 
     return img_name, img_dir
-
-
-# ==================== Image Processor ====================
-class SimpleImageProcessor:
-    """Standalone image processor without transformers dependency."""
-
-    def __init__(
-            self,
-            max_side=(960, 1408),  # (width, height)
-            divided_factor=(64, 64),
-            image_mean=(0.5, 0.5, 0.5),
-            image_std=(0.5, 0.5, 0.5),
-    ):
-        self.max_side = max_side
-        self.divided_factor = divided_factor
-        self.image_mean = np.array(image_mean, dtype=np.float32)
-        self.image_std = np.array(image_std, dtype=np.float32)
-
-    def _calculate_target_size(self, original_width, original_height):
-        """Calculate target size with aspect ratio preservation."""
-        max_width, max_height = self.max_side
-        aspect_ratio = original_width / original_height
-
-        if original_width > max_width or original_height > max_height:
-            if (max_width / max_height) >= aspect_ratio:
-                new_height = max_height
-                new_width = int(new_height * aspect_ratio)
-            else:
-                new_width = max_width
-                new_height = int(new_width / aspect_ratio)
-        else:
-            new_width, new_height = original_width, original_height
-
-        # Apply divided factor
-        div_w, div_h = self.divided_factor
-        final_width = max(int(new_width // div_w * div_w), 64)
-        final_height = max(int(new_height // div_h * div_h), 64)
-
-        return (final_width, final_height)
-
-    def __call__(self, image):
-        """
-        Process image for model input.
-
-        Args:
-            image: PIL Image
-
-        Returns:
-            dict with 'pixel_values' as numpy array [1, 3, H, W]
-        """
-        if not isinstance(image, Image.Image):
-            raise ValueError('Input must be PIL Image')
-
-        original_width, original_height = image.size
-
-        # Resize
-        target_size = self._calculate_target_size(original_width,
-                                                  original_height)
-        image = image.resize(target_size, resample=Image.BICUBIC)
-
-        # Convert to numpy array [H, W, C] and normalize to [0, 1]
-        image_np = np.array(image, dtype=np.float32)[:, :, :3] / 255.0
-
-        # Normalize: (x - mean) / std
-        image_np = (image_np - self.image_mean) / self.image_std
-
-        # Transpose to [C, H, W]
-        image_np = image_np.transpose(2, 0, 1)
-
-        # Add batch dimension [1, C, H, W]
-        image_np = np.expand_dims(image_np, axis=0)
-
-        return {'pixel_values': image_np}
-
-
-# ==================== Tokenizer ====================
-class SimpleTokenizer:
-    """Standalone tokenizer without transformers dependency."""
-
-    def __init__(self, mapping_file=None):
-        """
-        Load vocabulary from mapping file.
-
-        Args:
-            mapping_file: path to unirec_tokenizer_mapping.json
-        """
-        if mapping_file and os.path.exists(mapping_file):
-            logger.info(f'Loading tokenizer from mapping file: {mapping_file}')
-            with open(mapping_file, 'r', encoding='utf-8') as f:
-                mapping_data = json.load(f)
-
-            # 直接使用 id_to_token 映射
-            self.id_to_token = {
-                int(k): v
-                for k, v in mapping_data['id_to_token'].items()
-            }
-            self.vocab_size = mapping_data['vocab_size']
-
-            # 特殊 token
-            special_tokens = mapping_data['special_tokens']
-            self.bos_token_id = special_tokens['bos_token_id']
-            self.eos_token_id = special_tokens['eos_token_id']
-            self.pad_token_id = special_tokens['pad_token_id']
-
-            logger.info(f'✅ Loaded vocabulary with {self.vocab_size} tokens')
-        else:
-            raise ValueError(
-                f"Tokenizer mapping file not found: {mapping_file}")
-
-    def decode(self, token_ids, skip_special_tokens=False):
-        """
-        Decode token IDs to text.
-
-        Args:
-            token_ids: list of token IDs
-            skip_special_tokens: whether to skip special tokens
-
-        Returns:
-            decoded text string
-        """
-        tokens = []
-        for token_id in token_ids:
-            if token_id in self.id_to_token:
-                token = self.id_to_token[token_id]
-
-                # Skip special tokens if requested
-                if skip_special_tokens and token_id in [
-                        self.bos_token_id, self.eos_token_id, self.pad_token_id
-                ]:
-                    continue
-
-                tokens.append(token)
-            else:
-                tokens.append(f'<unk_{token_id}>')
-
-        # Join tokens
-        text = ''.join(tokens)
-
-        return text
-
-
-def clean_special_tokens(text):
-    """Clean special tokens from decoded text."""
-    # Remove special formatting tokens
-    text = text.replace('Ġ', ' ').replace('Ċ', '\n')
-    text = text.replace('<|bos|>', '').replace('<|eos|>',
-                                               '').replace('<|pad|>', '')
-
-    # Apply regex rules
-    rules = [
-        (r'-<\|sn\|>', ''),
-        (r' <\|sn\|>', ' '),
-        (r'<\|sn\|>', ' '),
-        (r'<\|unk\|>', ''),
-        (r'<s>', ''),
-        (r'</s>', ''),
-        (r'\uffff', ''),
-        (r'_{4,}', '___'),
-        (r'\.{4,}', '...'),
-    ]
-
-    for pattern, replacement in rules:
-        text = re.sub(pattern, replacement, text)
-
-    return text
 
 
 # ==================== Layout Detection ONNX ====================
