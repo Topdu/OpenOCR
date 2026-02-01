@@ -50,7 +50,7 @@ class BaseRecLabelEncode(object):
         text_re = []
         c_current = ''
         for c in text:
-            if not bool(re.search('[a-zA-Z0-9 :*./%+-١٢٣٤٥٦٧٨٩٠]', c)):
+            if not bool(re.search('[a-zA-Z0-9 :*./%+١٢٣٤٥٦٧٨٩٠-]', c)):
                 if c_current != '':
                     text_re.append(c_current)
                 text_re.append(c)
