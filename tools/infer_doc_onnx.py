@@ -30,6 +30,7 @@ from depolyment.unirec_onnx.infer_onnx import (
     SimpleImageProcessor,
     SimpleTokenizer,
     clean_special_tokens,
+    UniRecONNXInference
 )
 
 # 创建全局 markdown_converter 实例
@@ -275,7 +276,7 @@ class LayoutDetectorONNX:
         # 给每个 label 添加顺序编号
         for idx, box in enumerate(result_dict['boxes'], start=1):
             base_label = box['label']
-            box['label'] = f"{base_label}_{idx: 02d}"
+            box['label'] = f"{base_label}_{idx:02d}"
 
         # 裁剪图像区域
         blocks = self.crop_by_boxes(image, result_dict['boxes'])
@@ -332,167 +333,6 @@ class LayoutDetectorONNX:
         return results
 
 
-# ==================== UniRec ONNX Inference ====================
-class UniRecONNXInference:
-    """ONNX-based inference for UniRec model."""
-
-    def __init__(
-            self,
-            encoder_path: str,
-            decoder_path: str,
-            mapping_path: str,
-            device: str = 'cpu',  # 'auto', 'cuda', 'cpu'
-    ):
-        """Initialize ONNX inference sessions."""
-
-        # Determine execution providers based on device
-        # 设置ONNX Runtime的执行提供者
-        providers = []
-        if device == 'cuda':
-            providers.append('CUDAExecutionProvider')
-        providers.append('CPUExecutionProvider')
-        # logger.info(f'   Using providers: {providers}')
-
-        # Create ONNX runtime sessions
-        sess_options = ort.SessionOptions()
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.decoder_session = ort.InferenceSession(decoder_path,
-                                                    sess_options,
-                                                    providers=providers)
-        self.encoder_session = ort.InferenceSession(encoder_path,
-                                                    sess_options,
-                                                    providers=providers)
-
-        # Log actual provider being used
-        _ = self.encoder_session.get_providers()[0]  # noqa: F841
-
-        # Initialize processor and tokenizer
-        self.processor = SimpleImageProcessor()
-        self.tokenizer = SimpleTokenizer(mapping_file=mapping_path)
-
-        # Get model info from decoder session
-        self.num_decoder_layers = None
-        self.num_heads = None
-        self.head_dim = None
-
-        for inp in self.decoder_session.get_inputs():
-            if 'past_key' in inp.name:
-                layer_idx = int(inp.name.split('_')[-1])
-                if self.num_decoder_layers is None or layer_idx + 1 > self.num_decoder_layers:
-                    self.num_decoder_layers = layer_idx + 1
-                if len(inp.shape) == 4:
-                    if self.num_heads is None and isinstance(
-                            inp.shape[1], int):
-                        self.num_heads = inp.shape[1]
-                    if self.head_dim is None and isinstance(inp.shape[3], int):
-                        self.head_dim = inp.shape[3]
-
-        # Calculate d_model
-        if self.num_heads and self.head_dim:
-            self.d_model = self.num_heads * self.head_dim
-        else:
-            self.d_model = None
-
-    def encode_image(self, image):
-        """Encode image using encoder ONNX model."""
-        data_img = self.processor(image)
-        pixel_values = data_img['pixel_values']
-
-        encoder_outputs = self.encoder_session.run(
-            None, {'pixel_values': pixel_values.astype(np.float32)})
-
-        encoder_hidden_states = encoder_outputs[0]
-        cross_k = encoder_outputs[1]
-        cross_v = encoder_outputs[2]
-
-        return encoder_hidden_states, cross_k, cross_v
-
-    def decode_step(self,
-                    input_id,
-                    past_length,
-                    cross_k,
-                    cross_v,
-                    past_key_values,
-                    padding_idx=1):
-        """Unified decoder step with or without cache."""
-        input_ids = np.array([[input_id]], dtype=np.int64)
-        position_ids = np.array([[padding_idx + 1 + past_length]],
-                                dtype=np.int64)
-
-        decoder_inputs = {
-            'input_ids': input_ids,
-            'position_ids': position_ids,
-            'cross_k': cross_k.astype(np.float32),
-            'cross_v': cross_v.astype(np.float32),
-        }
-
-        for i, (past_key, past_value) in enumerate(past_key_values):
-            decoder_inputs[f'past_key_{i}'] = past_key.astype(np.float32)
-            decoder_inputs[f'past_value_{i}'] = past_value.astype(np.float32)
-
-        decoder_outputs = self.decoder_session.run(None, decoder_inputs)
-        logits = decoder_outputs[0]
-
-        present_key_values = []
-        for i in range(self.num_decoder_layers):
-            key = decoder_outputs[1 + i * 2]
-            value = decoder_outputs[1 + i * 2 + 1]
-            present_key_values.append((key, value))
-
-        return logits, present_key_values
-
-    def generate(self,
-                 image,
-                 max_length=2048,
-                 bos_token_id=None,
-                 eos_token_id=None,
-                 pad_token_id=None):
-        """Generate text from image."""
-        if bos_token_id is None:
-            bos_token_id = self.tokenizer.bos_token_id
-        if eos_token_id is None:
-            eos_token_id = self.tokenizer.eos_token_id
-        if pad_token_id is None:
-            pad_token_id = self.tokenizer.pad_token_id
-
-        encoder_hidden_states, cross_k, cross_v = self.encode_image(image)
-        generated_ids = [bos_token_id]
-
-        batch_size = encoder_hidden_states.shape[0]
-        past_key_values = []
-        for _ in range(self.num_decoder_layers):
-            empty_key = np.zeros(
-                (batch_size, self.num_heads, 0, self.head_dim),
-                dtype=np.float32)
-            empty_value = np.zeros(
-                (batch_size, self.num_heads, 0, self.head_dim),
-                dtype=np.float32)
-            past_key_values.append((empty_key, empty_value))
-
-        for step in range(max_length - 1):
-            current_token = generated_ids[-1]
-            past_length = step
-
-            logits, past_key_values = self.decode_step(
-                current_token,
-                past_length,
-                cross_k,
-                cross_v,
-                past_key_values,
-                padding_idx=pad_token_id)
-
-            next_token_id = int(np.argmax(logits[0, -1, :]))
-            generated_ids.append(next_token_id)
-
-            if next_token_id == eos_token_id:
-                break
-
-        generated_text = self.tokenizer.decode(generated_ids,
-                                               skip_special_tokens=False)
-        cleaned_text = clean_special_tokens(generated_text)
-
-        return cleaned_text, generated_ids
-
 
 # ==================== OpenDoc ONNX Pipeline ====================
 class OpenDocONNX:
@@ -528,8 +368,7 @@ class OpenDocONNX:
 
         # Markdown忽略的标签
         self.markdown_ignore_labels = [
-            'number', 'footnote', 'header', 'header_image', 'footer',
-            'footer_image', 'aside_text'
+            'number', 'footnote', 'header', 'footer', 'aside_text', 'footer_image', 'header_image','chart'
         ]
 
         # 初始化版面检测模型
@@ -543,8 +382,7 @@ class OpenDocONNX:
         self.vlm_recognizer = UniRecONNXInference(
             encoder_path=unirec_encoder_path,
             decoder_path=unirec_decoder_path,
-            mapping_path=tokenizer_mapping_path,
-            device=device)
+            mapping_path=tokenizer_mapping_path)
 
 
     def predict(
@@ -744,6 +582,10 @@ class OpenDocONNX:
             base_label = block_label.rsplit(
                 '_', 1)[0] if '_' in block_label and block_label.rsplit(
                     '_', 1)[1].isdigit() else block_label
+
+            # 判断是否是合并块的后续部分（img 为 None 表示是合并块的后续部分）
+            is_merged_continuation = block_img is None
+
             if base_label in image_labels and block_img is not None:
                 x_min, y_min, x_max, y_max = list(map(int, block_bbox))
                 img_path = f'imgs/img_in_{base_label}_box_{x_min}_{y_min}_{x_max}_{y_max}.jpg'
@@ -756,7 +598,8 @@ class OpenDocONNX:
                     'text': '',
                     'text_unirec': '',
                     'is_image': True,
-                    'img_path': img_path
+                    'img_path': img_path,
+                    'is_merged_continuation': False
                 })
             else:
                 recognition_results.append({
@@ -765,7 +608,8 @@ class OpenDocONNX:
                     'score': block.get('score', 1.0),
                     'text': block_content,
                     'text_unirec': block_content,
-                    'is_image': False
+                    'is_image': False,
+                    'is_merged_continuation': is_merged_continuation
                 })
 
         total_time = time.time() - start_time
@@ -788,7 +632,6 @@ class OpenDocONNX:
         if 'layout_results' in result:
             del result['layout_results']
 
-        # 移除包含 ndarray 的 blocks 字段，无法序列化为 JSON
         if 'blocks' in result:
             del result['blocks']
 
@@ -816,6 +659,8 @@ class OpenDocONNX:
             original_image.shape[1] if original_image is not None else 1)
 
         with open(md_path, 'w', encoding='utf-8') as f:
+            pending_text = []  # 用于收集合并块的文本
+            pending_label = None  # 当前合并块的标签类型
 
             for rec in result['recognition_results']:
                 # 获取基础标签名（去除编号后缀，如 text_01 -> text）
@@ -830,6 +675,12 @@ class OpenDocONNX:
 
                 # 处理图片类型
                 if rec.get('is_image', False):
+                    # 先输出之前累积的文本
+                    if pending_text:
+                        self._write_merged_text(f, pending_text, pending_label)
+                        pending_text = []
+                        pending_label = None
+
                     img_path = rec.get('img_path', '')
                     if img_path and original_image is not None:
                         # 从bbox裁剪并保存图片
@@ -858,17 +709,40 @@ class OpenDocONNX:
                 if not text:
                     continue
 
-                # 根据标签类型格式化输出
-                if 'title' in base_label or base_label == 'doc_title':
-                    f.write(f"## {text}\n\n")
-                elif 'table' in base_label:
-                    f.write(f"{text}\n\n")
-                elif 'formula' in base_label or base_label == 'equation':
-                    f.write(f"$${text}$$\n\n")
-                else:
-                    f.write(f"{text}\n\n")
+                # 检查是否是合并块的后续部分
+                is_merged_continuation = rec.get('is_merged_continuation', False)
 
-        # logger.info(f"  Saved Markdown to {md_path}")
+                if is_merged_continuation and pending_text:
+                    # 是合并块的后续部分，追加文本
+                    pending_text.append(text)
+                else:
+                    # 先输出之前累积的文本
+                    if pending_text:
+                        self._write_merged_text(f, pending_text, pending_label)
+                        pending_text = []
+                        pending_label = None
+
+                    # 开始新的文本块
+                    pending_text.append(text)
+                    pending_label = base_label
+
+            # 输出最后累积的文本
+            if pending_text:
+                self._write_merged_text(f, pending_text, pending_label)
+
+    def _write_merged_text(self, f, texts: List[str], base_label: str):
+        """将合并的文本写入文件"""
+        merged_text = ' '.join(texts)
+
+        # 根据标签类型格式化输出
+        if 'title' in base_label or base_label == 'doc_title':
+            f.write(f"## {merged_text}\n\n")
+        elif 'table' in base_label:
+            f.write(f"{merged_text}\n\n")
+        elif 'formula' in base_label or base_label == 'equation':
+            f.write(f"$${merged_text}$$\n\n")
+        else:
+            f.write(f"{merged_text}\n\n")
 
     def save_visualization(self, result: Dict, output_path: str):
         """保存可视化结果"""
