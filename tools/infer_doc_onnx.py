@@ -71,7 +71,6 @@ class LayoutDetectorONNX:
             threshold: 检测阈值
         """
         self.threshold = threshold
-        logger.info(f"Loading layout detection ONNX model from {model_path}")
 
         # 设置ONNX Runtime的执行提供者
         providers = []
@@ -92,7 +91,6 @@ class LayoutDetectorONNX:
             output.name for output in self.session.get_outputs()
         ]
 
-        logger.info(f"✅ Layout model loaded successfully on {device}")
         logger.info(f"   Input names: {self.input_names}")
         logger.info(f"   Output names: {self.output_names}")
 
@@ -346,7 +344,6 @@ class UniRecONNXInference:
             device: str = 'cpu',  # 'auto', 'cuda', 'cpu'
     ):
         """Initialize ONNX inference sessions."""
-        logger.info('Loading UniRec ONNX models...')
 
         # Determine execution providers based on device
         # 设置ONNX Runtime的执行提供者
@@ -368,7 +365,6 @@ class UniRecONNXInference:
 
         # Log actual provider being used
         _ = self.encoder_session.get_providers()[0]  # noqa: F841
-        # logger.info(f'   Active provider: {actual_provider}')
 
         # Initialize processor and tokenizer
         self.processor = SimpleImageProcessor()
@@ -396,13 +392,6 @@ class UniRecONNXInference:
             self.d_model = self.num_heads * self.head_dim
         else:
             self.d_model = None
-
-        logger.info('✅ UniRec models loaded successfully!')
-        # logger.info(f'   Number of decoder layers: {self.num_decoder_layers}')
-        # logger.info(f'   Number of attention heads: {self.num_heads}')
-        # logger.info(f'   Head dimension: {self.head_dim}')
-        # logger.info(f'   Model dimension (d_model): {self.d_model}')
-        # logger.info(f'   Vocabulary size: {self.tokenizer.vocab_size}')
 
     def encode_image(self, image):
         """Encode image using encoder ONNX model."""
@@ -557,7 +546,6 @@ class OpenDocONNX:
             mapping_path=tokenizer_mapping_path,
             device=device)
 
-        logger.info('✅ OpenDoc ONNX Pipeline initialized successfully')
 
     def predict(
         self,
@@ -992,10 +980,6 @@ def main():
     # 创建输出目录
     os.makedirs(args.output_path, exist_ok=True)
 
-    # 初始化Pipeline
-    logger.info('=' * 80)
-    logger.info('Initializing OpenDoc ONNX Pipeline')
-    logger.info('=' * 80)
 
     opendoc_onnx = OpenDocONNX(
         layout_model_path=args.layout_model,
