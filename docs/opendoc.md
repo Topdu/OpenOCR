@@ -73,9 +73,7 @@ huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
 conda create -n opendoconnx python==3.12
 conda activate opendoconnx
 
-pip install paddlex
 pip install onnxruntime-gpu
-conda install cudnn
 pip install opencv-python
 ```
 ### Inference
