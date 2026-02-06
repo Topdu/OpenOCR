@@ -37,3 +37,9 @@ test_tipc/web/models/
 test_tipc/web/node_modules/
 ppocr/
 .idea/
+openocr/
+openocr_python.egg-info/
+gradio_outputs/
+openocr_test_images/
+openocr_output/
+test_output/

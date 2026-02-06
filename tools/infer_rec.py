@@ -164,6 +164,7 @@ class OpenRecognizer:
                  mode='mobile',
                  backend='torch',
                  onnx_model_path=None,
+                 use_gpu='auto',
                  numId=0):
         """
         Args:
@@ -171,12 +172,30 @@ class OpenRecognizer:
             mode (str, optional): 模式，'server' 或 'mobile'。默认为'mobile'。
             backend (str): 'torch' 或 'onnx'
             onnx_model_path (str): ONNX模型路径（仅当backend='onnx'时需要）
+            use_gpu (str, optional): GPU使用策略，可选值为'auto'/'true'/'false'。默认为'auto'。
             numId (int, optional): 设备编号。默认为0。
         """
 
         if config is None:
             config_file = DEFAULT_CFG_PATH_REC_SERVER if mode == 'server' else DEFAULT_CFG_PATH_REC
             config = Config(config_file).cfg
+
+        # Parse use_gpu parameter
+        if use_gpu == 'auto':
+            try:
+                import torch
+                device = 'gpu' if torch.cuda.is_available() else 'cpu'
+            except:
+                device = 'cpu'
+        elif use_gpu == 'true':
+            device = 'gpu'
+        elif use_gpu == 'false':
+            device = 'cpu'
+        else:
+            raise ValueError(f"use_gpu must be 'auto', 'true', or 'false', got '{use_gpu}'")
+
+        config['Global']['device'] = device
+
         self.cfg = config
         # 公共初始化
         self._init_common()
@@ -199,7 +218,7 @@ class OpenRecognizer:
                 else:
                     raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_rec_engine = ONNXEngine(
-                onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
+                onnx_model_path, use_gpu=(device == 'gpu'))
         else:
             raise ValueError("backend参数必须是'torch'或'onnx'")
 

@@ -13,10 +13,10 @@ import cv2
 import numpy as np
 from PIL import Image
 import onnxruntime as ort
-from utils.logging import get_logger
-from utils.utility import get_image_file_list
+from tools.utils.logging import get_logger
+from tools.utils.utility import get_image_file_list
 
-from utils.opendoc_onnx_utils.utils import (
+from tools.utils.opendoc_onnx_utils.utils import (
     convert_otsl_to_html,
     crop_margin,
     filter_overlap_boxes,
@@ -25,12 +25,9 @@ from utils.opendoc_onnx_utils.utils import (
     truncate_repetitive_content,
     untokenize_figure_of_table,
 )
-from to_markdown import MarkdownConverter
-from depolyment.unirec_onnx.infer_onnx import (
-    SimpleImageProcessor,
-    SimpleTokenizer,
-    clean_special_tokens,
-    UniRecONNXInference
+from tools.to_markdown import MarkdownConverter
+from tools.infer_unirec_onnx import (
+    UniRecONNX
 )
 
 # 创建全局 markdown_converter 实例
@@ -41,6 +38,145 @@ logger = get_logger(name='opendoc_onnx')
 root_dir = Path(__file__).resolve().parent
 
 IMAGE_LABELS = ['image', 'header_image', 'footer_image', 'seal']
+
+
+def download_layout_model(model_dir=None):
+    """Download layout detection ONNX model from ModelScope or HuggingFace.
+
+    Args:
+        model_dir: Directory to save model file. If None, use default cache directory.
+
+    Returns:
+        Path to the downloaded model file
+    """
+    # Use default cache directory if not specified
+    if model_dir is None:
+        cache_dir = Path.home() / '.cache' / 'openocr'
+        model_dir = cache_dir / 'PP_DoclayoutV2_onnx'
+    else:
+        model_dir = Path(model_dir)
+
+    model_dir.mkdir(parents=True, exist_ok=True)
+
+    model_file = 'PP-DoclayoutV2.onnx'
+    model_path = model_dir / model_file
+
+    # Check if model already exists
+    if model_path.exists():
+        logger.info(f'✅ Layout model found in {model_dir}')
+        return str(model_path)
+
+    logger.info(f'📥 Downloading layout model to {model_dir}...')
+
+    download_success = False
+
+    try:
+        # Try ModelScope first (default)
+        logger.info('🌐 Trying ModelScope (China mirror) first...')
+        try:
+            from modelscope import snapshot_download
+            downloaded_path = snapshot_download(
+                'topdktu/PP_DoclayoutV2_onnx',
+                cache_dir=str(model_dir.parent)
+            )
+            logger.info(f'✅ Downloaded to {downloaded_path}')
+
+            # Copy file to target directory
+            import shutil
+            src = Path(downloaded_path) / model_file
+            if src.exists() and not model_path.exists():
+                shutil.copy(str(src), str(model_path))
+                logger.info(f'  ✓ {model_file}')
+
+            # Verify file exists after download
+            if model_path.exists():
+                download_success = True
+                logger.info('✅ Layout model downloaded successfully from ModelScope!')
+            else:
+                logger.info('⚠️  ModelScope download incomplete, trying HuggingFace...')
+
+        except ImportError:
+            logger.info('ModelScope not installed. Install with: pip install modelscope')
+            logger.info('Trying HuggingFace...')
+        except Exception as e:
+            logger.info(f'ModelScope download failed: {e}')
+            logger.info('Trying HuggingFace...')
+
+        if not download_success:
+            # Try HuggingFace
+            logger.info('🌐 Using HuggingFace...')
+            try:
+                from huggingface_hub import hf_hub_download
+                logger.info(f'  Downloading {model_file}...')
+                downloaded_path = hf_hub_download(
+                    repo_id='topdu/PP_DoclayoutV2_onnx',
+                    filename=model_file,
+                    cache_dir=str(model_dir.parent),
+                    local_dir=str(model_dir),
+                    local_dir_use_symlinks=False
+                )
+                logger.info(f'  ✓ {model_file}')
+
+                # Verify file exists after download
+                if model_path.exists():
+                    download_success = True
+                    logger.info('✅ Layout model downloaded successfully from HuggingFace!')
+
+            except ImportError:
+                raise ImportError('HuggingFace Hub not installed. Install with: pip install huggingface_hub')
+
+        if not download_success:
+            raise RuntimeError(
+                'Failed to download layout model. Please manually download from:\n'
+                '  - https://huggingface.co/topdu/PP_DoclayoutV2_onnx\n'
+                '  - https://modelscope.cn/models/topdktu/PP_DoclayoutV2_onnx'
+            )
+
+    except Exception as e:
+        logger.error(f'❌ Failed to download layout model: {e}')
+        raise
+
+    return str(model_path)
+
+
+def check_and_download_layout_model(model_path, auto_download=True):
+    """Check if layout model exists, download if missing.
+
+    Args:
+        model_path: Path to layout model file
+        auto_download: If True, automatically download missing model
+
+    Returns:
+        Path to the model file
+    """
+    if model_path and os.path.exists(model_path):
+        return model_path
+
+    if not auto_download:
+        if not model_path or not os.path.exists(model_path):
+            logger.error(f'⚠️  Layout model not found: {model_path}')
+            logger.info('\n📝 Manual download instructions:')
+            logger.info('   1. Visit: https://huggingface.co/topdu/PP_DoclayoutV2_onnx')
+            logger.info('   2. Download PP-DoclayoutV2.onnx')
+            logger.info('   3. Specify path with --layout_model argument')
+            raise FileNotFoundError(f'Layout model not found: {model_path}')
+
+    # Determine model directory from model path
+    default_path = str(Path.home() / '.cache' / 'openocr' / 'PP_DoclayoutV2_onnx' / 'PP-DoclayoutV2.onnx')
+    if model_path and model_path != default_path:
+        # User specified a custom path
+        model_dir = os.path.dirname(model_path)
+    else:
+        # Use default cache directory
+        model_dir = None
+
+    # Try ModelScope first (faster in China), then HuggingFace
+    try:
+        logger.info('🇨🇳 Trying ModelScope (China mirror) first...')
+        return download_layout_model(model_dir)
+    except:
+        logger.info('🌍 Trying HuggingFace...')
+        return download_layout_model(model_dir)
 
 
 def _get_image_name_and_dir(result: Dict, output_path: str):
@@ -61,23 +197,26 @@ class LayoutDetectorONNX:
 
     def __init__(self,
                  model_path: str,
-                 device: str = 'cpu',
-                 threshold: float = 0.5):
+                 use_gpu: Optional[bool] = None,
+                 threshold: float = 0.5,
+                 auto_download: bool = True):
         """
         初始化ONNX版面检测模型
 
         Args:
             model_path: ONNX模型路径
-            device: 'cpu' 或 'cuda'
+            use_gpu: Whether to use GPU. If None, auto-detect. If True, force GPU. If False, force CPU.
             threshold: 检测阈值
+            auto_download: If True, automatically download missing model
         """
         self.threshold = threshold
 
-        # 设置ONNX Runtime的执行提供者
-        providers = []
-        if device == 'cuda':
-            providers.append('CUDAExecutionProvider')
-        providers.append('CPUExecutionProvider')
+        # Check and download model if needed
+        model_path = check_and_download_layout_model(model_path, auto_download=auto_download)
+
+        # Determine execution providers
+        providers = self._get_execution_providers(use_gpu)
+        logger.info(f'Layout detector using: {providers[0]}')
 
         # 创建ONNX Runtime会话
         sess_options = ort.SessionOptions()
@@ -122,6 +261,48 @@ class LayoutDetectorONNX:
             23: 'vertical_text',
             24: 'vision_footnote'
         }
+
+    def _get_execution_providers(self, use_gpu):
+        """Determine execution providers based on GPU availability and user preference.
+
+        Args:
+            use_gpu: None (auto-detect), True (force GPU), or False (force CPU)
+
+        Returns:
+            List of execution providers in priority order
+        """
+        available_providers = ort.get_available_providers()
+
+        if use_gpu is False:
+            # Force CPU
+            logger.info('🔧 User specified: Using CPU for layout detection')
+            return ['CPUExecutionProvider']
+
+        # Check for GPU providers
+        gpu_providers = []
+        if 'TensorrtExecutionProvider' in available_providers:
+            gpu_providers.append('TensorrtExecutionProvider')
+        if 'CUDAExecutionProvider' in available_providers:
+            gpu_providers.append('CUDAExecutionProvider')
+
+        if use_gpu is True:
+            # Force GPU
+            if gpu_providers:
+                logger.info(f'🔧 User specified: Using GPU for layout detection ({gpu_providers[0]})')
+                return gpu_providers + ['CPUExecutionProvider']
+            else:
+                logger.warning('⚠️  GPU requested but not available, falling back to CPU')
+                return ['CPUExecutionProvider']
+
+        # Auto-detect (use_gpu is None)
+        if gpu_providers:
+            logger.info(f'✅ GPU detected for layout detection: Using {gpu_providers[0]}')
+            return gpu_providers + ['CPUExecutionProvider']
+        else:
+            logger.info('ℹ️  No GPU detected for layout detection, using CPU')
+            return ['CPUExecutionProvider']
+
+
 
     def crop_by_boxes(self, image: np.ndarray,
                       boxes: List[Dict]) -> List[Dict]:
@@ -340,76 +521,136 @@ class OpenDocONNX:
 
     def __init__(
         self,
-        layout_model_path: str,
-        unirec_encoder_path: str,
-        unirec_decoder_path: str,
-        tokenizer_mapping_path: str,
-        device: str = 'cpu',
+        layout_model_path: Optional[str] = None,
+        unirec_encoder_path: Optional[str] = None,
+        unirec_decoder_path: Optional[str] = None,
+        tokenizer_mapping_path: Optional[str] = None,
+        use_gpu: Optional[bool] = None,
         layout_threshold: float = 0.5,
         use_layout_detection: bool = True,
         use_chart_recognition: bool = True,
+        auto_download: bool = True,
     ):
         """
         初始化OpenDoc ONNX Pipeline
 
         Args:
-            layout_model_path: 版面检测ONNX模型路径
-            unirec_encoder_path: UniRec编码器ONNX模型路径
-            unirec_decoder_path: UniRec解码器ONNX模型路径
-            tokenizer_mapping_path: Tokenizer映射文件路径
-            device: 'cpu' 或 'cuda'
+            layout_model_path: 版面检测ONNX模型路径. If None, use default cache directory.
+            unirec_encoder_path: UniRec编码器ONNX模型路径. If None, use default cache directory.
+            unirec_decoder_path: UniRec解码器ONNX模型路径. If None, use default cache directory.
+            tokenizer_mapping_path: Tokenizer映射文件路径. If None, use default cache directory.
+            use_gpu: Whether to use GPU. If None, auto-detect. If True, force GPU. If False, force CPU.
             layout_threshold: 版面检测阈值
             use_layout_detection: 是否使用版面检测
             use_chart_recognition: 是否识别图表
+            auto_download: If True, automatically download missing models
         """
-        self.device = device
         self.use_layout_detection = use_layout_detection
         self.use_chart_recognition = use_chart_recognition
+
+        # Set default paths if not provided
+        if layout_model_path is None:
+            cache_dir = Path.home() / '.cache' / 'openocr'
+            layout_model_path = str(cache_dir / 'PP_DoclayoutV2_onnx' / 'PP-DoclayoutV2.onnx')
 
         # Markdown忽略的标签
         self.markdown_ignore_labels = [
             'number', 'footnote', 'header', 'footer', 'aside_text', 'footer_image', 'header_image','chart'
         ]
 
+        # 为所有25种标签类型定义不同的颜色 (BGR格式)
+        self.colors = {
+            'abstract': (255, 128, 0),        # 橙色
+            'algorithm': (128, 0, 255),       # 紫色
+            'aside_text': (128, 128, 128),    # 灰色
+            'chart': (0, 255, 255),           # 青色
+            'content': (0, 255, 0),           # 绿色
+            'display_formula': (255, 0, 255), # 品红
+            'doc_title': (255, 0, 0),         # 红色
+            'figure_title': (255, 128, 128),  # 浅红
+            'footer': (64, 64, 64),           # 深灰
+            'footer_image': (128, 64, 0),     # 棕色
+            'footnote': (192, 192, 192),      # 浅灰
+            'formula_number': (255, 128, 255),# 浅品红
+            'header': (96, 96, 96),           # 中灰
+            'header_image': (0, 128, 128),    # 深青
+            'image': (0, 255, 255),           # 青色
+            'inline_formula': (200, 0, 200),  # 深品红
+            'number': (128, 255, 0),          # 黄绿
+            'paragraph_title': (255, 64, 0),  # 橙红
+            'reference': (0, 128, 255),       # 天蓝
+            'reference_content': (128, 192, 255), # 浅蓝
+            'seal': (0, 0, 128),              # 深蓝
+            'table': (0, 0, 255),             # 蓝色
+            'text': (0, 200, 0),              # 深绿
+            'vertical_text': (128, 255, 128), # 浅绿
+            'vision_footnote': (160, 160, 160) # 中浅灰
+        }
+
         # 初始化版面检测模型
         if use_layout_detection:
             self.layout_detector = LayoutDetectorONNX(
-                layout_model_path, device=device, threshold=layout_threshold)
+                layout_model_path, use_gpu=use_gpu, threshold=layout_threshold, auto_download=auto_download)
         else:
             self.layout_detector = None
 
         # 初始化VLM模型
-        self.vlm_recognizer = UniRecONNXInference(
+        self.vlm_recognizer = UniRecONNX(
             encoder_path=unirec_encoder_path,
             decoder_path=unirec_decoder_path,
-            mapping_path=tokenizer_mapping_path)
+            mapping_path=tokenizer_mapping_path,
+            use_gpu=use_gpu,
+            auto_download=auto_download)
 
 
-    def predict(
+    def __call__(
         self,
-        image_path: str,
+        img_path: Optional[str] = None,
+        img_numpy: Optional[np.ndarray] = None,
+        image_path: Optional[str] = None,
         layout_threshold: Optional[float] = None,
         max_length: int = 2048,
         merge_layout_blocks: bool = True,
     ) -> Dict:
         """
-        对单张图像进行预测，仿照 get_layout_parsing_results 的逻辑
+        Unified interface for OpenDoc inference.
 
         Args:
-            image_path: 图像路径
-            layout_threshold: 版面检测阈值
-            max_length: VLM最大生成长度
-            merge_layout_blocks: 是否合并布局块
+            img_path: Path to input image (str or Path)
+            img_numpy: Input image as numpy array (BGR format)
+            image_path: Alias for img_path (for backward compatibility)
+            layout_threshold: Layout detection threshold
+            max_length: VLM maximum generation length
+            merge_layout_blocks: Whether to merge layout blocks
 
         Returns:
-            预测结果字典
+            Prediction result dictionary
         """
+        # Handle backward compatibility: image_path is alias for img_path
+        if image_path is not None and img_path is None:
+            img_path = image_path
+
+        # Load image from path or numpy array
+        is_temp_file = False
+        if img_path is not None:
+            actual_path = img_path
+        elif img_numpy is not None:
+            # For numpy array input, we need to save it temporarily
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
+                tmp_path = tmp_file.name
+                cv2.imwrite(tmp_path, img_numpy)
+            actual_path = tmp_path
+            is_temp_file = True
+        else:
+            raise ValueError('Either img_path or img_numpy must be provided')
+
         start_time = time.time()
 
         # 读取图像
-        image = cv2.imread(image_path)
+        image = cv2.imread(actual_path)
         if image is None:
-            raise ValueError(f"Failed to read image: {image_path}")
+            raise ValueError(f"Failed to read image: {actual_path}")
 
         ori_h, ori_w = image.shape[:2]
 
@@ -519,8 +760,8 @@ class OpenDocONNX:
             pil_image = Image.fromarray(block_img_rgb)
 
             try:
-                text, token_ids = self.vlm_recognizer.generate(
-                    pil_image, max_length=max_length)
+                text, token_ids = self.vlm_recognizer(
+                    image=pil_image, max_length=max_length)
             except Exception as e:
                 logger.error(f"  Error processing block: {e}")
                 text = ''
@@ -589,8 +830,9 @@ class OpenDocONNX:
             if base_label in image_labels and block_img is not None:
                 x_min, y_min, x_max, y_max = list(map(int, block_bbox))
                 img_path = f'imgs/img_in_{base_label}_box_{x_min}_{y_min}_{x_max}_{y_max}.jpg'
-                if img_path in drop_figures_set:
-                    continue
+                # 不跳过表格中的图片，需要保存它们
+                # if img_path in drop_figures_set:
+                #     continue
                 recognition_results.append({
                     'label': block_label,
                     'bbox': block_bbox,
@@ -599,7 +841,8 @@ class OpenDocONNX:
                     'text_unirec': '',
                     'is_image': True,
                     'img_path': img_path,
-                    'is_merged_continuation': False
+                    'is_merged_continuation': False,
+                    'in_table': img_path in drop_figures_set  # 标记是否在表格中
                 })
             else:
                 recognition_results.append({
@@ -615,8 +858,8 @@ class OpenDocONNX:
         total_time = time.time() - start_time
         logger.info(f"  Total time: {total_time: .3f}s")
 
-        return {
-            'input_path': image_path,
+        result = {
+            'input_path': actual_path if not is_temp_file else '<numpy_array>',
             'width': ori_w,
             'height': ori_h,
             'layout_results': layout_results,
@@ -626,6 +869,12 @@ class OpenDocONNX:
                 'total': total_time,
             }
         }
+
+        # Clean up temporary file if created
+        if is_temp_file and os.path.exists(actual_path):
+            os.remove(actual_path)
+
+        return result
 
     def save_to_json(self, result: Dict, output_path: str):
         """保存结果为JSON"""
@@ -658,6 +907,21 @@ class OpenDocONNX:
             'width',
             original_image.shape[1] if original_image is not None else 1)
 
+        # 保存所有图片区域（包括表格中的图片）
+        if original_image is not None:
+            for rec in result['recognition_results']:
+                if rec.get('is_image', False):
+                    img_path = rec.get('img_path', '')
+                    if img_path:
+                        bbox = rec.get('bbox', [])
+                        if bbox:
+                            x1, y1, x2, y2 = map(int, bbox)
+                            cropped_img = original_image[y1:y2, x1:x2]
+                            if cropped_img.size > 0:
+                                save_img_path = os.path.join(img_dir, img_path)
+                                os.makedirs(os.path.dirname(save_img_path), exist_ok=True)
+                                cv2.imwrite(save_img_path, cropped_img)
+
         with open(md_path, 'w', encoding='utf-8') as f:
             pending_text = []  # 用于收集合并块的文本
             pending_label = None  # 当前合并块的标签类型
@@ -681,30 +945,25 @@ class OpenDocONNX:
                         pending_text = []
                         pending_label = None
 
+                    # 如果图片在表格中，跳过在markdown中独立显示（已在表格HTML中引用）
+                    if rec.get('in_table', False):
+                        continue
+
                     img_path = rec.get('img_path', '')
-                    if img_path and original_image is not None:
-                        # 从bbox裁剪并保存图片
+                    if img_path:
+                        # 计算图片宽度占原图的百分比
                         bbox = rec.get('bbox', [])
                         if bbox:
                             x1, y1, x2, y2 = map(int, bbox)
-                            cropped_img = original_image[y1:y2, x1:x2]
-                            if cropped_img.size > 0:
-                                save_img_path = os.path.join(img_dir, img_path)
-                                os.makedirs(os.path.dirname(save_img_path),
-                                            exist_ok=True)
-                                cv2.imwrite(save_img_path, cropped_img)
-                            # 计算图片宽度占原图的百分比
                             img_width = x2 - x1
                             width_percent = int((img_width / ori_width) * 100)
-                            width_percent = max(5, min(width_percent,
-                                                       100))  # 限制在5%-100%之间
+                            width_percent = max(5, min(width_percent, 100))  # 限制在5%-100%之间
                         else:
                             width_percent = 50  # 默认50%
                         f.write(
-                            f'<img src="{img_path}" alt="Image" width="{width_percent}%" />\n\n'
+                            f'<img src="{img_path}" alt="Image" width="{width_percent}%" />\\n\\n'
                         )
                     continue
-
                 text = rec['text'].strip()
                 if not text:
                     continue
@@ -751,21 +1010,16 @@ class OpenDocONNX:
 
         image = cv2.imread(result['input_path'])
 
-        colors = {
-            'text': (0, 255, 0),
-            'title': (255, 0, 0),
-            'table': (0, 0, 255),
-            'figure': (255, 255, 0),
-            'formula': (255, 0, 255),
-            'equation': (255, 0, 255),
-        }
-
         for box_info in result['layout_results']['boxes']:
             x1, y1, x2, y2 = map(int, box_info['coordinate'])
             label = box_info['label']
             score = box_info['score']
 
-            color = colors.get(label, (255, 0, 0))
+            # 提取基础标签名（去除编号后缀，如 text_01 -> text）
+            base_label = label.rsplit('_', 1)[0] if '_' in label and label.rsplit('_', 1)[1].isdigit() else label
+
+            # 获取颜色，如果没有定义则使用默认红色
+            color = self.colors.get(base_label, (255, 0, 0))
 
             cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
             cv2.putText(image, f"{label}: {score: .2f}", (x1, y1 - 10),
@@ -793,27 +1047,27 @@ def main():
     # Model paths
     parser.add_argument('--layout_model',
                         type=str,
-                        required=True,
-                        help='Path to layout detection ONNX model')
+                        default=None,
+                        help='Path to layout detection ONNX model (default: ~/.cache/openocr/PP_DoclayoutV2_onnx/PP-DoclayoutV2.onnx)')
     parser.add_argument('--encoder_model',
                         type=str,
-                        required=True,
-                        help='Path to UniRec encoder ONNX model')
+                        default=None,
+                        help='Path to UniRec encoder ONNX model (default: ~/.cache/openocr/unirec_0_1b_onnx/unirec_encoder.onnx)')
     parser.add_argument('--decoder_model',
                         type=str,
-                        required=True,
-                        help='Path to UniRec decoder ONNX model')
+                        default=None,
+                        help='Path to UniRec decoder ONNX model (default: ~/.cache/openocr/unirec_0_1b_onnx/unirec_decoder.onnx)')
     parser.add_argument('--tokenizer_mapping',
                         type=str,
-                        required=True,
-                        help='Path to tokenizer mapping JSON file')
+                        default=None,
+                        help='Path to tokenizer mapping JSON file (default: ~/.cache/openocr/unirec_0_1b_onnx/unirec_tokenizer_mapping.json)')
 
     # Settings
-    parser.add_argument('--device',
+    parser.add_argument('--use-gpu',
                         type=str,
-                        default='cpu',
-                        choices=['cpu', 'cuda'],
-                        help='Device to run inference')
+                        default='auto',
+                        choices=['auto', 'true', 'false'],
+                        help='Use GPU for inference (auto: auto-detect, true: force GPU, false: force CPU)')
     parser.add_argument('--layout_threshold',
                         type=float,
                         default=0.4,
@@ -824,7 +1078,6 @@ def main():
                         help='Maximum generation length for VLM')
     parser.add_argument('--use_layout_detection',
                         action='store_true',
-                        default=True,
                         help='Use layout detection')
     parser.add_argument('--no_layout_detection',
                         dest='use_layout_detection',
@@ -832,44 +1085,50 @@ def main():
                         help='Disable layout detection (process whole image)')
     parser.add_argument('--use_chart_recognition',
                         action='store_true',
-                        default=True,
                         help='Recognize charts')
+    parser.add_argument('--no-auto-download',
+                        action='store_true',
+                        help='Disable automatic model download')
 
     # Output formats
     parser.add_argument('--save_vis',
                         action='store_true',
-                        default=True,
                         help='Save visualization images')
     parser.add_argument('--save_json',
                         action='store_true',
-                        default=True,
                         help='Save JSON results')
     parser.add_argument('--save_markdown',
                         action='store_true',
-                        default=True,
                         help='Save Markdown results')
 
     args = parser.parse_args()
 
+    # Parse use_gpu argument
+    if args.use_gpu == 'auto':
+        use_gpu = None
+    elif args.use_gpu == 'true':
+        use_gpu = True
+    else:
+        use_gpu = False
+
     # 创建输出目录
     os.makedirs(args.output_path, exist_ok=True)
-
 
     opendoc_onnx = OpenDocONNX(
         layout_model_path=args.layout_model,
         unirec_encoder_path=args.encoder_model,
         unirec_decoder_path=args.decoder_model,
         tokenizer_mapping_path=args.tokenizer_mapping,
-        device=args.device,
+        use_gpu=use_gpu,
         layout_threshold=args.layout_threshold,
         use_layout_detection=args.use_layout_detection,
         use_chart_recognition=args.use_chart_recognition,
+        auto_download=not args.no_auto_download,
     )
 
     # 获取图像列表
     img_list = get_image_file_list(args.input_path)
     logger.info(f'\nFound {len(img_list)} images in {args.input_path}')
-    logger.info(f'Using device: {args.device}')
     logger.info(f'Output will be saved to: {args.output_path}')
     logger.info('=' * 80)
 
@@ -881,8 +1140,8 @@ def main():
 
         try:
             # 预测
-            result = opendoc_onnx.predict(
-                img_path,
+            result = opendoc_onnx(
+                img_path=img_path,
                 layout_threshold=args.layout_threshold,
                 max_length=args.max_length,
             )

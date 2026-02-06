@@ -123,17 +123,35 @@ class OpenDetector(object):
                  config=None,
                  backend='torch',
                  onnx_model_path=None,
+                 use_gpu='auto',
                  numId=0):
         """
         Args:
             config (dict, optional): 配置信息。默认为None。
             backend (str): 'torch' 或 'onnx'
             onnx_model_path (str): ONNX模型路径（仅当backend='onnx'时需要）
+            use_gpu (str, optional): GPU使用策略，可选值为'auto'/'true'/'false'。默认为'auto'。
             numId (int, optional): 设备编号。默认为0。
         """
 
         if config is None:
             config = Config(DEFAULT_CFG_PATH_DET).cfg
+
+        # Parse use_gpu parameter
+        if use_gpu == 'auto':
+            try:
+                import torch
+                device = 'gpu' if torch.cuda.is_available() else 'cpu'
+            except:
+                device = 'cpu'
+        elif use_gpu == 'true':
+            device = 'gpu'
+        elif use_gpu == 'false':
+            device = 'cpu'
+        else:
+            raise ValueError(f"use_gpu must be 'auto', 'true', or 'false', got '{use_gpu}'")
+
+        config['Global']['device'] = device
 
         self._init_common(config)
         backend = backend if config['Global'].get(
@@ -160,7 +178,7 @@ class OpenDetector(object):
                 else:
                     raise ValueError('ONNX模式需要指定onnx_model_path参数')
             self.onnx_det_engine = ONNXEngine(
-                onnx_model_path, use_gpu=config['Global']['device'] == 'gpu')
+                onnx_model_path, use_gpu=(device == 'gpu'))
         else:
             raise ValueError("backend参数必须是'torch'或'onnx'")
 

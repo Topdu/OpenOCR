@@ -3,41 +3,58 @@ import uuid
 import shutil
 import re
 import base64
+import argparse
 import gradio as gr
 from PIL import Image
 
-from tools.infer_doc import OpenDoc
+from tools.infer_doc_onnx import OpenDocONNX
 from tools.utils.logging import get_logger
+from tools.download_example_images import get_example_images_path
 
 logger = get_logger(name='opendoc_gradio')
 
 # Initialize the pipeline
-pipeline: OpenDoc | None = None
+pipeline: OpenDocONNX | None = None
 
 
-def get_pipeline(gpu_id: int) -> OpenDoc:
-    """获取或初始化OpenDoc流水线
+def get_pipeline(
+    layout_model_path=None,
+    unirec_encoder_path=None,
+    unirec_decoder_path=None,
+    tokenizer_mapping_path=None,
+    use_gpu=None,
+    auto_download=True
+) -> OpenDocONNX:
+    """获取或初始化OpenDocONNX流水线
 
     Args:
-        gpu_id: GPU设备ID，-1表示使用CPU
+        layout_model_path: 版面检测ONNX模型路径
+        unirec_encoder_path: UniRec编码器ONNX模型路径
+        unirec_decoder_path: UniRec解码器ONNX模型路径
+        tokenizer_mapping_path: Tokenizer映射文件路径
+        use_gpu: Whether to use GPU. If None, auto-detect.
+        auto_download: If True, automatically download missing models
 
     Returns:
-        OpenDoc: 初始化好的OpenDoc实例
+        OpenDocONNX: 初始化好的OpenDocONNX实例
     """
     global pipeline
     if pipeline is None:
-        logger.info(
-            f"Initializing OpenDoc pipeline on {'GPU ' + str(gpu_id) if gpu_id >= 0 else 'CPU'}..."
+        gpu_info = 'GPU (auto-detect)' if use_gpu is None else ('GPU' if use_gpu else 'CPU')
+        logger.info(f"Initializing OpenDoc ONNX pipeline on {gpu_info}...")
+        pipeline = OpenDocONNX(
+            layout_model_path=layout_model_path,
+            unirec_encoder_path=unirec_encoder_path,
+            unirec_decoder_path=unirec_decoder_path,
+            tokenizer_mapping_path=tokenizer_mapping_path,
+            use_gpu=use_gpu,
+            auto_download=auto_download
         )
-        pipeline = OpenDoc(gpuId=gpu_id)
     return pipeline
 
 
-# Ensure pipeline is initialized
-try:
-    current_pipeline = get_pipeline(0)
-except Exception as e:
-    raise e
+# Ensure pipeline is initialized (will be done on first request)
+current_pipeline = None
 
 
 def process_image(
@@ -51,8 +68,14 @@ def process_image(
     Returns:
         tuple: (可视化图片, Markdown内容(base64图片), JSON内容, ZIP文件路径, 原始Markdown, Markdown内容(base64图片))
     """
+    global current_pipeline
+
     if image_path is None:
         return None, '', '', None, '', ''
+
+    # Initialize pipeline on first use
+    if current_pipeline is None:
+        current_pipeline = get_pipeline()
 
     # Get original image name
     base_name = os.path.splitext(os.path.basename(image_path))[0]
@@ -75,43 +98,76 @@ def process_image(
         image.save(tmp_img_path)
 
         # Predict
-        output = list(
-            current_pipeline.predict(tmp_img_path,
-                                     use_doc_orientation_classify=False,
-                                     use_doc_unwarping=False))
-        if not output:
+        result = current_pipeline(
+            img_path=tmp_img_path,
+            merge_layout_blocks=True
+        )
+        logger.info(f'Pipeline result type: {type(result)}, has content: {bool(result)}')
+        if result:
+            logger.info(f'Result keys: {result.keys()}')
+            if 'recognition_results' in result:
+                logger.info(f'Recognition results count: {len(result['recognition_results'])}')
+
+        if not result:
+            logger.warning('Pipeline returned empty result')
             return None, 'No results found.', '', None, '', ''
 
-        res = output[0]
-
         # Save results
-        res.save_to_img(tmp_dir)
-        res.save_to_markdown(tmp_dir, pretty=True)
-        res.save_to_json(tmp_dir)
+        logger.info(f'Saving results to: {tmp_dir}')
+        current_pipeline.save_visualization(result, tmp_dir)
+        logger.info('Visualization saved')
+        current_pipeline.save_to_markdown(result, tmp_dir)
+        logger.info('Markdown saved')
+        current_pipeline.save_to_json(result, tmp_dir)
+        logger.info('JSON saved')
+
+        # The save methods create a subdirectory with the image name
+        # Find the actual output directory
+        actual_output_dir = None
+        for item in os.listdir(tmp_dir):
+            item_path = os.path.join(tmp_dir, item)
+            if os.path.isdir(item_path):
+                actual_output_dir = item_path
+                break
+
+        if actual_output_dir is None:
+            # Fallback to tmp_dir if no subdirectory found
+            actual_output_dir = tmp_dir
+
+        logger.info(f'Actual output directory: {actual_output_dir}')
+        logger.info(f'Files in output dir: {os.listdir(actual_output_dir)}')
 
         # Find the saved files
         vis_img = None
-        for f in os.listdir(tmp_dir):
-            if 'layout_order_res' in f:
-                vis_img_path = os.path.join(tmp_dir, f)
+        for f in os.listdir(actual_output_dir):
+            if f.endswith('_vis.jpg'):
+                vis_img_path = os.path.join(actual_output_dir, f)
                 vis_img = Image.open(vis_img_path)
+                logger.info(f'Found visualization image: {vis_img_path}')
                 break
+
+        if vis_img is None:
+            logger.warning('No visualization image found')
 
         markdown_content = ''
         md_file_path = None
-        for f in os.listdir(tmp_dir):
+        for f in os.listdir(actual_output_dir):
             if f.endswith('.md'):
-                md_file_path = os.path.join(tmp_dir, f)
+                md_file_path = os.path.join(actual_output_dir, f)
                 with open(md_file_path, 'r', encoding='utf-8') as file:
                     markdown_content = file.read()
+                logger.info(f'Found markdown file: {md_file_path}, length: {len(markdown_content)}')
                 break
+
+        if not markdown_content:
+            logger.warning('No markdown content found')
 
         # Convert relative image paths to base64 for proper display in Gradio
         if markdown_content:
 
             def replace_img_with_base64(match):
                 img_path = match.group(1)
-                full_img_path = os.path.join(tmp_dir, img_path)
+                full_img_path = os.path.join(actual_output_dir, img_path)
 
                 if os.path.exists(full_img_path):
                     try:
@@ -125,16 +181,15 @@ def process_image(
                             ] else 'image/png'
                             # Replace src with base64 data URL
                             return match.group(0).replace(
-                                f'src="{img_path}"',
-                                f'src="data:{mime_type};base64,{img_data}"')
+                                f'src=\"{img_path}\"',
+                                f'src=\"data:{mime_type};base64,{img_data}\"')
                     except Exception as e:
                         logger.warning(
-                            f'Failed to convert image {img_path} to base64: {e}'
-                        )
+                            f'Failed to convert image {img_path} to base64: {e}')
                 return match.group(0)
 
             # Find all img tags and replace their src
-            markdown_content_show = re.sub(r'<img[^>]*src="([^"]+)"[^>]*>',
+            markdown_content_show = re.sub(r'<img[^>]*src=\"([^\"]+)\"[^>]*>',
                                            replace_img_with_base64,
                                            markdown_content)
         else:
@@ -142,13 +197,12 @@ def process_image(
 
         json_content = ''
         json_file_path = None
-        for f in os.listdir(tmp_dir):
+        for f in os.listdir(actual_output_dir):
             if f.endswith('.json'):
-                json_file_path = os.path.join(tmp_dir, f)
+                json_file_path = os.path.join(actual_output_dir, f)
                 with open(json_file_path, 'r', encoding='utf-8') as file:
                     json_content = file.read()
                 break
-
         # Prepare all files in tmp_dir for download by creating a zip archive
         zip_path = os.path.join(output_base_dir, f'{folder_name}.zip')
         _ = shutil.make_archive(zip_path.replace('.zip', ''), 'zip', tmp_dir)
@@ -297,6 +351,17 @@ def create_demo() -> gr.Blocks:
     Returns:
         gr.Blocks: Gradio Blocks应用实例
     """
+    # Get example images path and download if necessary
+    example_img_dir = get_example_images_path(demo_type='doc')
+
+    # Get list of example images
+    example_images = []
+    if os.path.exists(example_img_dir):
+        for file in os.listdir(example_img_dir):
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                example_images.append(os.path.join(example_img_dir, file))
+        example_images = sorted(example_images)
+
     with gr.Blocks(css=custom_css,
                    theme=gr.themes.Soft(),
                    title='OpenDoc-0.1B Demo') as demo:
@@ -317,11 +382,21 @@ def create_demo() -> gr.Blocks:
         """)
 
         with gr.Row():
-            with gr.Column(scale=5, elem_classes=['upload-section']):
+            with gr.Column(scale=4, elem_classes=['upload-section']):
                 input_img = gr.Image(type='filepath',
                                      label='📤 Upload Document Image',
                                      height=400)
 
+                # Add examples if available
+                if example_images:
+                    gr.Examples(
+                        examples=example_images,
+                        inputs=input_img,
+                        label='📚 Example Documents'
+                    )
+                btn = gr.Button('🔍 Analyze Document',
+                                variant='primary',
+                                size='lg')
                 gr.Markdown("""
                 ### 💡 Tips
                 - Supports Chinese and English documents
@@ -329,13 +404,10 @@ def create_demo() -> gr.Blocks:
                 - Handles text, formulas, tables, and images
                 """)
 
-                btn = gr.Button('🔍 Analyze Document',
-                                variant='primary',
-                                size='lg')
                 download_output = gr.File(label='📥 Download All Results (ZIP)',
                                           visible=True)
 
-            with gr.Column(scale=7):
+            with gr.Column(scale=6):
                 with gr.Tabs():
                     with gr.Tab('📝 Markdown Preview'):
                         output_md = gr.Markdown(
@@ -384,7 +456,122 @@ def create_demo() -> gr.Blocks:
     return demo
 
 
-if __name__ == '__main__':
+def launch_demo(
+    layout_model_path=None,
+    unirec_encoder_path=None,
+    unirec_decoder_path=None,
+    tokenizer_mapping_path=None,
+    use_gpu=None,
+    auto_download=True,
+    share=False,
+    server_port=7860,
+    server_name='0.0.0.0'
+):
+    """Launch OpenDoc ONNX Gradio demo with default configuration.
+
+    Args:
+        layout_model_path: Path to layout detection ONNX model (default: auto-download)
+        unirec_encoder_path: Path to UniRec encoder ONNX model (default: auto-download)
+        unirec_decoder_path: Path to UniRec decoder ONNX model (default: auto-download)
+        tokenizer_mapping_path: Path to tokenizer mapping JSON (default: auto-download)
+        use_gpu: Whether to use GPU. If None, auto-detect (default: None)
+        auto_download: If True, automatically download missing models (default: True)
+        share: Create a public share link (default: False)
+        server_port: Server port (default: 7860)
+        server_name: Server name (default: '0.0.0.0')
+
+    Returns:
+        gr.Blocks: Gradio demo instance
+    """
+    global current_pipeline
+
+    # Initialize pipeline with arguments
+    try:
+        current_pipeline = get_pipeline(
+            layout_model_path=layout_model_path,
+            unirec_encoder_path=unirec_encoder_path,
+            unirec_decoder_path=unirec_decoder_path,
+            tokenizer_mapping_path=tokenizer_mapping_path,
+            use_gpu=use_gpu,
+            auto_download=auto_download
+        )
+    except Exception as e:
+        logger.error(f"Failed to initialize pipeline: {e}")
+        raise e
+
     demo = create_demo()
-    # Launch with larger interface settings
-    demo.launch(share=False)
+    # Launch with settings from arguments
+    demo.launch(
+        share=share,
+        server_port=server_port,
+        server_name=server_name
+    )
+    return demo
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='OpenDoc-0.1B ONNX Gradio Demo')
+
+    # Model paths
+    parser.add_argument('--layout-model',
+                        type=str,
+                        default=None,
+                        help='Path to layout detection ONNX model (default: ~/.cache/openocr/PP_DoclayoutV2_onnx/PP-DoclayoutV2.onnx)')
+    parser.add_argument('--encoder',
+                        type=str,
+                        default=None,
+                        help='Path to UniRec encoder ONNX model (default: ~/.cache/openocr/unirec_0_1b_onnx/unirec_encoder.onnx)')
+    parser.add_argument('--decoder',
+                        type=str,
+                        default=None,
+                        help='Path to UniRec decoder ONNX model (default: ~/.cache/openocr/unirec_0_1b_onnx/unirec_decoder.onnx)')
+    parser.add_argument('--mapping',
+                        type=str,
+                        default=None,
+                        help='Path to tokenizer mapping JSON (default: ~/.cache/openocrunirec_0_1b_onnx/unirec_tokenizer_mapping.json)')
+
+    # GPU settings
+    parser.add_argument('--use-gpu',
+                        type=str,
+                        default='auto',
+                        choices=['auto', 'true', 'false'],
+                        help='Use GPU for inference (auto: auto-detect, true: force GPU, false: force CPU)')
+    parser.add_argument('--no-auto-download',
+                        action='store_true',
+                        help='Disable automatic model download')
+
+    # Gradio settings
+    parser.add_argument('--share',
+                        action='store_true',
+                        help='Create a public link')
+    parser.add_argument('--server-port',
+                        type=int,
+                        default=7860,
+                        help='Server port')
+    parser.add_argument('--server-name',
+                        type=str,
+                        default='0.0.0.0',
+                        help='Server name')
+
+    args = parser.parse_args()
+
+    # Parse use_gpu argument
+    if args.use_gpu == 'auto':
+        use_gpu = None
+    elif args.use_gpu == 'true':
+        use_gpu = True
+    else:
+        use_gpu = False
+
+    # Launch demo with parsed arguments
+    launch_demo(
+        layout_model_path=args.layout_model,
+        unirec_encoder_path=args.encoder,
+        unirec_decoder_path=args.decoder,
+        tokenizer_mapping_path=args.mapping,
+        use_gpu=use_gpu,
+        auto_download=not args.no_auto_download,
+        share=args.share,
+        server_port=args.server_port,
+        server_name=args.server_name
+    )

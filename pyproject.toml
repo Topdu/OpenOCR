@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openocr-python"
+version = "0.1.0"
+description = "Accurate and Efficient General OCR System"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache License 2.0"}
+authors = [
+    {name = "OCR Team, FVL Lab", email = "784990967@qq.com"}
+]
+maintainers = [
+    {name = "OCR Team, FVL Lab", email = "784990967@qq.com"}
+]
+keywords = [
+    "ocr",
+    "optical character recognition",
+    "text detection",
+    "text recognition",
+    "document parsing",
+    "deep learning",
+    "computer vision"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "numpy<=1.26.4",
+    "opencv-python<=4.12.0",
+    "Pillow>=8.0.0",
+    "pyyaml>=5.4.0",
+    "tqdm>=4.60.0",
+    "rapidfuzz>=2.0.0",
+    "pyclipper>=1.3.0",
+]
+
+[project.optional-dependencies]
+onnx = [
+    "onnxruntime>=1.12.0",
+]
+onnx-gpu = [
+    "onnxruntime-gpu>=1.12.0",
+]
+pytorch = [
+    "torch>=1.10.0",
+    "torchvision>=0.11.0",
+]
+gradio = [
+    "gradio==4.20.0",
+]
+huggingface = [
+    "huggingface-hub>=0.16.0",
+]
+modelscope = [
+    "modelscope>=1.9.0",
+]
+all = [
+    "onnxruntime>=1.12.0",
+    "torch>=1.10.0",
+    "torchvision>=0.11.0",
+    "gradio==4.20.0",
+    "huggingface-hub>=0.16.0",
+    "modelscope>=1.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Topdu/OpenOCR"
+Documentation = "https://github.com/Topdu/OpenOCR/tree/main/docs"
+Repository = "https://github.com/Topdu/OpenOCR"
+"Bug Reports" = "https://github.com/Topdu/OpenOCR/issues"
+
+[project.scripts]
+openocr = "openocr.openocr:main"
+
+[tool.setuptools]
+packages = {find = {}}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["configs/**/*.yml", "configs/**/*.yaml", "*.ttf"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

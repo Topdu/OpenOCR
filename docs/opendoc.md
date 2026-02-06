@@ -8,6 +8,63 @@
 
 ## Quick Start
 
+### Installation
+
+```bash
+# Install from PyPI (recommended)
+pip install openocr-python
+
+# Or install from source
+git clone https://github.com/Topdu/OpenOCR.git
+cd OpenOCR
+python build_package.py
+pip install ./build/dist/openocr_python-*.whl
+pip install onnxruntime
+```
+
+Parse documents with layout analysis, table/formula/table recognition:
+
+```bash
+# Full document parsing with all outputs
+openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --save_json --save_markdown
+
+# Parse PDF document
+openocr --task doc --input_path document.pdf --use_layout_detection --save_vis --save_json --save_markdown
+
+# Custom layout threshold
+openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --save_json --save_markdown --layout_threshold 0.5
+```
+
+### Local Demo
+
+Launch Gradio web interface for document parsing:
+
+```bash
+openocr --task launch_opendoc_demo --server_port 7862 --share
+```
+
+### Python API Usage
+
+```python
+from openocr import OpenOCR
+
+# Initialize OpenDoc
+doc_parser = OpenOCR(
+    task='doc',
+    use_layout_detection=True,
+)
+
+# Parse document
+result = doc_parser(image_path='path/to/document.jpg')
+
+# Save results
+doc_parser.save_to_markdown(result, './output')
+doc_parser.save_to_json(result, './output')
+doc_parser.save_visualization(result, './output')
+```
+
+## Get Started with Source
+
 ### Requirements
 
 ```bash
@@ -53,33 +110,6 @@ python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output 
 python tools/infer_doc.py --input_path ../doc_img_or_pdf --output_path ./output --gpus 0 --is_save_vis_img --is_save_json --is_save_markdown
 ```
 
-## Local Demo
-
-```shell
-pip install gradio
-python demo_opendoc.py
-```
-## ONNX
-
-### Download unirec-0.1b and PP-doclayoutV2 onnx model
-
-```
-https://github.com/predict-woo/paddle2onnx-PP-DocLayoutV2.git
-
-huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
-```
-### requirements
-```bash
-conda create -n opendoconnx python==3.12
-conda activate opendoconnx
-
-pip install onnxruntime-gpu
-pip install opencv-python
-```
-### Inference
-```bash
-python tools/infer_doc_onnx.py --input_path ../doc_img_or_pdf --output_path ./output --layout_model ./model_path --encoder_model ./model_path --decoder_model ./model_path --tokenizer_mapping ./path --device {cpu,cuda}
-```
 ## Citation
 
 If you find our method useful for your research, please cite:

@@ -1,0 +1,20 @@
+prune opendet
+prune openrec
+prune tools
+
+
+include openocr/README.md
+include openocr/README_ch.md
+include openocr/__init__.py
+include openocr/demo_gradio.py
+include openocr/demo_opendoc.py
+include openocr/demo_unirec.py
+include openocr/openocr.py
+include LICENSE
+
+# Include all config files
+recursive-include openocr/configs *.yml *.yaml
+recursive-include openocr/opendet *.py
+recursive-include openocr/openrec *.py
+recursive-include openocr/tools *.py
+recursive-include openocr/tools *.txt

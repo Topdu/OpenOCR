@@ -22,6 +22,8 @@ OpenOCR is an open-source toolkit developed by the OCR team from [FVL Lab](https
 
 OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bridging academic research and real-world applications, and fostering the collaborative development and widespread deployment of OCR technologies across both research frontiers and industrial scenarios. We welcome researchers, developers, and industry partners to explore the toolkit and share feedback.
 
+## 🚀 [Quick Start](./QUICKSTART.md)
+
 ## Features
 
 - 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
@@ -88,6 +90,7 @@ OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bri
 
 ## Recent Updates
 
+- **2026.02.06**: 🔥 Releasing openocr-python 0.1.0, and using a unified interface for OpenOCR, Document Parsing OpenDoc-0.1B, and UniRec-0.1B. Accessible in [Doc](./QUICKSTART.md).
 - **2026.01.13**: 🔥 Releasing [CMER](./configs/rec/cmer/) code and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) dataset.
 - **2026.01.07**: 🔥 Releasing [UniRec40M](https://huggingface.co/datasets/topdu/UniRec40M) dataset, which includes 40 million instances of recognition data comprising text, formulas, and text-formula mixed content.
 - **2025.12.25**: 🔥 Releasing [OpenDoc-0.1B](./docs/opendoc.md): Ultra-Lightweight Document Parsing System with 0.1B Parameters

@@ -8,24 +8,57 @@
 
 It addresses structural variability and semantic entanglement by using a hierarchical supervision training strategy and a semantic-decoupled tokenizer. Despite its small size, it achieves performance comparable to or better than much larger vision-language models.
 
-## Get Started with ONNX
+## Quick Start
 
-### Install OpenOCR and Dependencies:
+### Installation
 
-```shell
+```bash
+# Install from PyPI (recommended)
+pip install openocr-python
+
+# Or install from source
 git clone https://github.com/Topdu/OpenOCR.git
-pip install onnxruntime
 cd OpenOCR
-huggingface-cli download topdu/unirec_0_1b_onnx --local-dir ./unirec_0_1b_onnx
+python build_package.py
+pip install ./build/dist/openocr_python-*.whl
+pip install onnxruntime
 ```
 
-### Inference
+Recognize text, formulas, and tables using Vision-Language Model:
 
-```shell
-python ./tools/depolyment/unirec_onnx/infer_onnx.py --image /path/to/image
+```bash
+# Basic usage
+openocr --task unirec --input_path path/to/img
+
+# Process directory
+openocr --task unirec --input_path ./images --output_path ./results
 ```
 
-## Get Started with Pytorch
+### Local Demo
+
+Launch Gradio web interface for universal recognition:
+
+```bash
+openocr --task launch_unirec_demo --server_port 7862 --share
+```
+
+### Python API Usage
+
+```python
+from openocr import OpenOCR
+
+# Initialize UniRec
+unirec = OpenOCR(task='unirec')
+
+# Recognize text/formula/table
+result_text, generated_ids = unirec(
+    image_path='path/to/image.jpg',
+    max_length=2048
+)
+print(f"Result: {result_text}")
+```
+
+## Get Started with Source
 
 ### Dependencies:
 
@@ -57,13 +90,6 @@ huggingface-cli download topdu/unirec-0.1b --local-dir ./unirec-0.1b
 
 ```shell
 python tools/infer_rec.py --c ./configs/rec/unirec/focalsvtr_ardecoder_unirec.yml --o Global.infer_img=/path/img_fold or /path/img_file
-```
-
-### Local Demo
-
-```shell
-pip install gradio==4.20.0
-python demo_unirec.py
 ```
 
 ### Training

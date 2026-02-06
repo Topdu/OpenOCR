@@ -9,11 +9,12 @@ import numpy as np
 import json
 import time
 from PIL import Image
-from tools.infer_e2e import OpenOCR, check_and_download_font, draw_ocr_box_txt
+from tools.infer_e2e import OpenOCRE2E, check_and_download_font, draw_ocr_box_txt
+from tools.download_example_images import get_example_images_path
 
 
 def initialize_ocr(model_type, drop_score):
-    return OpenOCR(mode=model_type, drop_score=drop_score)
+    return OpenOCRE2E(mode=model_type, drop_score=drop_score)
 
 
 # Default model type
@@ -108,12 +109,25 @@ def find_file_in_current_dir_and_subdirs(file_name):
             return relative_path
 
 
-e2e_img_example = list_image_paths('./OCR_e2e_img')
+# Get example images path and download if necessary
+example_img_dir = get_example_images_path(demo_type='ocr')
+e2e_img_example = list_image_paths(example_img_dir)
 
-if __name__ == '__main__':
+
+def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
+    """Launch OpenOCR Gradio demo with default configuration.
+
+    Args:
+        share: Whether to create a public share link (default: False)
+        server_port: Server port (default: 7860)
+        server_name: Server name (default: '0.0.0.0')
+
+    Returns:
+        gr.Blocks: Gradio demo instance
+    """
     css = '.image-container img { width: 100%; max-height: 320px;}'
 
-    with gr.Blocks(css=css) as demo:
+    with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
         gr.HTML("""
                 <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">OpenOCR</a></h1>
                 <p style='text-align: center;'>准确高效的通用 OCR 系统 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建） <a href="https://github.com/Topdu/OpenOCR/tree/main?tab=readme-ov-file#quick-start">[本地快速部署]</a></p>"""
@@ -126,7 +140,7 @@ if __name__ == '__main__':
                 examples = gr.Examples(examples=e2e_img_example,
                                        inputs=input_image,
                                        label='Examples')
-                downstream = gr.Button('Run')
+                downstream = gr.Button('🚀 运行识别', variant='primary')
 
                 # 添加参数调节组件
                 with gr.Column():
@@ -205,4 +219,9 @@ if __name__ == '__main__':
                                  img_mask,
                              ])
 
-    demo.launch(share=True)
+    demo.launch(share=share, server_port=server_port, server_name=server_name)
+    return demo
+
+
+if __name__ == '__main__':
+    launch_demo(share=False)

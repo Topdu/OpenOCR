@@ -61,7 +61,7 @@ def extract_table_from_html(html_string):
         tables = [
             re.sub(r'<table[^>]*>', '<table>', table) for table in tables
         ]
-        tables = [re.sub(r'>\n', '>', table) for table in tables]
+        # tables = [re.sub(r'>\n', '>', table) for table in tables]
         return '\n'.join(tables)
     except Exception as e:
         print(f'extract_table_from_html error: {str(e)}')
@@ -326,11 +326,11 @@ class MarkdownConverter:
             table_content = table_content.replace('\(', '$').replace('\)', '$')
             table_content = table_content.replace('\[',
                                                   '$$').replace('\]', '$$')
-            markdown_table = re.sub(r'>\s*\n+\s*',
-                                    '>',
-                                    table_content,
-                                    flags=re.DOTALL)
-            markdown_content.append(markdown_table + '\n')
+            # markdown_table = re.sub(r'>\s*\n+\s*',
+            #                         '>',
+            #                         table_content,
+            #                         flags=re.DOTALL)
+            markdown_content.append(table_content + '\n')
             return '\n'.join(markdown_content) + '\n\n'
 
         except Exception as e:

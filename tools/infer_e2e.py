@@ -75,7 +75,7 @@ def sorted_boxes(dt_boxes):
     return _boxes
 
 
-class OpenOCR(object):
+class OpenOCRE2E(object):
 
     def __init__(self,
                  mode='mobile',
@@ -84,7 +84,7 @@ class OpenOCR(object):
                  onnx_rec_model_path=None,
                  drop_score=0.5,
                  det_box_type='quad',
-                 device='gpu'):
+                 use_gpu='auto'):
         """
         初始化函数，用于初始化OCR引擎的相关配置和组件。
 
@@ -92,11 +92,26 @@ class OpenOCR(object):
             mode (str, optional): 运行模式，可选值为'mobile'或'server'。默认为'mobile'。
             drop_score (float, optional): 检测框的置信度阈值，低于该阈值的检测框将被丢弃。默认为0.5。
             det_box_type (str, optional): 检测框的类型，可选值为'quad' and 'poly'。默认为'quad'。
+            use_gpu (str, optional): GPU使用策略，可选值为'auto'/'true'/'false'。默认为'auto'。
 
         Returns:
             无返回值。
 
         """
+        # Parse use_gpu parameter
+        if use_gpu == 'auto':
+            try:
+                import torch
+                device = 'gpu' if torch.cuda.is_available() else 'cpu'
+            except:
+                device = 'cpu'
+        elif use_gpu == 'true':
+            device = 'gpu'
+        elif use_gpu == 'false':
+            device = 'cpu'
+        else:
+            raise ValueError(f"use_gpu must be 'auto', 'true', or 'false', got '{use_gpu}'")
+
         cfg_det = Config(DEFAULT_CFG_PATH_DET).cfg  # mobile model
         cfg_det['Global']['device'] = device
         if mode == 'server':
@@ -108,9 +123,10 @@ class OpenOCR(object):
 
         self.text_detector = OpenDetector(cfg_det,
                                           backend=backend,
-                                          onnx_model_path=onnx_det_model_path)
+                                          onnx_model_path=onnx_det_model_path,
+                                          use_gpu=use_gpu)
         self.text_recognizer = OpenRecognizer(
-            cfg_rec, backend=backend, onnx_model_path=onnx_rec_model_path)
+            cfg_rec, backend=backend, onnx_model_path=onnx_rec_model_path, use_gpu=use_gpu)
         self.det_box_type = det_box_type
         self.drop_score = drop_score
 
@@ -415,10 +431,11 @@ def main():
                         type=float,
                         default=0.5,
                         help='Score threshold for text recognition.')
-    parser.add_argument('--device',
+    parser.add_argument('--use_gpu',
                         type=str,
-                        default='gpu',
-                        help='Device to use for inference.')
+                        default='auto',
+                        choices=['auto', 'true', 'false'],
+                        help='GPU usage strategy: auto (detect automatically), true (force GPU), false (force CPU)')
     args = parser.parse_args()
 
     img_path = args.img_path
@@ -429,15 +446,15 @@ def main():
     save_dir = args.save_dir
     is_visualize = args.is_vis
     drop_score = args.drop_score
-    device = args.device
+    use_gpu = args.use_gpu
 
-    text_sys = OpenOCR(mode=mode,
+    text_sys = OpenOCRE2E(mode=mode,
                        backend=backend,
                        onnx_det_model_path=onnx_det_model_path,
                        onnx_rec_model_path=onnx_rec_model_path,
                        drop_score=drop_score,
                        det_box_type='quad',
-                       device=device)  # det_box_type: 'quad' or 'poly'
+                       use_gpu=use_gpu)  # det_box_type: 'quad' or 'poly'
     text_sys(img_path=img_path, save_dir=save_dir, is_visualize=is_visualize)
 
 

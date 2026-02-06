@@ -14,25 +14,133 @@ We proposed strategies to comprehensively enhance CTC-based STR models and devel
 
 **Note**: OpenOCR supports inference using both the ONNX and Torch frameworks, with the dependency environments for the two frameworks being isolated. When using ONNX for inference, there is no need to install Torch, and vice versa.
 
-### 1. ONNX Inference
+### Installation
 
-#### Install OpenOCR and Dependencies:
-
-```shell
+```bash
+# Install from PyPI (recommended)
 pip install openocr-python
+
+# Or install from source
+git clone https://github.com/Topdu/OpenOCR.git
+cd OpenOCR
+python build_package.py
+pip install ./build/dist/openocr_python-*.whl
 pip install onnxruntime
 ```
 
-#### Usage:
+#### 1. Text Detection + Recognition (OCR)
+
+End-to-end OCR for Chinese/English text detection and recognition:
+
+```bash
+# Basic usage
+openocr --task ocr --input_path path/to/img
+
+# With visualization
+openocr --task ocr --input_path path/to/img --is_vis
+
+# Process directory with custom output
+openocr --task ocr --input_path ./images --output_path ./results --is_vis
+
+# Use server mode (higher accuracy)
+openocr --task ocr --input_path path/to/img --mode server
+```
+
+#### 2. Text Detection Only
+
+Detect text regions without recognition:
+
+```bash
+# Basic detection
+openocr --task det --input_path path/to/img
+
+# With visualization
+openocr --task det --input_path path/to/img --is_vis
+
+# Use polygon detection (more accurate for curved text)
+openocr --task det --input_path path/to/img --det_box_type poly
+```
+
+#### 3. Text Recognition Only
+
+Recognize text from cropped word/line images:
+
+```bash
+# Basic recognition
+openocr --task rec --input_path path/to/img
+
+# Use server mode (higher accuracy)
+openocr --task rec --input_path path/to/img --mode server
+
+# Batch processing
+openocr --task rec --input_path ./word_images --rec_batch_num 16
+```
+
+### Local Demo
+
+Launch Gradio web interface for OCR tasks:
+
+```bash
+openocr --task launch_openoce_demo --server_port 7862 --share
+```
+
+### Python API Usage
+
+#### 1. OCR Task
 
 ```python
 from openocr import OpenOCR
-onnx_engine = OpenOCR(backend='onnx', device='cpu')
-img_path = '/path/img_path or /path/img_file'
-result, elapse = onnx_engine(img_path)
+
+# Initialize OCR engine
+ocr = OpenOCR(mode='mobile', backend=='onnx')
+
+# Process single image
+results, time_dicts = ocr(
+    image_path='path/to/image.jpg',
+    save_dir='./output',
+    is_visualize=True
+)
+
+# Access results
+for result in results:
+    for line in result:
+        print(f"Text: {line['text']}, Score: {line['score']}")
 ```
 
-### 2. Pytorch inference
+#### 2. Detection Task
+
+```python
+from openocr import OpenOCR
+
+# Initialize detector
+detector = OpenOCR(task='det')
+
+# Detect text regions
+results = detector(image_path='path/to/image.jpg')
+
+# Access detection boxes
+boxes = results[0]['boxes']
+print(f"Found {len(boxes)} text regions")
+```
+
+#### 3. Recognition Task
+
+```python
+from openocr import OpenOCR
+
+# Initialize recognizer
+recognizer = OpenOCR(task='rec', mode='server')
+
+# Recognize text
+results = recognizer(image_path='path/to/word.jpg')
+
+# Access recognition result
+text = results[0]['text']
+score = results[0]['score']
+print(f"Text: {text}, Confidence: {score}")
+```
+
+## Get Started with Source
 
 #### Dependencies:
 
@@ -46,33 +154,7 @@ conda activate openocr
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
 # or cpu version
 conda install pytorch torchvision torchaudio cpuonly -c pytorch
-```
 
-After installing dependencies, the following two installation methods are available. Either one can be chosen.
-
-#### 2.1. Python Modules
-
-**Install OpenOCR**:
-
-```shell
-pip install openocr-python
-```
-
-**Usage**:
-
-```python
-from openocr import OpenOCR
-engine = OpenOCR()
-img_path = '/path/img_path or /path/img_file'
-result, elapse = engine(img_path)
-
-# Server mode
-# engine = OpenOCR(mode='server')
-```
-
-#### 2.2. Clone this repository:
-
-```shell
 git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 pip install -r requirements.txt
@@ -91,16 +173,6 @@ python tools/infer_e2e.py --img_path=/path/img_fold or /path/img_file
 python tools/infer_det.py --c ./configs/det/dbnet/repvit_db.yml --o Global.infer_img=/path/img_fold or /path/img_file
 # Rec model
 python tools/infer_rec.py --c ./configs/rec/svtrv2/repsvtr_ch.yml --o Global.infer_img=/path/img_fold or /path/img_file
-```
-
-#### Local Demo
-
-```shell
-pip install gradio==4.20.0
-wget https://github.com/Topdu/OpenOCR/releases/download/develop0.0.1/OCR_e2e_img.tar
-tar xf OCR_e2e_img.tar
-# start demo
-python demo_gradio.py
 ```
 
 ## Fine-tuning on a Custom dataset

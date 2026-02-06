@@ -22,6 +22,8 @@ OpenOCR 是由复旦大学[FVL实验室](https://fvl.fudan.edu.cn)[姜育刚教�
 
 OpenOCR 致力于构建一个为学术研究与实际应用搭建桥梁的通用 OCR 开源生态，推动 OCR 技术在研究前沿和产业场景中的协同发展与广泛落地。欢迎研究者、开发者和企业使用和提建议。
 
+## 🚀 [快速开始](./QUICKSTART.md)
+
 ## 核心特性
 
 - 🔥**OpenDoc-0.1B: Ultra-Lightweight Document Parsing System with 0.1B Parameters**
@@ -85,6 +87,7 @@ OpenOCR 致力于构建一个为学术研究与实际应用搭建桥梁的通用
 
 ## 近期更新
 
+- **2026.02.06**: 🔥 发布 openocr-python 0.1.0，采用统一接口实现OpenOCR、文档解析OpenDoc-0.1B和UniRec-0.1B，[使用说明文档](./QUICKSTART.md)
 - **2026.01.13**: 🔥 开源 [CMER](./configs/rec/cmer/) 代码和 and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) 数据集.
 - **2026.01.07**: 🔥 开源 [UniRec40M](https://huggingface.co/datasets/topdu/UniRec40M) 数据集，包含4000万多层次文本、公式和文本公式混合内容识别数据.
 - **2025.12.25**: 🔥 新增超轻量级文档解析系统[OpenDoc-0.1B](./docs/opendoc.md)
