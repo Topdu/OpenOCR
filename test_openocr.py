@@ -6,7 +6,6 @@ Tests all OpenOCR tasks using both Python API and command-line interface.
 import os
 import sys
 import subprocess
-import tempfile
 from pathlib import Path
 
 # Add parent directory to path for imports
@@ -30,7 +29,7 @@ class OpenOCRTester:
 
         # Download test images
         logger.info('\n📥 Downloading test images...')
-        self.image_paths = download_example_images(use_modelscope=True)
+        self.image_paths = download_example_images()
 
         # Verify image paths
         self.ocr_images = Path(self.image_paths.get('ocr', ''))
@@ -42,17 +41,17 @@ class OpenOCRTester:
         self.output_dir = Path('test_output')
         self.output_dir.mkdir(exist_ok=True)
 
-        logger.info(f"\n📁 Test image directories:")
-        logger.info(f"  OCR/Det: {self.ocr_images}")
-        logger.info(f"  Rec: {self.rec_images}")
-        logger.info(f"  Doc: {self.doc_images}")
-        logger.info(f"  UniRec: {self.unirec_images}")
-        logger.info(f"  Output: {self.output_dir}")
+        logger.info('\n📁 Test image directories:')
+        logger.info(f'  OCR/Det: {self.ocr_images}')
+        logger.info(f'  Rec: {self.rec_images}')
+        logger.info(f'  Doc: {self.doc_images}')
+        logger.info(f'  UniRec: {self.unirec_images}')
+        logger.info(f'  Output: {self.output_dir}')
 
     def get_test_image(self, image_dir):
         """Get first valid image from directory"""
         if not image_dir.exists():
-            logger.warning(f"Directory not found: {image_dir}")
+            logger.warning(f'Directory not found: {image_dir}')
             return None
 
         for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
@@ -60,7 +59,7 @@ class OpenOCRTester:
             if images:
                 return str(images[0])
 
-        logger.warning(f"No images found in: {image_dir}")
+        logger.warning(f'No images found in: {image_dir}')
         return None
 
     def test_python_api(self):
@@ -79,11 +78,11 @@ class OpenOCRTester:
                 openocr_det = OpenOCR(task='det', use_gpu='auto')
                 results = openocr_det(image_path=test_img)
                 boxes = results[0]['boxes']
-                logger.info(f"✅ Detection: Found {len(boxes)} text regions")
+                logger.info(f'✅ Detection: Found {len(boxes)} text regions')
             else:
                 logger.warning('⚠️  Detection: No test image available')
         except Exception as e:
-            logger.error(f"❌ Detection failed: {e}")
+            logger.error(f'❌ Detection failed: {e}')
             import traceback
             traceback.print_exc()
 
@@ -104,7 +103,7 @@ class OpenOCRTester:
             else:
                 logger.warning('⚠️  Recognition: No test image available')
         except Exception as e:
-            logger.error(f"❌ Recognition failed: {e}")
+            logger.error(f'❌ Recognition failed: {e}')
             import traceback
             traceback.print_exc()
 
@@ -121,11 +120,11 @@ class OpenOCRTester:
                     is_visualize=True,
                     rec_batch_num=6
                 )
-                logger.info(f"✅ OCR: Processed successfully, results saved to {output_path}")
+                logger.info(f'✅ OCR: Processed successfully, results saved to {output_path}')
             else:
                 logger.warning('⚠️  OCR: No test image available')
         except Exception as e:
-            logger.error(f"❌ OCR failed: {e}")
+            logger.error(f'❌ OCR failed: {e}')
             import traceback
             traceback.print_exc()
 
@@ -139,12 +138,12 @@ class OpenOCRTester:
                     image_path=test_img,
                     max_length=2048
                 )
-                logger.info(f"✅ UniRec: Generated {len(generated_ids)} tokens")
-                logger.info(f"   Text preview: {result_text[:100]}..." if len(result_text) > 100 else f"   Text: {result_text}")
+                logger.info(f'✅ UniRec: Generated {len(generated_ids)} tokens')
+                logger.info(f'   Text preview: {result_text[:100]}...' if len(result_text) > 100 else f'   Text: {result_text}')
             else:
                 logger.warning('⚠️  UniRec: No test image available')
         except Exception as e:
-            logger.error(f"❌ UniRec failed: {e}")
+            logger.error(f'❌ UniRec failed: {e}')
             import traceback
             traceback.print_exc()
 
@@ -175,11 +174,11 @@ class OpenOCRTester:
                 if 'layout_results' in result:
                     openocr_doc.save_visualization(result, str(output_path))
 
-                logger.info(f"✅ Doc: Processed successfully, results saved to {output_path}")
+                logger.info(f'✅ Doc: Processed successfully, results saved to {output_path}')
             else:
                 logger.warning('⚠️  Doc: No test image available')
         except Exception as e:
-            logger.error(f"❌ Doc failed: {e}")
+            logger.error(f'❌ Doc failed: {e}')
             import traceback
             traceback.print_exc()
 
@@ -209,13 +208,13 @@ class OpenOCRTester:
                 logger.info(f"Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, cwd=__dir__, capture_output=True, text=True)
                 if result.returncode == 0:
-                    logger.info(f"✅ Detection CLI: Success")
+                    logger.info('✅ Detection CLI: Success')
                 else:
-                    logger.error(f"❌ Detection CLI failed: {result.stderr}")
+                    logger.error(f'❌ Detection CLI failed: {result.stderr}')
             else:
                 logger.warning('⚠️  Detection CLI: No test image available')
         except Exception as e:
-            logger.error(f"❌ Detection CLI failed: {e}")
+            logger.error(f'❌ Detection CLI failed: {e}')
 
         # Test 2: Recognition task
         logger.info('\n[Test 2/4] Testing Recognition Command...')
@@ -236,13 +235,13 @@ class OpenOCRTester:
                 logger.info(f"Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, cwd=__dir__, capture_output=True, text=True)
                 if result.returncode == 0:
-                    logger.info(f"✅ Recognition CLI: Success")
+                    logger.info('✅ Recognition CLI: Success')
                 else:
-                    logger.error(f"❌ Recognition CLI failed: {result.stderr}")
+                    logger.error(f'❌ Recognition CLI failed: {result.stderr}')
             else:
                 logger.warning('⚠️  Recognition CLI: No test image available')
         except Exception as e:
-            logger.error(f"❌ Recognition CLI failed: {e}")
+            logger.error(f'❌ Recognition CLI failed: {e}')
 
         # Test 3: OCR task
         logger.info('\n[Test 3/4] Testing OCR Command...')
@@ -261,13 +260,13 @@ class OpenOCRTester:
                 logger.info(f"Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, cwd=__dir__, capture_output=True, text=True)
                 if result.returncode == 0:
-                    logger.info(f"✅ OCR CLI: Success")
+                    logger.info('✅ OCR CLI: Success')
                 else:
-                    logger.error(f"❌ OCR CLI failed: {result.stderr}")
+                    logger.error(f'❌ OCR CLI failed: {result.stderr}')
             else:
                 logger.warning('⚠️  OCR CLI: No test image available')
         except Exception as e:
-            logger.error(f"❌ OCR CLI failed: {e}")
+            logger.error(f'❌ OCR CLI failed: {e}')
 
         # Test 4: UniRec task
         logger.info('\n[Test 4/4] Testing UniRec Command...')
@@ -285,13 +284,13 @@ class OpenOCRTester:
                 logger.info(f"Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, cwd=__dir__, capture_output=True, text=True)
                 if result.returncode == 0:
-                    logger.info(f"✅ UniRec CLI: Success")
+                    logger.info('✅ UniRec CLI: Success')
                 else:
-                    logger.error(f"❌ UniRec CLI failed: {result.stderr}")
+                    logger.error(f'❌ UniRec CLI failed: {result.stderr}')
             else:
                 logger.warning('⚠️  UniRec CLI: No test image available')
         except Exception as e:
-            logger.error(f"❌ UniRec CLI failed: {e}")
+            logger.error(f'❌ UniRec CLI failed: {e}')
 
         # Test 5: Doc task
         logger.info('\n[Test 5/5] Testing Doc Command...')
@@ -312,13 +311,13 @@ class OpenOCRTester:
                 logger.info(f"Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, cwd=__dir__, capture_output=True, text=True)
                 if result.returncode == 0:
-                    logger.info(f"✅ Doc CLI: Success")
+                    logger.info('✅ Doc CLI: Success')
                 else:
-                    logger.error(f"❌ Doc CLI failed: {result.stderr}")
+                    logger.error(f'❌ Doc CLI failed: {result.stderr}')
             else:
                 logger.warning('⚠️  Doc CLI: No test image available')
         except Exception as e:
-            logger.error(f"❌ Doc CLI failed: {e}")
+            logger.error(f'❌ Doc CLI failed: {e}')
 
         logger.info('\n' + '=' * 80)
         logger.info('✅ Command-line tests completed')
@@ -336,7 +335,7 @@ class OpenOCRTester:
 
         logger.info('\n' + '=' * 80)
         logger.info('🎉 All tests completed!')
-        logger.info(f"📁 Test outputs saved to: {self.output_dir.absolute()}")
+        logger.info(f'📁 Test outputs saved to: {self.output_dir.absolute()}')
         logger.info('=' * 80)
 
 
@@ -366,7 +365,7 @@ def main():
             tester.test_command_line()
 
     except Exception as e:
-        logger.error(f"Test suite failed: {e}")
+        logger.error(f'Test suite failed: {e}')
         import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -8,9 +8,9 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
-from .tools.infer_e2e import OpenOCRE2E, OpenDetector, OpenRecognizer
-from .tools.infer_unirec_onnx import UniRecONNX
-from .tools.infer_doc_onnx import OpenDocONNX
+# from .tools.infer_e2e import OpenOCRE2E, OpenDetector, OpenRecognizer
+# from .tools.infer_unirec_onnx import UniRecONNX
+# from .tools.infer_doc_onnx import OpenDocONNX
 from .openocr import OpenOCR, main
 
 __version__ = '0.1.0'

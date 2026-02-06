@@ -113,6 +113,7 @@ pip install gradio==4.20.0
 Launch Gradio web interface for OCR tasks:
 
 ```bash
+pip install onnxruntime
 # Local access only
 openocr --task launch_openocr_demo --server_port 7860
 
