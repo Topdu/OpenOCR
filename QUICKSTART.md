@@ -21,6 +21,7 @@ git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 python build_package.py
 pip install ./build/dist/openocr_python-*.whl
+pip install huggingface-hub==0.36.0 modelscope
 ```
 
 ## Command Line Usage
@@ -105,7 +106,6 @@ openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --
 ```bash
 # Install gradio
 pip install gradio==4.20.0
-pip install huggingface-hub==0.36.0 modelscope
 ```
 
 ### OCR Demo
