@@ -18,16 +18,16 @@ def create_package_structure():
     root_dir = Path(__file__).parent.absolute()
     openocr_dir = root_dir / 'build/openocr'
 
-    print(f"Root directory: {root_dir}")
-    print(f"Target openocr directory: {openocr_dir}")
+    print(f'Root directory: {root_dir}')
+    print(f'Target openocr directory: {openocr_dir}')
 
     # Remove existing openocr directory if it exists
     if openocr_dir.exists():
-        print(f"Removing existing {openocr_dir}...")
+        print(f'Removing existing {openocr_dir}...')
         shutil.rmtree(openocr_dir)
 
     # Create openocr directory
-    print(f"Creating {openocr_dir}...")
+    print(f'Creating {openocr_dir}...')
     os.makedirs(openocr_dir, exist_ok=True)
     # List of directories to copy
     dirs_to_copy = ['configs', 'docs', 'opendet', 'openrec', 'tools']
@@ -37,31 +37,31 @@ def create_package_structure():
         src = root_dir / dir_name
         dst = openocr_dir / dir_name
         if src.exists():
-            print(f"Copying {dir_name}...")
+            print(f'Copying {dir_name}...')
             shutil.copytree(src, dst)
         else:
-            print(f"Warning: {dir_name} not found, skipping...")
+            print(f'Warning: {dir_name} not found, skipping...')
 
     # List of files to copy
-    files_to_copy = ['__init__.py', 'openocr.py', 'QUICKSTART.md', 'demo_gradio.py', 'demo_opendoc.py', 'demo_unirec.py']
+    files_to_copy = ['__init__.py', 'openocr.py', 'demo_gradio.py', 'demo_opendoc.py', 'demo_unirec.py']
     # Copy files
     for file_name in files_to_copy:
         src = root_dir / file_name
         dst = openocr_dir / file_name
         if src.exists():
-            print(f"Copying {file_name}...")
+            print(f'Copying {file_name}...')
             shutil.copy2(src, dst)
         else:
-            print(f"Warning: {file_name} not found, skipping...")
-    files_to_copy = ['setup.py', 'MANIFEST.in', 'LICENSE', 'pyproject.toml']
+            print(f'Warning: {file_name} not found, skipping...')
+    files_to_copy = ['setup.py', 'MANIFEST.in', 'LICENSE', 'pyproject.toml', 'QUICKSTART.md']
     for file_name in files_to_copy:
         src = root_dir / file_name
         dst = root_dir / 'build' / file_name
         if src.exists():
-            print(f"Copying {file_name}...")
+            print(f'Copying {file_name}...')
             shutil.copy2(src, dst)
         else:
-            print(f"Warning: {file_name} not found, skipping...")
+            print(f'Warning: {file_name} not found, skipping...')
 
 
 
@@ -96,7 +96,7 @@ def build_wheel():
 
     for dir_path in [dist_dir, build_dir, egg_info_dir]:
         if dir_path.exists():
-            print(f"Cleaning {dir_path}...")
+            print(f'Cleaning {dir_path}...')
             shutil.rmtree(dir_path)
 
     # Build wheel from build directory
@@ -116,13 +116,13 @@ def build_wheel():
         print('\n' + '='*60)
         print('Build successful!')
         print('='*60)
-        print(f"\nWheel package created in: {dist_dir}")
+        print(f'\nWheel package created in: {dist_dir}')
 
         # List created files
         if dist_dir.exists():
             print('\nCreated files:')
             for file in dist_dir.iterdir():
-                print(f"  - {file.name}")
+                print(f'  - {file.name}')
         return True
     else:
         print('\n' + '='*60)
@@ -152,7 +152,7 @@ def main():
             print('All steps completed successfully!')
             print('='*60)
             print('\nTo install the package, run:')
-            print(f"  pip install build/dist/openocr_python-*.whl")
+            print(f'  pip install build/dist/openocr_python-*.whl')
             print('\nAfter installation, you can use:')
             print('  openocr --help')
         else:
@@ -160,7 +160,7 @@ def main():
             sys.exit(1)
 
     except Exception as e:
-        print(f"\nError: {e}")
+        print(f'\nError: {e}')
         import traceback
         traceback.print_exc()
         sys.exit(1)

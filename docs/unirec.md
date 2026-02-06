@@ -14,15 +14,13 @@ It addresses structural variability and semantic entanglement by using a hierarc
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python
+pip install openocr-python huggingface-hub==0.36.0 modelscope onnxruntime
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 python build_package.py
-pip install ./build/dist/openocr_python-*.whl
-pip install onnxruntime
-pip install huggingface-hub==0.36.0 modelscope
+pip install ./build/dist/openocr_python-*.whl huggingface-hub==0.36.0 modelscope onnxruntime
 ```
 
 Recognize text, formulas, and tables using Vision-Language Model:

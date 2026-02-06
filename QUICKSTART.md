@@ -1,5 +1,9 @@
 # OpenOCR: An Open-Source Toolkit for General-OCR Research and Applications
 
+## For More Information
+
+Visit: https://github.com/Topdu/OpenOCR
+
 ## Recent Updates
 
 - **0.1.0**: Use a unified interface for OCR, Document Parsing, and Unirec
@@ -14,14 +18,13 @@
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python
+pip install openocr-python huggingface-hub==0.36.0 modelscope onnxruntime
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 python build_package.py
-pip install ./build/dist/openocr_python-*.whl
-pip install huggingface-hub==0.36.0 modelscope
+pip install ./build/dist/openocr_python-*.whl huggingface-hub==0.36.0 modelscope onnxruntime
 ```
 
 ## Command Line Usage
@@ -41,7 +44,8 @@ openocr --task ocr --input_path path/to/img --is_vis
 openocr --task ocr --input_path ./images --output_path ./results --is_vis
 
 # Use server mode (higher accuracy)
-openocr --task ocr --input_path path/to/img --mode server
+pip install torch torchvision
+openocr --task ocr --input_path path/to/img --mode server --backend torch
 ```
 
 ### 2. Text Detection Only
@@ -68,7 +72,8 @@ Recognize text from cropped word/line images:
 openocr --task rec --input_path path/to/img
 
 # Use server mode (higher accuracy)
-openocr --task rec --input_path path/to/img --mode server
+pip install torch torchvision
+openocr --task rec --input_path path/to/img --mode server --backend torch
 
 # Batch processing
 openocr --task rec --input_path ./word_images --rec_batch_num 16
@@ -184,7 +189,7 @@ print(f"Found {len(boxes)} text regions")
 from openocr import OpenOCR
 
 # Initialize recognizer
-recognizer = OpenOCR(task='rec', mode='server')
+recognizer = OpenOCR(task='rec', mode='server', backend='torch') # pip install torch torchvision
 
 # Recognize text
 results = recognizer(image_path='path/to/word.jpg')
@@ -252,7 +257,3 @@ Results are saved to `openocr_output/{task}/` by default:
 - **Recognition task**: `rec_results.txt`
 - **UniRec task**: `unirec_results.txt`
 - **Doc task**: JSON files, Markdown files, visualization images (based on flags)
-
-## For More Information
-
-Visit: https://github.com/Topdu/OpenOCR
