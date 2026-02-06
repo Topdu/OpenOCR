@@ -287,7 +287,7 @@ class OpenDetector(object):
 
             info = {'boxes': post_result[0]['points'], 'elapse': t_cost}
             if return_mask:
-                if isinstance(preds['maps'], self.torch.Tensor):
+                if self.backend == 'torch' and isinstance(preds['maps'], self.torch.Tensor):
                     mask = preds['maps'].detach().cpu().numpy()
                 else:
                     mask = preds['maps']

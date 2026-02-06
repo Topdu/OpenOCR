@@ -14,7 +14,7 @@ from tools.download_example_images import get_example_images_path
 
 
 def initialize_ocr(model_type, drop_score):
-    return OpenOCRE2E(mode=model_type, drop_score=drop_score)
+    return OpenOCRE2E(mode=model_type, drop_score=drop_score, backend='onnx')
 
 
 # Default model type

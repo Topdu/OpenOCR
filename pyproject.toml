@@ -40,13 +40,15 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy<=1.26.4",
+    "numpy==1.26.4",
     "opencv-python<=4.12.0",
     "Pillow>=8.0.0",
     "pyyaml>=5.4.0",
     "tqdm>=4.60.0",
     "rapidfuzz>=2.0.0",
     "pyclipper>=1.3.0",
+    "pydantic",
+    "shapely",
 ]
 
 [project.optional-dependencies]

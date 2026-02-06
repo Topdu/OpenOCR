@@ -43,13 +43,15 @@ setup(
 
     # Dependencies
     install_requires=[
-        'numpy<=1.26.4',
+        'numpy==1.26.4',
         'opencv-python<=4.12.0',
         'Pillow<=9.5.0',
         'pyyaml<=6.0.0',
         'tqdm<=4.65.0',
         'rapidfuzz<=2.0.0',
         'pyclipper<=1.3.0',
+        'pydantic',
+        'shapely',
     ],
 
     # Optional dependencies

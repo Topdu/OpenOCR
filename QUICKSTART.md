@@ -102,14 +102,15 @@ openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --
 
 ## Launch Interactive Demos
 
-### OCR Demo
-
-Launch Gradio web interface for OCR tasks:
-
 ```bash
 # Install gradio
 pip install gradio==4.20.0
+pip install huggingface-hub==0.36.0 modelscope
 ```
+
+### OCR Demo
+
+Launch Gradio web interface for OCR tasks:
 
 ```bash
 # Local access only

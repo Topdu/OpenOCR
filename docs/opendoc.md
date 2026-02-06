@@ -40,6 +40,8 @@ openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --
 Launch Gradio web interface for document parsing:
 
 ```bash
+pip install gradio==4.20.0
+pip install huggingface-hub==0.36.0 modelscope
 openocr --task launch_opendoc_demo --server_port 7862 --share
 ```
 

@@ -41,7 +41,7 @@ def get_pipeline(
     global pipeline
     if pipeline is None:
         gpu_info = 'GPU (auto-detect)' if use_gpu is None else ('GPU' if use_gpu else 'CPU')
-        logger.info(f"Initializing OpenDoc ONNX pipeline on {gpu_info}...")
+        logger.info(f'Initializing OpenDoc ONNX pipeline on {gpu_info}...')
         pipeline = OpenDocONNX(
             layout_model_path=layout_model_path,
             unirec_encoder_path=unirec_encoder_path,
@@ -106,7 +106,7 @@ def process_image(
         if result:
             logger.info(f'Result keys: {result.keys()}')
             if 'recognition_results' in result:
-                logger.info(f'Recognition results count: {len(result['recognition_results'])}')
+                logger.info(f'Recognition results count: {len(result["recognition_results"])}')
 
         if not result:
             logger.warning('Pipeline returned empty result')
@@ -207,7 +207,7 @@ def process_image(
         zip_path = os.path.join(output_base_dir, f'{folder_name}.zip')
         _ = shutil.make_archive(zip_path.replace('.zip', ''), 'zip', tmp_dir)
 
-        return vis_img, markdown_content_show, json_content, zip_path, markdown_content, markdown_content_show
+        return vis_img, markdown_content_show, json_content, zip_path, markdown_content
 
     except Exception as e:
         logger.error(f'Prediction error: {str(e)}')
@@ -423,11 +423,6 @@ def create_demo() -> gr.Blocks:
                         output_md_raw = gr.Code(label='Markdown Source',
                                                 language='markdown',
                                                 lines=20)
-                    with gr.Tab('📄 Raw Markdown with Base64 Images'):
-                        output_md_raw_with_base64 = gr.Code(
-                            label='Markdown Source',
-                            language='markdown',
-                            lines=20)
 
                     with gr.Tab('🗂️ JSON Result'):
                         output_json = gr.Code(label='Structured Data',
@@ -450,7 +445,7 @@ def create_demo() -> gr.Blocks:
                   inputs=[input_img],
                   outputs=[
                       output_vis, output_md, output_json, download_output,
-                      output_md_raw, output_md_raw_with_base64
+                      output_md_raw
                   ])
 
     return demo
@@ -496,7 +491,7 @@ def launch_demo(
             auto_download=auto_download
         )
     except Exception as e:
-        logger.error(f"Failed to initialize pipeline: {e}")
+        logger.error(f'Failed to initialize pipeline: {e}')
         raise e
 
     demo = create_demo()

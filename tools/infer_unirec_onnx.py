@@ -165,13 +165,13 @@ def check_and_download_models(encoder_path, decoder_path, mapping_path, auto_dow
     if not missing_files:
         return encoder_path, decoder_path, mapping_path
 
-    print(f'⚠️  Missing model files:')
+    print('⚠️  Missing model files:')
     for name, path in missing_files.items():
         print(f'   - {name}: {path}')
 
     if not auto_download:
         raise FileNotFoundError(
-            f'Model files not found. Please download from:\n'
+            'Model files not found. Please download from:\n'
             '  - https://huggingface.co/topdu/unirec_0_1b_onnx\n'
             '  - https://modelscope.cn/models/topdktu/unirec_0_1b_onnx'
         )
@@ -461,8 +461,8 @@ class UniRecONNX:
         gpu_providers = []
         if 'CUDAExecutionProvider' in available_providers:
             gpu_providers.append('CUDAExecutionProvider')
-        if 'TensorrtExecutionProvider' in available_providers:
-            gpu_providers.append('TensorrtExecutionProvider')
+        # if 'TensorrtExecutionProvider' in available_providers:
+        #     gpu_providers.append('TensorrtExecutionProvider')
 
         if use_gpu is True:
             # Force GPU

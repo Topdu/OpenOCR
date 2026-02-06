@@ -231,8 +231,8 @@ class LayoutDetectorONNX:
             output.name for output in self.session.get_outputs()
         ]
 
-        logger.info(f"   Input names: {self.input_names}")
-        logger.info(f"   Output names: {self.output_names}")
+        logger.info(f'   Input names: {self.input_names}')
+        logger.info(f'   Output names: {self.output_names}')
 
         self.label_map = {
             0: 'abstract',
@@ -280,10 +280,10 @@ class LayoutDetectorONNX:
 
         # Check for GPU providers
         gpu_providers = []
-        if 'TensorrtExecutionProvider' in available_providers:
-            gpu_providers.append('TensorrtExecutionProvider')
         if 'CUDAExecutionProvider' in available_providers:
             gpu_providers.append('CUDAExecutionProvider')
+        # if 'TensorrtExecutionProvider' in available_providers:
+        #     gpu_providers.append('TensorrtExecutionProvider')
 
         if use_gpu is True:
             # Force GPU
@@ -457,7 +457,7 @@ class LayoutDetectorONNX:
         # 给每个 label 添加顺序编号
         for idx, box in enumerate(result_dict['boxes'], start=1):
             base_label = box['label']
-            box['label'] = f"{base_label}_{idx:02d}"
+            box['label'] = f'{base_label}_{idx:02d}'
 
         # 裁剪图像区域
         blocks = self.crop_by_boxes(image, result_dict['boxes'])
@@ -650,7 +650,7 @@ class OpenDocONNX:
         # 读取图像
         image = cv2.imread(actual_path)
         if image is None:
-            raise ValueError(f"Failed to read image: {actual_path}")
+            raise ValueError(f'Failed to read image: {actual_path}')
 
         ori_h, ori_w = image.shape[:2]
 
@@ -763,7 +763,7 @@ class OpenDocONNX:
                 text, token_ids = self.vlm_recognizer(
                     image=pil_image, max_length=max_length)
             except Exception as e:
-                logger.error(f"  Error processing block: {e}")
+                logger.error(f'  Error processing block: {e}')
                 text = ''
 
             # 使用 markdown_converter 进行后处理
@@ -856,7 +856,7 @@ class OpenDocONNX:
                 })
 
         total_time = time.time() - start_time
-        logger.info(f"  Total time: {total_time: .3f}s")
+        logger.info(f'  Total time: {total_time: .3f}s')
 
         result = {
             'input_path': actual_path if not is_temp_file else '<numpy_array>',
@@ -885,7 +885,7 @@ class OpenDocONNX:
             del result['blocks']
 
         img_name, img_dir = _get_image_name_and_dir(result, output_path)
-        json_path = os.path.join(img_dir, f"{img_name}.json")
+        json_path = os.path.join(img_dir, f'{img_name}.json')
 
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
@@ -895,7 +895,7 @@ class OpenDocONNX:
     def save_to_markdown(self, result: Dict, output_path: str):
         """保存结果为Markdown，按阅读顺序包含图片"""
         img_name, img_dir = _get_image_name_and_dir(result, output_path)
-        md_path = os.path.join(img_dir, f"{img_name}.md")
+        md_path = os.path.join(img_dir, f'{img_name}.md')
 
         # 创建imgs子目录
         imgs_dir = os.path.join(img_dir, 'imgs')
@@ -995,18 +995,18 @@ class OpenDocONNX:
 
         # 根据标签类型格式化输出
         if 'title' in base_label or base_label == 'doc_title':
-            f.write(f"## {merged_text}\n\n")
+            f.write(f'## {merged_text}\n\n')
         elif 'table' in base_label:
-            f.write(f"{merged_text}\n\n")
+            f.write(f'{merged_text}\n\n')
         elif 'formula' in base_label or base_label == 'equation':
-            f.write(f"$${merged_text}$$\n\n")
+            f.write(f'$${merged_text}$$\n\n')
         else:
-            f.write(f"{merged_text}\n\n")
+            f.write(f'{merged_text}\n\n')
 
     def save_visualization(self, result: Dict, output_path: str):
         """保存可视化结果"""
         img_name, img_dir = _get_image_name_and_dir(result, output_path)
-        vis_path = os.path.join(img_dir, f"{img_name}_vis.jpg")
+        vis_path = os.path.join(img_dir, f'{img_name}_vis.jpg')
 
         image = cv2.imread(result['input_path'])
 
@@ -1022,7 +1022,7 @@ class OpenDocONNX:
             color = self.colors.get(base_label, (255, 0, 0))
 
             cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(image, f"{label}: {score: .2f}", (x1, y1 - 10),
+            cv2.putText(image, f'{label}: {score: .2f}', (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         cv2.imwrite(vis_path, image)
@@ -1135,7 +1135,7 @@ def main():
     # 处理每张图像
     for idx, img_path in enumerate(img_list):
         logger.info(
-            f"\n[{idx + 1}/{len(img_list)}] Processing: {os.path.basename(img_path)}"
+            f'\n[{idx + 1}/{len(img_list)}] Processing: {os.path.basename(img_path)}'
         )
 
         try:
@@ -1157,7 +1157,7 @@ def main():
                 opendoc_onnx.save_to_markdown(result, args.output_path)
 
         except Exception as e:
-            logger.error(f"Error processing {img_path}: {str(e)}")
+            logger.error(f'Error processing {img_path}: {str(e)}')
             import traceback
             traceback.print_exc()
             continue

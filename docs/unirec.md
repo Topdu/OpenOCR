@@ -39,6 +39,8 @@ openocr --task unirec --input_path ./images --output_path ./results
 Launch Gradio web interface for universal recognition:
 
 ```bash
+pip install gradio==4.20.0
+pip install huggingface-hub==0.36.0 modelscope
 openocr --task launch_unirec_demo --server_port 7862 --share
 ```
 
