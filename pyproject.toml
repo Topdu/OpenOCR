@@ -40,44 +40,35 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy==1.26.4",
-    "opencv-python<=4.12.0",
-    "Pillow>=8.0.0",
-    "pyyaml>=5.4.0",
-    "tqdm>=4.60.0",
-    "rapidfuzz>=2.0.0",
-    "pyclipper>=1.3.0",
+    "numpy",
+    "opencv-python",
+    "Pillow",
+    "pyyaml",
+    "tqdm",
+    "rapidfuzz",
+    "pyclipper",
     "pydantic",
     "shapely",
+    "huggingface-hub",
+    "modelscope",
+    "onnxruntime",
 ]
 
 [project.optional-dependencies]
-onnx = [
-    "onnxruntime>=1.12.0",
-]
 onnx-gpu = [
-    "onnxruntime-gpu>=1.12.0",
+    "onnxruntime-gpu",
 ]
 pytorch = [
-    "torch>=1.10.0",
-    "torchvision>=0.11.0",
+    "torch",
+    "torchvision",
 ]
 gradio = [
-    "gradio==4.20.0",
-]
-huggingface = [
-    "huggingface-hub>=0.16.0",
-]
-modelscope = [
-    "modelscope>=1.9.0",
+    "gradio",
 ]
 all = [
-    "onnxruntime>=1.12.0",
-    "torch>=1.10.0",
-    "torchvision>=0.11.0",
-    "gradio==4.20.0",
-    "huggingface-hub>=0.16.0",
-    "modelscope>=1.9.0",
+    "torch",
+    "torchvision",
+    "gradio",
 ]
 
 [project.urls]

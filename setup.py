@@ -41,50 +41,6 @@ setup(
     # Python version requirement
     python_requires='>=3.8',
 
-    # Dependencies
-    install_requires=[
-        'numpy==1.26.4',
-        'opencv-python<=4.12.0',
-        'Pillow<=9.5.0',
-        'pyyaml<=6.0.0',
-        'tqdm<=4.65.0',
-        'rapidfuzz<=2.0.0',
-        'pyclipper<=1.3.0',
-        'pydantic',
-        'shapely',
-    ],
-
-    # Optional dependencies
-    extras_require={
-        'onnx': [
-            'onnxruntime>=1.12.0',
-            'onnxruntime-gpu>=1.12.0',
-        ],
-        'pytorch': [
-            'torch>=1.10.0',
-            'torchvision>=0.11.0',
-        ],
-        'gradio': [
-            'gradio==4.20.0',
-            'onnxruntime>=1.12.0',
-            'onnxruntime-gpu>=1.12.0',
-        ],
-        'huggingface': [
-            'huggingface-hub>=0.16.0',
-        ],
-        'modelscope': [
-            'modelscope>=1.9.0',
-        ],
-        'all': [
-            'onnxruntime>=1.12.0',
-            'torch>=1.10.0',
-            'torchvision>=0.11.0',
-            'gradio==4.20.0',
-            'huggingface-hub>=0.16.0',
-            'modelscope>=1.9.0',
-        ],
-    },
-
     # Entry points for command-line scripts
     entry_points={
         'console_scripts': [

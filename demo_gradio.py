@@ -1,7 +1,7 @@
 # @Author: OpenOCR
 # @Contact: 784990967@qq.com
 import os
-import gradio as gr  # gradio==4.20.0
+import gradio as gr
 
 os.environ['FLAGS_allocator_strategy'] = 'auto_growth'
 import cv2
@@ -9,6 +9,8 @@ import numpy as np
 import json
 import time
 from PIL import Image
+from pathlib import Path
+
 from tools.infer_e2e import OpenOCRE2E, check_and_download_font, draw_ocr_box_txt
 from tools.download_example_images import get_example_images_path
 
@@ -218,8 +220,8 @@ def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
                                  img_output,
                                  img_mask,
                              ])
-
-    demo.launch(share=share, server_port=server_port, server_name=server_name)
+    allowed_path = str(Path.home() / '.cache' / 'openocr')
+    demo.launch(share=share, server_port=server_port, server_name=server_name, allowed_paths=[allowed_path])
     return demo
 
 

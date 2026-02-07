@@ -999,7 +999,7 @@ class OpenDocONNX:
         elif 'table' in base_label:
             f.write(f'{merged_text}\n\n')
         elif 'formula' in base_label or base_label == 'equation':
-            f.write(f'$${merged_text}$$\n\n')
+            f.write(f'{merged_text}\n\n')
         else:
             f.write(f'{merged_text}\n\n')
 

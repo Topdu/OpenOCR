@@ -6,6 +6,7 @@ import base64
 import argparse
 import gradio as gr
 from PIL import Image
+from pathlib import Path
 
 from tools.infer_doc_onnx import OpenDocONNX
 from tools.utils.logging import get_logger
@@ -496,10 +497,13 @@ def launch_demo(
 
     demo = create_demo()
     # Launch with settings from arguments
+    allowed_path = str(Path.home() / '.cache' / 'openocr')
+    # Launch demo
     demo.launch(
         share=share,
+        server_name=server_name,
         server_port=server_port,
-        server_name=server_name
+        allowed_paths=[allowed_path]
     )
     return demo
 

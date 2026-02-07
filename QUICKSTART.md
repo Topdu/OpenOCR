@@ -18,13 +18,13 @@ Visit: https://github.com/Topdu/OpenOCR
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python==0.1.0.dev0 huggingface-hub==0.36.0 modelscope onnxruntime
+pip install openocr-python==0.1.0.dev0
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git
 cd OpenOCR
 python build_package.py
-pip install ./build/dist/openocr_python-*.whl huggingface-hub==0.36.0 modelscope onnxruntime
+pip install ./build/dist/openocr_python-*.whl
 ```
 
 ## Command Line Usage
@@ -110,7 +110,7 @@ openocr --task doc --input_path path/to/img --use_layout_detection --save_vis --
 
 ```bash
 # Install gradio
-pip install gradio==4.20.0
+pip install gradio
 ```
 
 ### OCR Demo
@@ -118,7 +118,6 @@ pip install gradio==4.20.0
 Launch Gradio web interface for OCR tasks:
 
 ```bash
-pip install onnxruntime
 # Local access only
 openocr --task launch_openocr_demo --server_port 7860
 
@@ -131,7 +130,6 @@ openocr --task launch_openocr_demo --server_port 7860 --share
 Launch Gradio web interface for universal recognition:
 
 ```bash
-pip install onnxruntime
 openocr --task launch_unirec_demo --server_port 7861 --share
 ```
 
@@ -140,7 +138,6 @@ openocr --task launch_unirec_demo --server_port 7861 --share
 Launch Gradio web interface for document parsing:
 
 ```bash
-pip install onnxruntime
 openocr --task launch_opendoc_demo --server_port 7862 --share
 ```
 

@@ -82,8 +82,7 @@ openocr --task rec --input_path ./word_images --rec_batch_num 16
 Launch Gradio web interface for OCR tasks:
 
 ```bash
-pip install gradio==4.20.0
-pip install huggingface-hub==0.36.0 modelscope
+pip install gradio
 openocr --task launch_openoce_demo --server_port 7862 --share
 ```
 
