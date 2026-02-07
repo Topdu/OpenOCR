@@ -14,7 +14,7 @@ It addresses structural variability and semantic entanglement by using a hierarc
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python huggingface-hub==0.36.0 modelscope onnxruntime
+pip install openocr-python==0.1.0.dev0 huggingface-hub==0.36.0 modelscope onnxruntime
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git

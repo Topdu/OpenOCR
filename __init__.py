@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 # from .tools.infer_doc_onnx import OpenDocONNX
 from .openocr import OpenOCR, main
 
-__version__ = '0.1.0.dev4'
+__version__ = '0.1.0.dev'
 
 # Lazy import for demo interfaces to avoid initialization on import
 def launch_openocr_demo(*args, **kwargs):
