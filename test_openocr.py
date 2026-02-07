@@ -7,6 +7,7 @@ import os
 import sys
 import subprocess
 from pathlib import Path
+import json
 
 # Add parent directory to path for imports
 __dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -120,6 +121,10 @@ class OpenOCRTester:
                     is_visualize=True,
                     rec_batch_num=6
                 )
+                for result in results:
+                    image_name, ocr_result = result.split('\t')
+                    ocr_result = json.loads(ocr_result)
+                    logger.info(f'✅ OCR: {image_name} results: {ocr_result}')
                 logger.info(f'✅ OCR: Processed successfully, results saved to {output_path}')
             else:
                 logger.warning('⚠️  OCR: No test image available')

@@ -149,6 +149,7 @@ openocr --task launch_opendoc_demo --server_port 7862 --share
 ### OCR Task
 
 ```python
+import json
 from openocr import OpenOCR
 
 # Initialize OCR engine
@@ -163,8 +164,9 @@ results, time_dicts = ocr(
 
 # Access results
 for result in results:
-    for line in result:
-        print(f"Text: {line['text']}, Score: {line['score']}")
+    image_name, ocr_result = result.split('\t')
+    ocr_result = json.loads(ocr_result)
+    print(f"✅ OCR: {image_name} results: {ocr_result}")
 ```
 
 ### Detection Task
