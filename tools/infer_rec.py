@@ -45,9 +45,12 @@ def check_and_download_model(model_name: str, url: str):
     if os.path.exists(model_name):
         return model_name
 
+    # Strip leading './' from model_name to get a clean filename
+    clean_name = model_name.lstrip('./')
+
     # 固定缓存路径为用户主目录下的 ".cache/openocr"
     cache_dir = Path.home() / '.cache' / 'openocr'
-    model_path = cache_dir / model_name
+    model_path = cache_dir / clean_name
 
     # 如果模型文件已存在，直接返回路径
     if model_path.exists():
@@ -68,7 +71,7 @@ def check_and_download_model(model_name: str, url: str):
         import shutil
         downloaded_path = model_file_download(
             model_id=modelscope_repo,
-            file_path=model_name,
+            file_path=clean_name,
             cache_dir=str(cache_dir.parent)
         )
         # 复制文件到目标位置（处理符号链接）
@@ -87,7 +90,7 @@ def check_and_download_model(model_name: str, url: str):
         import shutil
         downloaded_path = hf_hub_download(
             repo_id=huggingface_repo,
-            filename=model_name,
+            filename=clean_name,
             cache_dir=str(cache_dir.parent)
         )
         # 复制文件到目标位置（HuggingFace 返回的可能是符号链接）
