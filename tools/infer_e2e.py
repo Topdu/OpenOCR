@@ -98,6 +98,15 @@ class OpenOCRE2E(object):
             无返回值。
 
         """
+        # Auto-switch backend for server mode
+        if mode == 'server' and backend != 'torch':
+            logger.warning(
+                f"Server mode only supports 'torch' backend, got '{backend}'. "
+                f"Automatically switching to 'torch' backend. "
+                f"Please make sure 'torch' and 'torchvision' are installed: "
+                f"pip install torch torchvision")
+            backend = 'torch'
+
         # Parse use_gpu parameter
         if use_gpu == 'auto':
             try:

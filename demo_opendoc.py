@@ -26,18 +26,18 @@ def get_pipeline(
     use_gpu=None,
     auto_download=True
 ) -> OpenDocONNX:
-    """获取或初始化OpenDocONNX流水线
+    """Get or initialize OpenDocONNX pipeline.
 
     Args:
-        layout_model_path: 版面检测ONNX模型路径
-        unirec_encoder_path: UniRec编码器ONNX模型路径
-        unirec_decoder_path: UniRec解码器ONNX模型路径
-        tokenizer_mapping_path: Tokenizer映射文件路径
+        layout_model_path: Path to layout detection ONNX model.
+        unirec_encoder_path: Path to UniRec encoder ONNX model.
+        unirec_decoder_path: Path to UniRec decoder ONNX model.
+        tokenizer_mapping_path: Path to tokenizer mapping file.
         use_gpu: Whether to use GPU. If None, auto-detect.
-        auto_download: If True, automatically download missing models
+        auto_download: If True, automatically download missing models.
 
     Returns:
-        OpenDocONNX: 初始化好的OpenDocONNX实例
+        OpenDocONNX: Initialized OpenDocONNX instance.
     """
     global pipeline
     if pipeline is None:
@@ -61,13 +61,13 @@ current_pipeline = None
 def process_image(
     image_path: str | None
 ) -> tuple[Image.Image | None, str, str, str | None, str, str]:
-    """处理图片并进行OCR识别
+    """Process image and perform OCR recognition.
 
     Args:
-        image_path: 图片文件路径，None表示无图片
+        image_path: Image file path, None if no image.
 
     Returns:
-        tuple: (可视化图片, Markdown内容(base64图片), JSON内容, ZIP文件路径, 原始Markdown, Markdown内容(base64图片))
+        tuple: (visualization image, Markdown content with base64 images, JSON content, ZIP file path, raw Markdown)
     """
     global current_pipeline
 
@@ -107,7 +107,7 @@ def process_image(
         if result:
             logger.info(f'Result keys: {result.keys()}')
             if 'recognition_results' in result:
-                logger.info(f'Recognition results count: {len(result["recognition_results"])}')
+                logger.info(f'Recognition results count: {len(result['recognition_results'])}')
 
         if not result:
             logger.warning('Pipeline returned empty result')
@@ -269,9 +269,17 @@ body, .gradio-container {
     background: var(--background-fill-primary);
 }
 #vis_output {
-    min-height: 400px;
     border-radius: 12px;
     overflow: hidden;
+}
+.image-container img, #vis_output img {
+    max-width: 100%;
+    max-height: 480px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 #md_preview {
     max-height: 600px;
@@ -347,10 +355,10 @@ LATEX_DELIMS = [
 
 # Define the Gradio Interface
 def create_demo() -> gr.Blocks:
-    """创建Gradio演示界面
+    """Create Gradio demo interface.
 
     Returns:
-        gr.Blocks: Gradio Blocks应用实例
+        gr.Blocks: Gradio Blocks application instance.
     """
     # Get example images path and download if necessary
     example_img_dir = get_example_images_path(demo_type='doc')
@@ -386,7 +394,7 @@ def create_demo() -> gr.Blocks:
             with gr.Column(scale=4, elem_classes=['upload-section']):
                 input_img = gr.Image(type='filepath',
                                      label='📤 Upload Document Image',
-                                     height=400)
+                                     elem_classes=['image-container'])
 
                 # Add examples if available
                 if example_images:

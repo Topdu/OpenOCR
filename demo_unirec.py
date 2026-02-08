@@ -12,7 +12,7 @@ from tools.infer_unirec_onnx import UniRecONNX, clean_special_tokens
 from tools.download_example_images import get_example_images_path
 from tools.to_markdown import MarkdownConverter
 
-# 创建全局 markdown_converter 实例
+# Create global markdown_converter instance
 markdown_converter = MarkdownConverter()
 
 # LaTeX delimiters for formula rendering
@@ -81,7 +81,7 @@ def stream_recognize_image(input_image, max_length=2048):
         max_length: Maximum generation length
     """
     if input_image is None:
-        yield '请先上传一张图片。', '**请先上传一张图片。**'
+        yield 'Please upload an image first.', '**Please upload an image first.**'
         return
 
     # Convert to PIL Image if needed
@@ -138,7 +138,7 @@ def stream_recognize_image(input_image, max_length=2048):
         current_text = model.tokenizer.decode(generated_ids[-1:], skip_special_tokens=False)
         cleaned_text += clean_special_tokens(current_text)
 
-        yield cleaned_text, '_正在识别中，请稍候..._'
+        yield cleaned_text, '_Recognizing, please wait..._'
 
         # Check for EOS
         if next_token_id == eos_token_id:
@@ -149,7 +149,7 @@ def stream_recognize_image(input_image, max_length=2048):
         formatted_result = format_markdown_output(cleaned_text)
         yield formatted_result, formatted_result
     else:
-        yield '识别失败，请重试。', '**识别失败，请重试。**'
+        yield 'Recognition failed, please try again.', '**Recognition failed, please try again.**'
 
 
 def format_markdown_output(markdown_text):
@@ -161,7 +161,7 @@ def format_markdown_output(markdown_text):
     - Basic markdown formatting
     """
     if not markdown_text:
-        return '_等待识别结果..._'
+        return '_Waiting for recognition results..._'
     if '<table>' in markdown_text:
         markdown_text = markdown_converter._handle_table(markdown_text)
     if '\\(' in markdown_text or '\\[' in markdown_text:
@@ -192,28 +192,106 @@ def create_demo() -> gr.Blocks:
                 example_images.append(os.path.join(example_img_dir, file))
         example_images = sorted(example_images)
 
-    with gr.Blocks(theme=gr.themes.Soft()) as demo:
+    custom_css = """
+body, .gradio-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+}
+.app-header {
+    text-align: center;
+    max-width: 1200px;
+    margin: 20px auto !important;
+    padding: 20px;
+}
+.app-header h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.app-header p {
+    font-size: 1.1em;
+    opacity: 0.7;
+    line-height: 1.6;
+}
+.quick-links {
+    text-align: center;
+    padding: 12px 0;
+    border: 1px solid var(--border-color-primary);
+    border-radius: 12px;
+    margin: 16px auto;
+    max-width: 1200px;
+    background: var(--background-fill-secondary);
+}
+.quick-links a {
+    margin: 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--link-text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.quick-links a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+.upload-section {
+    border: 2px dashed var(--border-color-primary);
+    border-radius: 12px;
+    padding: 20px;
+    background: var(--background-fill-secondary);
+    transition: all 0.3s ease;
+}
+.upload-section:hover {
+    border-color: var(--color-accent);
+    background: var(--background-fill-primary);
+}
+.image-container img {
+    max-width: 100%;
+    max-height: 480px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+.gradio-button-primary {
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+.gradio-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-drop-lg) !important;
+}
+"""
+
+    with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
         gr.HTML("""
-                <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters</a></h1>
-                <p style='text-align: center;'>0.1B超轻量模型统一文本与公式识别（由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建）</p>
-                <p style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR/blob/main/docs/unirec.md">[本地GPU部署]</a>获取快速识别体验</p>"""
-                )
-        gr.Markdown('上传一张图片，点击"运行识别"按钮进行文本和公式识别。')
+        <div class="app-header">
+            <h1><a href="https://github.com/Topdu/OpenOCR">UniRec-0.1B</a></h1>
+            <p>Unified Text and Formula Recognition with 0.1B Parameters (built by <a href="https://fvl.fudan.edu.cn">FVL Lab</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a>)</p>
+        </div>
+        <div class="quick-links">
+            <a href="https://github.com/Topdu/OpenOCR" target="_blank">📖 GitHub</a>
+            <a href="https://arxiv.org/pdf/2512.21095" target="_blank">📄 Paper</a>
+            <a href="https://huggingface.co/topdu/unirec-0.1b" target="_blank">🤗 Model</a>
+            <a href="https://github.com/Topdu/OpenOCR/blob/main/docs/unirec.md" target="_blank">🚀 Local GPU Deployment</a>
+        </div>
+        """)
+        gr.Markdown('Upload an image and click the "Run Recognition" button to recognize text and formulas.')
         with gr.Row():
-            with gr.Column(scale=4):  # 左侧竖排：图片 + 按钮
-                image_input = gr.Image(label='上传图片 or 粘贴截图', type='pil')
+            with gr.Column(scale=4, elem_classes=['upload-section']):  # Left column: image + buttons
+                image_input = gr.Image(label='Upload Image or Paste Screenshot', type='pil', elem_classes=['image-container'])
 
                 # Add examples if available
                 if example_images:
                     gr.Examples(
                         examples=example_images,
                         inputs=image_input,
-                        label='📚 示例图片'
+                    label='📚 Example Images'
                     )
 
                 with gr.Row():
-                    run_button = gr.Button('🚀 运行识别', variant='primary')
-                    clear_button = gr.Button('🗑️ 清空', variant='secondary')
+                    run_button = gr.Button('🚀 Run Recognition', variant='primary')
+                    clear_button = gr.Button('🗑️ Clear', variant='secondary')
 
             with gr.Column(scale=6):
                 with gr.Tabs():
@@ -223,20 +301,20 @@ def create_demo() -> gr.Blocks:
                                                 lines=20)
                     with gr.Tab('📝 Markdown Preview'):
                         markdown_render = gr.Markdown(
-                                value='_渲染后的表格/公式将显示在这里..._',
+                                value='_Rendered tables/formulas will be displayed here..._',
                                 latex_delimiters=LATEX_DELIMS,
                                 elem_id='md_preview')
 
-        # 点击运行按钮后触发
+        # Trigger recognition on button click
         run_button.click(
             stream_recognize_image,
             inputs=[image_input],
             outputs=[markdown_output, markdown_render]
         )
 
-        # 清空按钮功能：清空图片和输出结果
+        # Clear button: reset image and output
         def clear_all():
-            return None, '', '_渲染后的表格/公式将显示在这里..._'
+            return None, '', '_Rendered tables/formulas will be displayed here..._'
 
         clear_button.click(
             clear_all,

@@ -127,13 +127,88 @@ def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
     Returns:
         gr.Blocks: Gradio demo instance
     """
-    css = '.image-container img { width: 100%; max-height: 320px;}'
+    custom_css = """
+body, .gradio-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+}
+.app-header {
+    text-align: center;
+    max-width: 1200px;
+    margin: 20px auto !important;
+    padding: 20px;
+}
+.app-header h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.app-header p {
+    font-size: 1.1em;
+    opacity: 0.7;
+    line-height: 1.6;
+}
+.quick-links {
+    text-align: center;
+    padding: 12px 0;
+    border: 1px solid var(--border-color-primary);
+    border-radius: 12px;
+    margin: 16px auto;
+    max-width: 1200px;
+    background: var(--background-fill-secondary);
+}
+.quick-links a {
+    margin: 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--link-text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.quick-links a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+.image-container img {
+    max-width: 100%;
+    max-height: 480px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+.upload-section {
+    border: 2px dashed var(--border-color-primary);
+    border-radius: 12px;
+    padding: 20px;
+    background: var(--background-fill-secondary);
+    transition: all 0.3s ease;
+}
+.upload-section:hover {
+    border-color: var(--color-accent);
+    background: var(--background-fill-primary);
+}
+.gradio-button-primary {
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+.gradio-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-drop-lg) !important;
+}
+"""
 
-    with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
+    with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
         gr.HTML("""
-                <h1 style='text-align: center;'><a href="https://github.com/Topdu/OpenOCR">OpenOCR</a></h1>
-                <p style='text-align: center;'>准确高效的通用 OCR 系统 （由<a href="https://fvl.fudan.edu.cn">FVL实验室</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a> 创建） <a href="https://github.com/Topdu/OpenOCR/tree/main?tab=readme-ov-file#quick-start">[本地快速部署]</a></p>"""
-                )
+        <div class="app-header">
+            <h1><a href="https://github.com/Topdu/OpenOCR">OpenOCR</a></h1>
+            <p>Accurate and Efficient General OCR System (built by <a href="https://fvl.fudan.edu.cn">FVL Lab</a> <a href="https://github.com/Topdu/OpenOCR">OCR Team</a>)</p>
+        </div>
+        <div class="quick-links">
+            <a href="https://github.com/Topdu/OpenOCR" target="_blank">📖 GitHub</a>
+            <a href="https://github.com/Topdu/OpenOCR/tree/main?tab=readme-ov-file#quick-start" target="_blank">🚀 Quick Start</a>
+        </div>
+        """)
         with gr.Row():
             with gr.Column(scale=1):
                 input_image = gr.Image(label='Input image',
@@ -142,21 +217,21 @@ def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
                 examples = gr.Examples(examples=e2e_img_example,
                                        inputs=input_image,
                                        label='Examples')
-                downstream = gr.Button('🚀 运行识别', variant='primary')
+                downstream = gr.Button('🚀 Run Recognition', variant='primary')
 
-                # 添加参数调节组件
+                # Parameter adjustment components
                 with gr.Column():
                     with gr.Row():
                         det_input_size_textbox = gr.Number(
                             label='Detection Input Size',
                             value=960,
-                            info='检测网络输入尺寸的最长边，默认为960。')
+                        info='Max side length of detection input, default 960.')
                         det_score_mode_dropdown = gr.Dropdown(
                             ['slow', 'fast'],
                             value='slow',
                             label='Detection Score Mode',
-                            info=
-                            '文本框的置信度计算模式，默认为 slow。slow 模式计算速度较慢，但准确度较高。fast 模式计算速度较快，但准确度较低。'
+                        info=
+                            'Confidence score mode for text boxes, default slow. Slow mode is more accurate but slower. Fast mode is faster but less accurate.'
                         )
                     with gr.Row():
                         rec_drop_score_slider = gr.Slider(
@@ -165,14 +240,14 @@ def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
                             value=0.4,
                             step=0.01,
                             label='Recognition Drop Score',
-                            info='识别置信度阈值，默认值为0.4。低于该阈值的识别结果和对应的文本框被丢弃。')
+                        info='Recognition confidence threshold, default 0.4. Results below this threshold will be discarded.')
                         mask_thresh_slider = gr.Slider(
                             0.0,
                             1.0,
                             value=0.3,
                             step=0.01,
                             label='Mask Threshold',
-                            info='Mask 阈值，用于二值化 mask，默认值为0.3。如果存在文本截断时，请调低该值。')
+                        info='Mask threshold for binarization, default 0.3. Lower this value if text is truncated.')
                     with gr.Row():
                         box_thresh_slider = gr.Slider(
                             0.0,
@@ -180,21 +255,20 @@ def launch_demo(share=False, server_port=7860, server_name='0.0.0.0'):
                             value=0.6,
                             step=0.01,
                             label='Box Threshold',
-                            info='文本框置信度阈值，默认值为0.6。如果存在文本被漏检时，请调低该值。')
+                        info='Text box confidence threshold, default 0.6. Lower this value if text boxes are missed.')
                         unclip_ratio_slider = gr.Slider(
                             1.5,
                             2.0,
                             value=1.5,
                             step=0.05,
                             label='Unclip Ratio',
-                            info='文本框解析时的膨胀系数，默认值为1.5。值越大文本框越大。')
+                        info='Expansion ratio for text box parsing, default 1.5. Larger values produce larger text boxes.')
 
-                    # 模型选择组件
                     model_type_dropdown = gr.Dropdown(
                         ['mobile', 'server'],
                         value='mobile',
                         label='Model Type',
-                        info='选择 OCR 模型类型：高效率模型mobile，高精度模型server。')
+                        info='Select OCR model type: mobile for efficiency, server for accuracy.')
 
             with gr.Column(scale=1):
                 img_mask = gr.Image(label='mask',
