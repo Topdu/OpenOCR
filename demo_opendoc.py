@@ -107,7 +107,7 @@ def process_image(
         if result:
             logger.info(f'Result keys: {result.keys()}')
             if 'recognition_results' in result:
-                logger.info(f'Recognition results count: {len(result['recognition_results'])}')
+                logger.info(f'Recognition results count: {len(result["recognition_results"])}')
 
         if not result:
             logger.warning('Pipeline returned empty result')
