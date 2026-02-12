@@ -188,7 +188,7 @@ def _get_image_name_and_dir(result: Dict, output_path: str):
 
     # For PDF pages, append page number to avoid overwriting
     if 'pdf_page' in result:
-        img_name = f'{img_name}_page{result['pdf_page']}'
+        img_name = f'{img_name}_page{result["pdf_page"]}'
 
     img_dir = os.path.join(output_path, img_name)
     os.makedirs(img_dir, exist_ok=True)
@@ -563,7 +563,7 @@ class OpenDocONNX:
 
         # Markdown忽略的标签
         self.markdown_ignore_labels = [
-            'number', 'footnote', 'header', 'footer', 'aside_text', 'footer_image', 'header_image','chart'
+            'number', 'footnote', 'header', 'footer', 'aside_text', 'footer_image', 'header_image', 'chart'
         ]
 
         # 为所有25种标签类型定义不同的颜色 (BGR格式)

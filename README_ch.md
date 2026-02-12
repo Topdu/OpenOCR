@@ -87,7 +87,7 @@ OpenOCR 致力于构建一个为学术研究与实际应用搭建桥梁的通用
 
 ## 近期更新
 
-- **2026.02.12**: 🔥 发布 openocr-python 0.1.4，支持PDF文件作为输入；文档元素并行识别；增加Agent [skill](https://clawhub.ai/Topdu/openocr-skill)，[使用说明文档](./QUICKSTART.md)
+- **2026.02.12**: 🔥 发布 openocr-python 0.1.5，支持PDF文件作为输入；文档元素并行识别；增加Agent [skill](https://clawhub.ai/Topdu/openocr-skill)，[使用说明文档](./QUICKSTART.md)
 - **2026.02.06**: 🔥 发布 openocr-python 0.1.3，采用统一接口实现OpenOCR、文档解析OpenDoc-0.1B和UniRec-0.1B，[使用说明文档](./QUICKSTART.md)
 - **2026.01.13**: 🔥 开源 [CMER](./configs/rec/cmer/) 代码和 and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) 数据集.
 - **2026.01.07**: 🔥 开源 [UniRec40M](https://huggingface.co/datasets/topdu/UniRec40M) 数据集，包含4000万多层次文本、公式和文本公式混合内容识别数据.

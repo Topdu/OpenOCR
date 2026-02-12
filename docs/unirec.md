@@ -14,7 +14,7 @@ It addresses structural variability and semantic entanglement by using a hierarc
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python==0.1.3
+pip install openocr-python==0.1.5
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git
