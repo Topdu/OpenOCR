@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import onnxruntime as ort
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from tools.utils.logging import get_logger
 from tools.utils.utility import get_image_file_list
 
@@ -184,6 +185,10 @@ def _get_image_name_and_dir(result: Dict, output_path: str):
     img_name = os.path.basename(result['input_path'])
     if '.' in img_name:
         img_name = img_name.rsplit('.', 1)[0]
+
+    # For PDF pages, append page number to avoid overwriting
+    if 'pdf_page' in result:
+        img_name = f'{img_name}_page{result['pdf_page']}'
 
     img_dir = os.path.join(output_path, img_name)
     os.makedirs(img_dir, exist_ok=True)
@@ -530,6 +535,7 @@ class OpenDocONNX:
         use_layout_detection: bool = True,
         use_chart_recognition: bool = True,
         auto_download: bool = True,
+        max_parallel_blocks: int = 4,
     ):
         """
         初始化OpenDoc ONNX Pipeline
@@ -544,9 +550,11 @@ class OpenDocONNX:
             use_layout_detection: 是否使用版面检测
             use_chart_recognition: 是否识别图表
             auto_download: If True, automatically download missing models
+            max_parallel_blocks: Maximum number of blocks to process in parallel for VLM recognition (default: 4)
         """
         self.use_layout_detection = use_layout_detection
         self.use_chart_recognition = use_chart_recognition
+        self.max_parallel_blocks = max(1, max_parallel_blocks)
 
         # Set default paths if not provided
         if layout_model_path is None:
@@ -594,7 +602,8 @@ class OpenDocONNX:
         else:
             self.layout_detector = None
 
-        # 初始化VLM模型
+        # 初始化VLM模型 (shared across all parallel workers;
+        # ONNX Runtime sessions are thread-safe)
         self.vlm_recognizer = UniRecONNX(
             encoder_path=unirec_encoder_path,
             decoder_path=unirec_decoder_path,
@@ -602,6 +611,148 @@ class OpenDocONNX:
             use_gpu=use_gpu,
             auto_download=auto_download)
 
+    def _recognize_single_block(
+        self,
+        block_img: np.ndarray,
+        block_label: str,
+        block_index: int,
+        max_length: int,
+    ) -> Tuple[int, str]:
+        """Recognize a single block using the shared VLM recognizer.
+
+        The underlying ONNX Runtime session is thread-safe, so multiple
+        threads can call this method concurrently on the same session.
+
+        Args:
+            block_img: Block image in BGR format
+            block_label: Block label string
+            block_index: Original index in the block list (for preserving order)
+            max_length: Maximum generation length
+
+        Returns:
+            Tuple of (block_index, recognized_text)
+        """
+        # Convert BGR to RGB PIL Image
+        block_img_rgb = cv2.cvtColor(block_img, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(block_img_rgb)
+
+        try:
+            text, token_ids = self.vlm_recognizer(
+                image=pil_image, max_length=max_length)
+        except Exception as e:
+            logger.error(f'  Error processing block {block_index} ({block_label}): {e}')
+            text = ''
+
+        # Post-process with markdown_converter
+        if 'table' in block_label:
+            text = markdown_converter._handle_table(text)
+        elif 'formula' in block_label and block_label != 'formula_number':
+            text = markdown_converter._handle_formula(text)
+        else:
+            text = markdown_converter._handle_text(text)
+
+        return block_index, text
+
+    def _parallel_vlm_recognize(
+        self,
+        block_imgs: List[np.ndarray],
+        block_labels: List[str],
+        max_length: int,
+    ) -> List[str]:
+        """Run VLM recognition on multiple blocks in parallel.
+
+        Uses ThreadPoolExecutor with multiple UniRecONNX instances to process
+        up to max_parallel_blocks blocks simultaneously.
+
+        Args:
+            block_imgs: List of block images in BGR format
+            block_labels: List of block label strings
+            max_length: Maximum generation length
+
+        Returns:
+            List of recognized text strings (in original order)
+        """
+        num_blocks = len(block_imgs)
+        if num_blocks == 0:
+            return []
+
+        # Determine effective parallelism
+        num_workers = min(self.max_parallel_blocks, num_blocks)
+
+        # If only 1 worker, fall back to sequential processing (no overhead)
+        if num_workers <= 1:
+            logger.info(f'  VLM recognition: processing {num_blocks} block(s) sequentially')
+            results = []
+            for i, (block_img, block_label) in enumerate(zip(block_imgs, block_labels)):
+                _, text = self._recognize_single_block(
+                    block_img, block_label, i, max_length)
+                results.append(text)
+            return results
+
+        logger.info(f'  VLM recognition: processing {num_blocks} block(s) with {num_workers} parallel worker(s)')
+
+        # Initialize result list with placeholders
+        vl_rec_results = [''] * num_blocks
+
+        # Process blocks in batches of num_workers
+        for batch_start in range(0, num_blocks, num_workers):
+            batch_end = min(batch_start + num_workers, num_blocks)
+            batch_size = batch_end - batch_start
+            logger.info(f'  Processing batch [{batch_start + 1}-{batch_end}] / {num_blocks}')
+
+            with ThreadPoolExecutor(max_workers=batch_size) as executor:
+                futures = {}
+                for i in range(batch_start, batch_end):
+                    future = executor.submit(
+                        self._recognize_single_block,
+                        block_imgs[i],
+                        block_labels[i],
+                        i,
+                        max_length,
+                    )
+                    futures[future] = i
+
+                for future in as_completed(futures):
+                    try:
+                        block_index, text = future.result()
+                        vl_rec_results[block_index] = text
+                    except Exception as e:
+                        block_index = futures[future]
+                        logger.error(f'  Parallel VLM recognition failed for block {block_index}: {e}')
+                        vl_rec_results[block_index] = ''
+
+        return vl_rec_results
+
+    def _pdf_to_images(self, pdf_path: str) -> List[np.ndarray]:
+        """Convert PDF file to a list of BGR numpy images.
+
+        Args:
+            pdf_path: Path to PDF file
+
+        Returns:
+            List of numpy arrays in BGR format
+        """
+        try:
+            import fitz
+        except ImportError:
+            raise ImportError(
+                'PyMuPDF is required for PDF support. '
+                'Install with: pip install PyMuPDF'
+            )
+
+        images = []
+        with fitz.open(pdf_path) as pdf:
+            for pg in range(pdf.page_count):
+                page = pdf[pg]
+                mat = fitz.Matrix(2, 2)
+                pm = page.get_pixmap(matrix=mat, alpha=False)
+                # If width or height > 2000 pixels, don't enlarge the image
+                if pm.width > 2000 or pm.height > 2000:
+                    pm = page.get_pixmap(matrix=fitz.Matrix(1, 1), alpha=False)
+                img = Image.frombytes('RGB', [pm.width, pm.height], pm.samples)
+                img_bgr = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                images.append(img_bgr)
+        return images
 
     def __call__(
         self,
@@ -611,12 +762,12 @@ class OpenDocONNX:
         layout_threshold: Optional[float] = None,
         max_length: int = 2048,
         merge_layout_blocks: bool = True,
-    ) -> Dict:
+    ) -> Union[Dict, List[Dict]]:
         """
         Unified interface for OpenDoc inference.
 
         Args:
-            img_path: Path to input image (str or Path)
+            img_path: Path to input image or PDF file (str or Path)
             img_numpy: Input image as numpy array (BGR format)
             image_path: Alias for img_path (for backward compatibility)
             layout_threshold: Layout detection threshold
@@ -624,11 +775,31 @@ class OpenDocONNX:
             merge_layout_blocks: Whether to merge layout blocks
 
         Returns:
-            Prediction result dictionary
+            Prediction result dictionary for single image input.
+            List of prediction result dictionaries for PDF input (one per page).
         """
         # Handle backward compatibility: image_path is alias for img_path
         if image_path is not None and img_path is None:
             img_path = image_path
+
+        # Handle PDF input: convert to images and process each page
+        if img_path is not None and str(img_path).lower().endswith('.pdf'):
+            logger.info(f'Processing PDF file: {img_path}')
+            pdf_images = self._pdf_to_images(img_path)
+            logger.info(f'Found {len(pdf_images)} pages in PDF')
+            results = []
+            for page_idx, page_img in enumerate(pdf_images):
+                logger.info(f'\n--- Processing page {page_idx + 1}/{len(pdf_images)} ---')
+                page_result = self._infer_single_image(
+                    img_numpy=page_img,
+                    original_path=img_path,
+                    page_index=page_idx,
+                    layout_threshold=layout_threshold,
+                    max_length=max_length,
+                    merge_layout_blocks=merge_layout_blocks,
+                )
+                results.append(page_result)
+            return results
 
         # Load image from path or numpy array
         is_temp_file = False
@@ -751,30 +922,9 @@ class OpenDocONNX:
                 vlm_block_ids.append(j)
                 drop_figures_set.update(drop_figures)
 
-        # VLM识别
-        vl_rec_results = []
-
-        for block_img, block_label in zip(block_imgs, block_labels):
-            # 转换为RGB PIL Image
-            block_img_rgb = cv2.cvtColor(block_img, cv2.COLOR_BGR2RGB)
-            pil_image = Image.fromarray(block_img_rgb)
-
-            try:
-                text, token_ids = self.vlm_recognizer(
-                    image=pil_image, max_length=max_length)
-            except Exception as e:
-                logger.error(f'  Error processing block: {e}')
-                text = ''
-
-            # 使用 markdown_converter 进行后处理
-            if 'table' in block_label:
-                text = markdown_converter._handle_table(text)
-            elif 'formula' in block_label and block_label != 'formula_number':
-                text = markdown_converter._handle_formula(text)
-            else:
-                text = markdown_converter._handle_text(text)
-
-            vl_rec_results.append(text)
+        # VLM识别 (parallel processing with up to max_parallel_blocks workers)
+        vl_rec_results = self._parallel_vlm_recognize(
+            block_imgs, block_labels, max_length)
 
         # 组装
         recognition_results = []
@@ -876,19 +1026,66 @@ class OpenDocONNX:
 
         return result
 
+    def _infer_single_image(
+        self,
+        img_numpy: np.ndarray,
+        original_path: str,
+        page_index: int,
+        layout_threshold: Optional[float] = None,
+        max_length: int = 2048,
+        merge_layout_blocks: bool = True,
+    ) -> Dict:
+        """Run inference on a single BGR numpy image (used for PDF pages).
+
+        Args:
+            img_numpy: Input image as numpy array (BGR format)
+            original_path: Original PDF file path (for result metadata)
+            page_index: Page index in the PDF
+            layout_threshold: Layout detection threshold
+            max_length: VLM maximum generation length
+            merge_layout_blocks: Whether to merge layout blocks
+
+        Returns:
+            Prediction result dictionary
+        """
+        import tempfile
+        # Save numpy image to a temporary file for processing
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+            cv2.imwrite(tmp_path, img_numpy)
+
+        try:
+            # Reuse the main __call__ method with the temp image path
+            result = self(
+                img_path=tmp_path,
+                layout_threshold=layout_threshold,
+                max_length=max_length,
+                merge_layout_blocks=merge_layout_blocks,
+            )
+            # Update input_path to indicate PDF source
+            pdf_name = os.path.basename(original_path)
+            result['input_path'] = f'{original_path}'
+            result['pdf_page'] = page_index + 1
+            result['pdf_source'] = pdf_name
+            # Store the page image for save_to_markdown and save_visualization
+            result['_page_image'] = img_numpy.copy()
+            return result
+        finally:
+            # Clean up temporary file
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
     def save_to_json(self, result: Dict, output_path: str):
         """保存结果为JSON"""
-        if 'layout_results' in result:
-            del result['layout_results']
-
-        if 'blocks' in result:
-            del result['blocks']
-
         img_name, img_dir = _get_image_name_and_dir(result, output_path)
         json_path = os.path.join(img_dir, f'{img_name}.json')
 
+        # Create a filtered copy excluding non-serializable and internal fields
+        exclude_keys = {'layout_results', 'blocks', '_page_image'}
+        result_filtered = {k: v for k, v in result.items() if k not in exclude_keys}
+
         with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+            json.dump(result_filtered, f, ensure_ascii=False, indent=2)
 
         # logger.info(f"  Saved JSON to {json_path}")
 
@@ -902,7 +1099,10 @@ class OpenDocONNX:
         os.makedirs(imgs_dir, exist_ok=True)
 
         # 读取原始图像用于裁剪保存图片
-        original_image = cv2.imread(result['input_path'])
+        if '_page_image' in result:
+            original_image = result['_page_image']
+        else:
+            original_image = cv2.imread(result['input_path'])
         ori_width = result.get(
             'width',
             original_image.shape[1] if original_image is not None else 1)
@@ -961,7 +1161,7 @@ class OpenDocONNX:
                         else:
                             width_percent = 50  # 默认50%
                         f.write(
-                            f'<img src="{img_path}" alt="Image" width="{width_percent}%" />\\n\\n'
+                            f'<img src="{img_path}" alt="Image" width="{width_percent}%" />\n'
                         )
                     continue
                 text = rec['text'].strip()
@@ -994,7 +1194,7 @@ class OpenDocONNX:
         merged_text = ' '.join(texts)
 
         # 根据标签类型格式化输出
-        if 'title' in base_label or base_label == 'doc_title':
+        if 'title' in base_label and base_label != 'figure_title':
             f.write(f'## {merged_text}\n\n')
         elif 'table' in base_label:
             f.write(f'{merged_text}\n\n')
@@ -1008,7 +1208,10 @@ class OpenDocONNX:
         img_name, img_dir = _get_image_name_and_dir(result, output_path)
         vis_path = os.path.join(img_dir, f'{img_name}_vis.jpg')
 
-        image = cv2.imread(result['input_path'])
+        if '_page_image' in result:
+            image = result['_page_image'].copy()
+        else:
+            image = cv2.imread(result['input_path'])
 
         for box_info in result['layout_results']['boxes']:
             x1, y1, x2, y2 = map(int, box_info['coordinate'])
@@ -1089,6 +1292,10 @@ def main():
     parser.add_argument('--no-auto-download',
                         action='store_true',
                         help='Disable automatic model download')
+    parser.add_argument('--max_parallel_blocks',
+                        type=int,
+                        default=4,
+                        help='Max parallel blocks for VLM recognition (default: 4)')
 
     # Output formats
     parser.add_argument('--save_vis',
@@ -1124,6 +1331,7 @@ def main():
         use_layout_detection=args.use_layout_detection,
         use_chart_recognition=args.use_chart_recognition,
         auto_download=not args.no_auto_download,
+        max_parallel_blocks=args.max_parallel_blocks,
     )
 
     # 获取图像列表

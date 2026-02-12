@@ -6,6 +6,7 @@ Visit: https://github.com/Topdu/OpenOCR
 
 ## Recent Updates
 
+- **0.1.4**: Support the PDF file as an input; Parallel recognition of document elements; Add skill document
 - **0.1.3**: Use a unified interface for OCR, Document Parsing, and Unirec
 - **0.0.10**: Remove OpenCV version restrictions.
 - **0.0.9**: Fixing torch inference bug.
@@ -18,7 +19,7 @@ Visit: https://github.com/Topdu/OpenOCR
 
 ```bash
 # Install from PyPI (recommended)
-pip install openocr-python==0.1.3
+pip install openocr-python==0.1.4
 
 # Or install from source
 git clone https://github.com/Topdu/OpenOCR.git

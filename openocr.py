@@ -69,6 +69,7 @@ class OpenOCR:
         use_layout_detection: bool = True,
         use_chart_recognition: bool = True,
         auto_download: bool = True,
+        max_parallel_blocks: int = 4,
     ):
         """
         Initialize OpenOCR unified interface.
@@ -99,6 +100,7 @@ class OpenOCR:
             use_layout_detection: Whether to use layout detection
             use_chart_recognition: Whether to recognize charts
             auto_download: Whether to auto-download missing models
+            max_parallel_blocks: Maximum number of blocks to process in parallel for VLM recognition (doc task only, default: 4)
         """
         self.task = task.lower()
         self.model = None
@@ -157,7 +159,8 @@ class OpenOCR:
                 layout_threshold=layout_threshold,
                 use_layout_detection=use_layout_detection,
                 use_chart_recognition=use_chart_recognition,
-                auto_download=auto_download
+                auto_download=auto_download,
+                max_parallel_blocks=max_parallel_blocks,
             )
 
         logger.info(f"✅ OpenOCR initialized successfully for task: {self.task}")
@@ -211,12 +214,12 @@ class OpenOCR:
 
         For 'unirec' task:
             Args:
-                image_path: Path to image
+                image_path: Path to image or PDF file
                 max_length: Maximum generation length
 
         For 'doc' task:
             Args:
-                image_path: Path to image
+                image_path: Path to image or PDF file
                 layout_threshold: Layout detection threshold
                 max_length: Maximum generation length
                 merge_layout_blocks: Whether to merge layout blocks
@@ -239,44 +242,59 @@ class OpenOCR:
         elif self.task == 'doc':
             return self._call_doc(*args, **kwargs)
 
-    def _call_det(self, image_path, **kwargs):
+    def _call_det(self, image_path=None, **kwargs):
         """Call detection task"""
         return self.model(img_path=image_path, **kwargs)
 
-    def _call_rec(self, image_path, batch_num=1, **kwargs):
+    def _call_rec(self, image_path=None, batch_num=1, **kwargs):
         """Call recognition task"""
         return self.model(img_path=image_path, batch_num=batch_num, **kwargs)
 
-    def _call_ocr(self, image_path, **kwargs):
+    def _call_ocr(self, image_path=None, **kwargs):
         """Call OCR task"""
         return self.model(img_path=image_path, **kwargs)
 
-    def _call_unirec(self, image_path, max_length=2048, **kwargs):
-        """Call UniRec task"""
+    def _call_unirec(self, image_path=None, max_length=2048, **kwargs):
+        """Call UniRec task (supports image and PDF input)"""
         return self.model(img_path=image_path, max_length=max_length, **kwargs)
 
-    def _call_doc(self, image_path, **kwargs):
-        """Call Doc task"""
+    def _call_doc(self, image_path=None, **kwargs):
+        """Call Doc task (supports image and PDF input)"""
         return self.model(img_path=image_path, **kwargs)
 
     # Additional methods for doc task
-    def save_to_json(self, result: Dict, output_path: str):
-        """Save doc task results to JSON (only for doc task)"""
+    def save_to_json(self, result, output_path: str):
+        """Save doc task results to JSON (only for doc task).
+        Supports both single result dict and list of results (from PDF)."""
         if self.task != 'doc':
             raise RuntimeError("save_to_json is only available for 'doc' task")
-        return self.model.save_to_json(result, output_path)
+        if isinstance(result, list):
+            for page_result in result:
+                self.model.save_to_json(page_result, output_path)
+        else:
+            return self.model.save_to_json(result, output_path)
 
-    def save_to_markdown(self, result: Dict, output_path: str):
-        """Save doc task results to Markdown (only for doc task)"""
+    def save_to_markdown(self, result, output_path: str):
+        """Save doc task results to Markdown (only for doc task).
+        Supports both single result dict and list of results (from PDF)."""
         if self.task != 'doc':
             raise RuntimeError("save_to_markdown is only available for 'doc' task")
-        return self.model.save_to_markdown(result, output_path)
+        if isinstance(result, list):
+            for page_result in result:
+                self.model.save_to_markdown(page_result, output_path)
+        else:
+            return self.model.save_to_markdown(result, output_path)
 
-    def save_visualization(self, result: Dict, output_path: str):
-        """Save doc task visualization (only for doc task)"""
+    def save_visualization(self, result, output_path: str):
+        """Save doc task visualization (only for doc task).
+        Supports both single result dict and list of results (from PDF)."""
         if self.task != 'doc':
             raise RuntimeError("save_visualization is only available for 'doc' task")
-        return self.model.save_visualization(result, output_path)
+        if isinstance(result, list):
+            for page_result in result:
+                self.model.save_visualization(page_result, output_path)
+        else:
+            return self.model.save_visualization(result, output_path)
 
 
 def main():
@@ -314,14 +332,14 @@ Examples:
   openocr --task unirec --input_path image.jpg --max_length 2048
 
   # Doc task (document OCR with layout)
-  openocr --task doc --input_path document.jpg --save_markdown --save_json
+  openocr --task doc --input_path document.jpg --use_layout_detection --save_vis --save_json --save_markdown
 
   # Doc task with PDF input
-  openocr --task doc --input_path document.pdf --save_markdown --save_json
+  openocr --task doc --input_path document.pdf --use_layout_detection --save_vis --save_json --save_markdown
 
   # Doc task with custom models
   openocr --task doc --input_path doc.jpg --layout_model path/to/layout.onnx \\
-         --encoder_model path/to/encoder.onnx --decoder_model path/to/decoder.onnx
+         --encoder_model path/to/encoder.onnx --decoder_model path/to/decoder.onnx --use_layout_detection --save_vis --save_json --save_markdown
 
   # Launch OpenOCR Gradio demo
   openocr --task launch_openocr_demo --share
@@ -388,6 +406,7 @@ For more information, visit: https://github.com/Topdu/OpenOCR
     parser.add_argument('--use_layout_detection', action='store_true', help='[Doc] Use layout detection')
     parser.add_argument('--no_layout_detection', dest='use_layout_detection', action='store_false', help='[Doc] Disable layout detection')
     parser.add_argument('--use_chart_recognition', action='store_true', help='[Doc] Recognize charts')
+    parser.add_argument('--max_parallel_blocks', type=int, default=4, help='[Doc] Max parallel blocks for VLM recognition (default: 4)')
     parser.add_argument('--save_vis', action='store_true', help='[Doc] Save visualization')
     parser.add_argument('--save_json', action='store_true', help='[Doc] Save JSON results')
     parser.add_argument('--save_markdown', action='store_true', help='[Doc] Save Markdown results')
@@ -588,7 +607,7 @@ For more information, visit: https://github.com/Topdu/OpenOCR
             from tools.utils.utility import get_image_file_list
             img_list = get_image_file_list(args.input_path)
 
-            logger.info(f'\nFound {len(img_list)} images in {args.input_path}')
+            logger.info(f'\nFound {len(img_list)} images/PDFs in {args.input_path}')
             logger.info(f'Output will be saved to: {args.output_path}')
             logger.info('=' * 80)
 
@@ -600,17 +619,29 @@ For more information, visit: https://github.com/Topdu/OpenOCR
                     logger.info(f"\n[{idx + 1}/{len(img_list)}] Processing: {os.path.basename(img_path)}")
 
                     try:
-                        result_text, generated_ids = openocr(
+                        result = openocr(
                             image_path=img_path,
                             max_length=args.max_length
                         )
 
-                        logger.info(f"   Generated {len(generated_ids)} tokens")
-                        logger.info(f"   Text: {result_text[:100]}..." if len(result_text) > 100 else f"   Text: {result_text}")
-
                         image_name = os.path.basename(img_path)
-                        result_dict = {'text': result_text}
-                        fout.write(f"{image_name}\t{json.dumps(result_dict, ensure_ascii=False)}\n")
+
+                        # Handle PDF results (list of tuples) vs image results (single tuple)
+                        if isinstance(result, list):
+                            # PDF input: result is a list of (text, ids) tuples
+                            logger.info(f"   PDF with {len(result)} pages")
+                            for page_idx, (page_text, page_ids) in enumerate(result):
+                                logger.info(f"   Page {page_idx + 1}: Generated {len(page_ids)} tokens")
+                                logger.info(f"   Text: {page_text[:100]}..." if len(page_text) > 100 else f"   Text: {page_text}")
+                                result_dict = {'text': page_text, 'page': page_idx + 1}
+                                fout.write(f"{image_name}_page{page_idx + 1}\t{json.dumps(result_dict, ensure_ascii=False)}\n")
+                        else:
+                            # Image input: result is a single (text, ids) tuple
+                            result_text, generated_ids = result
+                            logger.info(f"   Generated {len(generated_ids)} tokens")
+                            logger.info(f"   Text: {result_text[:100]}..." if len(result_text) > 100 else f"   Text: {result_text}")
+                            result_dict = {'text': result_text}
+                            fout.write(f"{image_name}\t{json.dumps(result_dict, ensure_ascii=False)}\n")
 
                     except Exception as e:
                         logger.error(f"Error processing {img_path}: {str(e)}")
@@ -633,7 +664,8 @@ For more information, visit: https://github.com/Topdu/OpenOCR
                 layout_threshold=args.layout_threshold,
                 use_layout_detection=args.use_layout_detection,
                 use_chart_recognition=args.use_chart_recognition,
-                auto_download=not args.no_auto_download
+                auto_download=not args.no_auto_download,
+                max_parallel_blocks=args.max_parallel_blocks,
             )
 
             from tools.utils.utility import get_image_file_list
@@ -655,14 +687,23 @@ For more information, visit: https://github.com/Topdu/OpenOCR
                         max_length=args.max_length
                     )
 
-                    if args.save_vis:
-                        openocr.save_visualization(result, args.output_path)
-
-                    if args.save_json:
-                        openocr.save_to_json(result, args.output_path)
-
-                    if args.save_markdown:
-                        openocr.save_to_markdown(result, args.output_path)
+                    # Handle PDF results (list of dicts) vs image results (single dict)
+                    if isinstance(result, list):
+                        logger.info(f"   PDF with {len(result)} pages")
+                        for page_result in result:
+                            if args.save_vis:
+                                openocr.save_visualization(page_result, args.output_path)
+                            if args.save_json:
+                                openocr.save_to_json(page_result, args.output_path)
+                            if args.save_markdown:
+                                openocr.save_to_markdown(page_result, args.output_path)
+                    else:
+                        if args.save_vis:
+                            openocr.save_visualization(result, args.output_path)
+                        if args.save_json:
+                            openocr.save_to_json(result, args.output_path)
+                        if args.save_markdown:
+                            openocr.save_to_markdown(result, args.output_path)
 
                 except Exception as e:
                     logger.error(f"Error processing {img_path}: {str(e)}")

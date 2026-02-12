@@ -538,6 +538,36 @@ class UniRecONNX:
 
         return logits, present_key_values
 
+    def _pdf_to_images(self, pdf_path):
+        """Convert PDF file to a list of PIL Images.
+
+        Args:
+            pdf_path: Path to PDF file
+
+        Returns:
+            List of PIL Image objects (RGB format)
+        """
+        try:
+            import fitz
+        except ImportError:
+            raise ImportError(
+                'PyMuPDF is required for PDF support. '
+                'Install with: pip install PyMuPDF'
+            )
+
+        images = []
+        with fitz.open(pdf_path) as pdf:
+            for pg in range(pdf.page_count):
+                page = pdf[pg]
+                mat = fitz.Matrix(2, 2)
+                pm = page.get_pixmap(matrix=mat, alpha=False)
+                # If width or height > 2000 pixels, don't enlarge the image
+                if pm.width > 2000 or pm.height > 2000:
+                    pm = page.get_pixmap(matrix=fitz.Matrix(1, 1), alpha=False)
+                img = Image.frombytes('RGB', [pm.width, pm.height], pm.samples)
+                images.append(img)
+        return images
+
     def __call__(
         self,
         img_path=None,
@@ -552,7 +582,7 @@ class UniRecONNX:
         Unified interface for UniRec inference.
 
         Args:
-            img_path: Path to input image (str or Path)
+            img_path: Path to input image or PDF file (str or Path)
             img_numpy: Input image as numpy array (BGR format)
             image: PIL Image object (RGB format)
             max_length: Maximum generation length
@@ -561,8 +591,27 @@ class UniRecONNX:
             pad_token_id: Padding token ID
 
         Returns:
-            Tuple of (generated_text, generated_ids)
+            Tuple of (generated_text, generated_ids) for single image input.
+            List of tuples [(generated_text, generated_ids), ...] for PDF input (one per page).
         """
+        # Handle PDF input: convert to images and process each page
+        if img_path is not None and str(img_path).lower().endswith('.pdf'):
+            print(f'Processing PDF file: {img_path}')
+            pdf_images = self._pdf_to_images(img_path)
+            print(f'Found {len(pdf_images)} pages in PDF')
+            results = []
+            for page_idx, page_image in enumerate(pdf_images):
+                print(f'\n--- Processing page {page_idx + 1}/{len(pdf_images)} ---')
+                result = self._infer_single_image(
+                    image=page_image,
+                    max_length=max_length,
+                    bos_token_id=bos_token_id,
+                    eos_token_id=eos_token_id,
+                    pad_token_id=pad_token_id,
+                )
+                results.append(result)
+            return results
+
         # Load image from path, numpy array, or use provided PIL image
         if img_path is not None:
             image = Image.open(img_path).convert('RGB')
@@ -575,6 +624,34 @@ class UniRecONNX:
         elif image is None:
             raise ValueError('Either img_path, img_numpy, or image must be provided')
 
+        return self._infer_single_image(
+            image=image,
+            max_length=max_length,
+            bos_token_id=bos_token_id,
+            eos_token_id=eos_token_id,
+            pad_token_id=pad_token_id,
+        )
+
+    def _infer_single_image(
+        self,
+        image,
+        max_length=2048,
+        bos_token_id=None,
+        eos_token_id=None,
+        pad_token_id=None,
+    ):
+        """Run inference on a single PIL Image.
+
+        Args:
+            image: PIL Image object (RGB format)
+            max_length: Maximum generation length
+            bos_token_id: Beginning of sequence token ID
+            eos_token_id: End of sequence token ID
+            pad_token_id: Padding token ID
+
+        Returns:
+            Tuple of (generated_text, generated_ids)
+        """
         # Get token IDs
         if bos_token_id is None:
             bos_token_id = self.tokenizer.bos_token_id

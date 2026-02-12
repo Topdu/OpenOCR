@@ -90,6 +90,7 @@ OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bri
 
 ## Recent Updates
 
+- **2026.02.12**: 🔥 Releasing openocr-python 0.1.4: Support the PDF file as an input; Parallel recognition of document elements; Add [skill document](./SKILL.md). Accessible in [Doc](./QUICKSTART.md).
 - **2026.02.06**: 🔥 Releasing openocr-python 0.1.3, and using a unified interface for OpenOCR, Document Parsing OpenDoc-0.1B, and UniRec-0.1B. Accessible in [Doc](./QUICKSTART.md).
 - **2026.01.13**: 🔥 Releasing [CMER](./configs/rec/cmer/) code and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) dataset.
 - **2026.01.07**: 🔥 Releasing [UniRec40M](https://huggingface.co/datasets/topdu/UniRec40M) dataset, which includes 40 million instances of recognition data comprising text, formulas, and text-formula mixed content.
