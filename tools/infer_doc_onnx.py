@@ -360,7 +360,9 @@ class LayoutDetectorONNX:
         scale_h = target_h / orig_h
         scale_w = target_w / orig_w
 
-        new_h, new_w = int(orig_h * scale_h), int(orig_w * scale_w)
+        # keep_ratio=false: output must be the exact target size.
+        # Avoid float->int truncation (e.g. 799.9999 -> 799).
+        new_h, new_w = target_h, target_w
         resized = cv2.resize(image, (new_w, new_h),
                              interpolation=cv2.INTER_LINEAR)
 
