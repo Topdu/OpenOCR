@@ -100,12 +100,16 @@ class Trainer(object):
                 f'train dataloader has {len(self.train_dataloader)} iters')
         self.valid_dataloader = None
         if 'eval' in mode and self.cfg['Eval']:
-            self.valid_dataloader = build_dataloader(self.cfg,
-                                                     'Eval',
-                                                     self.logger,
-                                                     task=task)
-            self.logger.info(
-                f'valid dataloader has {len(self.valid_dataloader)} iters')
+            try:
+                self.valid_dataloader = build_dataloader(self.cfg,
+                                                        'Eval',
+                                                        self.logger,
+                                                        task=task)
+                self.logger.info(
+                    f'valid dataloader has {len(self.valid_dataloader)} iters')
+            except Exception as e:
+                self.logger.info(f'valid dataloader build failed: {e}')
+                self.valid_dataloader = None
 
         if task == 'rec':
             self._init_rec_model()
@@ -262,7 +266,7 @@ class Trainer(object):
         if type(eval_batch_step) == list and len(eval_batch_step) >= 2:
             start_eval_step = eval_batch_step[0]
             eval_batch_step = eval_batch_step[1]
-            if len(self.valid_dataloader) == 0:
+            if self.valid_dataloader is not None and len(self.valid_dataloader) == 0:
                 self.logger.info(
                     'No Images in eval dataset, evaluation during training '
                     'will be disabled')
@@ -312,7 +316,7 @@ class Trainer(object):
                                           False):  # for unirec resume training
                 if 'sampler' in self.cfg['Train']:
                     self.cfg['Train']['sampler']['resume_iter'] = 0
-            if hasattr(self.train_dataloader, "dataset") and self.train_dataloader.dataset is not None:
+            if hasattr(self.train_dataloader, 'dataset') and self.train_dataloader.dataset is not None:
                 if self.train_dataloader.dataset.need_reset and epoch > 1:
                     self.train_dataloader = build_dataloader(self.cfg,
                                                             'Train',
@@ -439,7 +443,7 @@ class Trainer(object):
                     train_batch_cost = 0.0
                 reader_start = time.time()
                 # eval iter step
-                if is_main_process() and (global_step > start_eval_step and
+                if self.valid_dataloader is not None and is_main_process() and (global_step > start_eval_step and
                                           (global_step - start_eval_step) %
                                           eval_batch_step == 0):
                     self.eval_step(global_step, epoch)
@@ -459,7 +463,7 @@ class Trainer(object):
                         f'iter_{last_whole_epoch_global_step}_{global_step}')
 
             # eval epoch step
-            if is_main_process() and epoch > start_eval_epoch and (
+            if self.valid_dataloader is not None and is_main_process() and epoch > start_eval_epoch and (
                     epoch - start_eval_epoch) % eval_epoch_step == 0:
                 self.eval_step(global_step, epoch)
 

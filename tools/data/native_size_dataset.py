@@ -247,11 +247,12 @@ class NaSizeDataSet(Dataset):
                                                  [64., 64.])  # w, h
         self.use_region = dataset_config.get('use_region', False)
         self.use_ch = dataset_config.get('use_ch', False)
+        self.custom_data = dataset_config.get('custom_data', False)
+
         logger.info('Initialize indexs of doc datasets')
-        if self.all_data:
-            self.__init_lmdb()
 
         label_json_list = []
+
         if self.test_data:
             epoch_current = (epoch - 1) % 10
             label_json_list = [
@@ -266,7 +267,8 @@ class NaSizeDataSet(Dataset):
                                       readahead=False,
                                       meminit=False)
             self.txn_test = self.env_test.begin()
-        else:
+        elif self.all_data:
+            self.__init_lmdb()
             epoch_current_10ep = (epoch - 1) % 10
             epoch_current_20ep = (epoch - 1) % 20
             epoch_current_5ep = (epoch - 1) % 5
@@ -326,6 +328,50 @@ class NaSizeDataSet(Dataset):
 
             self.__init_line_lmdb(epoch_current)
             label_json_list += line_json_list
+
+        if self.custom_data:
+            # Custom dataset mode: use user-provided label_key.json and image_lmdb
+            custom_label_json_path = dataset_config.get('custom_label_json_path', None)
+            custom_ratio_sample = dataset_config.get('custom_ratio_sample', 1)
+            if custom_label_json_path is None:
+                custom_label_json_path = f'{self.root_path}/label_key.json'
+                label_json_list += [custom_label_json_path]
+                ratio_sample += [custom_ratio_sample]
+            elif isinstance(custom_label_json_path, list):
+                label_json_list += custom_label_json_path
+                if not isinstance(custom_ratio_sample, list):
+                    custom_ratio_sample = [custom_ratio_sample] * len(custom_label_json_path)
+                ratio_sample += custom_ratio_sample
+            else:
+                label_json_list += [custom_label_json_path]
+                ratio_sample += [custom_ratio_sample]
+
+            lmdb_args = dict(max_readers=32,
+                                readonly=True,
+                                lock=False,
+                                readahead=False,
+                                meminit=False)
+
+            if not self.use_linedata:
+                self.txns = {}
+
+            custom_lmdb_path = dataset_config.get('custom_lmdb_path', None)
+            custom_prefix = dataset_config.get('custom_prefix', None)
+            if custom_prefix is None:
+                custom_prefix = 'custom0001'
+            if custom_lmdb_path is None:
+                custom_lmdb_path = f'{self.root_path}/image_lmdb'
+
+            if not isinstance(custom_lmdb_path, list):
+                custom_lmdb_path = [custom_lmdb_path]
+                custom_prefix = [custom_prefix]
+
+            for i, path in enumerate(custom_lmdb_path):
+                env = lmdb.open(path, **lmdb_args)
+                self.txns[custom_prefix[i]] = env.begin()
+
+            logger.info(f'Custom dataset loaded from {custom_lmdb_path}')
+
 
         img_label_pair_list = self.load_label_json(label_json_list,
                                                    ratio_sample)
@@ -645,7 +691,7 @@ class NaSizeDataSet(Dataset):
                 image = Image.open(io.BytesIO(img_data)).convert('RGB')
                 line_data = True
             else:
-                if self.use_linedata:
+                if self.use_linedata or self.custom_data:
                     for prefix, txn in self.txns.items():
                         if file_name.startswith(prefix):
                             img_data = txn.get(file_name.encode('utf-8'))
