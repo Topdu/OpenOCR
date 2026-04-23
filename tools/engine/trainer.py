@@ -221,7 +221,7 @@ class Trainer(object):
     def set_random_seed(self, seed):
         torch.manual_seed(seed)  # 为CPU设置随机种子
         if self.device.type == 'cuda':
-            torch.backends.cudnn.benchmark = True
+            torch.backends.cudnn.benchmark = False
             torch.cuda.manual_seed(seed)  # 为当前GPU设置随机种子
             torch.cuda.manual_seed_all(seed)  # 为所有GPU设置随机种子
         random.seed(seed)
@@ -306,13 +306,14 @@ class Trainer(object):
             self.resume_iter = global_step
             iter_model_file_name = os.path.basename(
                 self.cfg['Global']['checkpoints'])
-            last_whole_epoch_global_step = iter_model_file_name.split('_')[1]
+            last_whole_epoch_global_step = int(iter_model_file_name.split('_')[1])
+            global_step = last_whole_epoch_global_step
             self.cfg['Train']['sampler'][
                 'resume_iter'] = self.resume_iter - last_whole_epoch_global_step
 
         last_whole_epoch_global_step = 0
         for epoch in range(start_epoch, epoch_num + 1):
-            if not self.cfg['Global'].get('resume_from_iter',
+            if self.cfg['Global'].get('resume_from_iter',
                                           False):  # for unirec resume training
                 if 'sampler' in self.cfg['Train']:
                     self.cfg['Train']['sampler']['resume_iter'] = 0
