@@ -396,9 +396,8 @@ class UniRecForConditionalGenerationNew(M2M100PreTrainedModel,
         **kwargs,
     ):
         # cut decoder_input_ids if past is used
-        if past_key_values is not None:
+        if past_key_values is not None and past_key_values[0][0] is not None:
             past_length = past_key_values[0][0].shape[2]
-
             # Some generation methods already pass only the last input ID
             if decoder_input_ids.shape[1] > past_length:
                 remove_prefix_length = past_length

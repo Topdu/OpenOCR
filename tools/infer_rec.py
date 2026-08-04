@@ -332,7 +332,8 @@ class OpenRecognizer:
                  img_path=None,
                  img_numpy_list=None,
                  img_numpy=None,
-                 batch_num=1):
+                 batch_num=1,
+                 suppress_repeat=True):
         """
         调用函数，处理输入图像，并返回识别结果。
 
@@ -341,6 +342,10 @@ class OpenRecognizer:
             img_numpy_list (list, optional): 包含多个图像 numpy 数组的列表。默认为 None。
             img_numpy (numpy.ndarray, optional): 单个图像的 numpy 数组。默认为 None。
             batch_num (int, optional): 每次处理的图像数量。默认为 1。
+            suppress_repeat (bool, optional): 是否用 repetition_penalty 与
+                no_repeat_ngram_size 抑制重复退化。仅普通文本应开启；表格和
+                公式应关闭——它们(连续空单元格 <td></td>、矩阵/array/align
+                环境)本身就是合法的高重复结构,抑制会误删或改坏内容。默认 True。
 
         Returns:
             list: 包含识别结果的列表，每个元素为一个字典，包含文件路径（如果有的话）、文本、分数和延迟时间。
@@ -416,7 +421,36 @@ class OpenRecognizer:
                             'input_ids': None,
                             'attention_mask': None
                         }
-                        preds = self.model.generate(**inputs)
+                        # Cap generation length explicitly; otherwise the model
+                        # falls back to its config default (max_length=2048),
+                        # which truncates large tables mid-output so they lack a
+                        # closing </table> and get dropped downstream. Bounded by
+                        # the model's max_position_embeddings (3072).
+                        max_new_tokens = self.cfg['Global'].get(
+                            'max_new_tokens', 3072)
+                        gen_kwargs = {'max_new_tokens': max_new_tokens}
+                        # Both repetition penalties are gated on suppress_repeat.
+                        # Structured content (tables, matrix/array/align formulas)
+                        # is legitimately repetitive: even the soft
+                        # repetition_penalty measurably hurt tables (TEDS -0.13)
+                        # and the hard no_repeat_ngram_size corrupted matrix
+                        # formulas (CDM -2.70). The pipeline only enables
+                        # suppression for plain text, where repetition is a true
+                        # degeneration signal (see infer_doc_v3 suppress_repeat).
+                        if suppress_repeat:
+                            # repetition_penalty is a soft penalty; it curbs
+                            # degenerate repetition loops in text.
+                            rep_pen = self.cfg['Global'].get(
+                                'repetition_penalty', 1.05)
+                            if rep_pen is not None:
+                                gen_kwargs['repetition_penalty'] = rep_pen
+                            # no_repeat_ngram_size hard-blocks repeated n-grams,
+                            # the most effective fix for text degeneration.
+                            no_repeat = self.cfg['Global'].get(
+                                'no_repeat_ngram_size', 20)
+                            if no_repeat:
+                                gen_kwargs['no_repeat_ngram_size'] = no_repeat
+                        preds = self.model.generate(**inputs, **gen_kwargs)
                     else:
                         # PyTorch模型推理
                         preds = self.model(images,

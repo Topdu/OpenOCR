@@ -56,12 +56,22 @@ def truncate_repeated_tail(s, threshold=20, keep=1):
 def extract_table_from_html(html_string):
     """Extract and clean table tags from HTML string"""
     try:
+        # UniRec can truncate a large table before emitting </table>; if an
+        # opening <table> exists without a matching closer, append one so the
+        # (otherwise valid) rows are not silently dropped below.
+        if '<table' in html_string and '</table>' not in html_string:
+            html_string = html_string + '</table>'
+
         table_pattern = re.compile(r'<table.*?>.*?</table>', re.DOTALL)
         tables = table_pattern.findall(html_string)
         tables = [
             re.sub(r'<table[^>]*>', '<table>', table) for table in tables
         ]
         # tables = [re.sub(r'>\n', '>', table) for table in tables]
+        if not tables:
+            # No <table> tags at all (e.g. a small table recognized as plain
+            # text). Keep the original content rather than returning nothing.
+            return html_string
         return '\n'.join(tables)
     except Exception as e:
         print(f'extract_table_from_html error: {str(e)}')
@@ -361,7 +371,13 @@ class MarkdownConverter:
             text = result.replace('\)', '')
             text = text.strip('$').rstrip('\ ').replace(r'\upmu', r'\mu')
             for key, value in self.replace_dict.items():
-                text = text.replace(key, value)
+                # Replace only whole LaTeX commands: the key must not be
+                # immediately followed by a letter, otherwise a longer command
+                # sharing this prefix gets corrupted (e.g. \leqslant -> \leq slant,
+                # \bmatrix -> \mathbf atrix). re.escape on the replacement keeps
+                # backslashes literal (value strings like '\mathbf ').
+                text = re.sub(re.escape(key) + r'(?![a-zA-Z])',
+                              value.replace('\\', '\\\\'), text)
             processed_text = '$$' + text + '$$'
             processed_text = processed_text.replace('\n', '\\\\\n')
             processed_text = fix_latex_brackets(processed_text)
