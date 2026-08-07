@@ -385,6 +385,7 @@ class Trainer(object):
                             self.model.parameters(),
                             max_norm=self.grad_clip_val)
                     self.optimizer.step()
+                    self.optimizer.zero_grad(set_to_none=True)
 
                 if cal_metric_during_train:  # only rec and cls need
                     post_result = self.post_process_class(preds,
