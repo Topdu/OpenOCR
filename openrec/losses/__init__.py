@@ -23,6 +23,7 @@ name_to_module = {
     'MDiffLoss': '.mdiff_loss',
     'UniRecLoss': '.unirec_loss',
     'CMERLoss': '.cmer_loss',
+    'ScriptMoELoss': '.scriptmoe_loss',
 }
 
 

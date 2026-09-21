@@ -20,6 +20,7 @@ module_mapping = {
     'MPGLabelDecode': '.mgp_postprocess',
     'UniRecLabelDecode': '.unirec_postprocess',
     'CMERLabelDecode': '.cmer_postprocess',
+    'ScriptMoELabelDecode': '.scriptmoe_postprocess',
     'GTCLabelDecode': '.'  # 当前模块中的类
 }
 

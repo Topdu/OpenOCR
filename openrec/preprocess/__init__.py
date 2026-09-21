@@ -104,6 +104,7 @@ MODULE_MAPPING = {
     'MDiffLabelEncode': '.mdiff_label_encode',
     'UniRecLabelEncode': '.unirec_label_encode',
     'CMERProcessor': '.cmer_label_encode',
+    'ScriptAwareARLabelEncode': '.scriptaware_ar_label_encode',
     'ABINetAug': '.rec_aug',
     'BDA': '.rec_aug',
     'PARSeqAug': '.rec_aug',

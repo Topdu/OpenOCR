@@ -73,6 +73,7 @@ OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bri
 
 ## Ours OCR algorithms
 
+- [**ScriptMoE**](./configs/rec/scriptmoe/) (*Xingsong Ye, Yongkun Du, Jiaxin Zhang, Zhixian Li, Chong Sun, Chen Li, Jing Lyu, Lianwen Jin, Zhineng Chen\*. All-in-One Multilingual Scene Text Recognition with Script-aware Mixture-of-Experts,* Preprint. [Doc](./configs/rec/scriptmoe/), [Code](https://github.com/YesianRohn/ScriptMoE), [Demo&Model](https://huggingface.co/spaces/Yesianrohn/MultilingualOCR-Demo))
 - [**UniRec-0.1B**](./docs/unirec.md) (*Yongkun Du, Zhineng Chen, Yazhen Xie, Weikang Bai, Hao Feng, Wei Shi, Yuchen Su, Can Huang, Yu-Gang Jiang. UniRec-0.1B: Unified Text and Formula Recognition with 0.1B Parameters,* Preprint. [Doc](./configs/rec/unirec/), [Paper](https://arxiv.org/pdf/2512.21095))
 - [**MDiff4STR**](./configs/rec/mdiff4str/) (*Yongkun Du, Miaomiao Zhao, Songlin Fan, Zhineng Chen\*, Caiyan Jia, Yu-Gang Jiang. MDiff4STR: Mask Diffusion Model for Scene Text Recognition,* AAAI 2026 Oral. [Doc](./configs/rec/mdiff4str/), [Paper](https://arxiv.org/abs/2512.01422))
 - [**CMER**](./configs/rec/cmer/) (*Weikang Bai, Yongkun Du, Yuchen Su, Yazhen Xie, Zhineng Chen\*. Complex Mathematical Expression Recognition: Benchmark, Large-Scale Dataset and Strong Baseline,* AAAI 2026. [Doc](./configs/rec/cmer/), [Paper](https://arxiv.org/abs/2512.13731))
@@ -90,6 +91,7 @@ OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bri
 
 ## Recent Updates
 
+- **2026.09.21**: 🔥 Releasing [ScriptMoE](./configs/rec/scriptmoe/): All-in-One Multilingual Scene Text Recognition with Script-aware Mixture-of-Experts. Accessible in [Doc](./configs/rec/scriptmoe/) and [Demo&Model](https://huggingface.co/spaces/Yesianrohn/MultilingualOCR-Demo).
 - **2026.02.12**: 🔥 Releasing openocr-python 0.1.5: Support the PDF file as an input; Parallel recognition of document elements; Add [skill](https://clawhub.ai/Topdu/openocr-skill) for OpenClaw Agent. Accessible in [Doc](./QUICKSTART.md).
 - **2026.02.06**: 🔥 Releasing openocr-python 0.1.3, and using a unified interface for OpenOCR, Document Parsing OpenDoc-0.1B, and UniRec-0.1B. Accessible in [Doc](./QUICKSTART.md).
 - **2026.01.13**: 🔥 Releasing [CMER](./configs/rec/cmer/) code and [MER-17M](https://huggingface.co/datasets/topdu/MER-17M) dataset.
@@ -157,6 +159,7 @@ OpenOCR aims to build a comprehensive open-source ecosystem for General-OCR, bri
 | [ResNet+Trans-CTC](./configs/rec/svtrs/)      |                                                                                                | ✅       | ✅         |                                             |
 | [ViT-CTC](./configs/rec/svtrs/)               |                                                                                                | ✅       | ✅         |                                             |
 | [MDiff4STR](./configs/rec/mdiff4str/)         | [AAAI 2025 Oral](https://arxiv.org/abs/2512.01422)                                             | ✅       | ✅         |                                             |
+| [ScriptMoE](./configs/rec/scriptmoe/)         | Preprint                                                                                       | ✅       | ✅         | [YesianRohn](https://github.com/YesianRohn) |
 
 ### Scene Text Detection (STD)
 
@@ -186,6 +189,13 @@ If you find our method useful for your reserach, please cite:
   author={Yongkun Du and Zhineng Chen and Yazhen Xie and Weikang Bai and Hao Feng and Wei Shi and Yuchen Su and Can Huang and Yu-Gang Jiang},
   journal={arXiv preprint arXiv:2512.21095},
   year={2025}
+}
+
+@article{Ye2026ScriptMoE,
+  title={All-in-One Multilingual Scene Text Recognition with Script-aware Mixture-of-Experts},
+  author={Xingsong Ye and Yongkun Du and Jiaxin Zhang and Zhixian Li and Chong Sun and Chen Li and Jing Lyu and Lianwen Jin and Zhineng Chen},
+  journal={arXiv preprint},
+  year={2026}
 }
 ```
 

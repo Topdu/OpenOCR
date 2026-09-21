@@ -3,7 +3,8 @@ import copy
 __all__ = ['build_metric']
 
 support_dict = [
-    'RecMetric', 'RecMetricLong', 'RecGTCMetric', 'RecMPGMetric', 'CMERMetric'
+    'RecMetric', 'RecMetricLong', 'RecGTCMetric', 'RecMPGMetric', 'CMERMetric',
+    'RecMLTMetric'
 ]
 
 
@@ -29,5 +30,8 @@ def build_metric(config):
     elif module_name == 'CMERMetric':
         from .rec_metric_cmer import CMERMetric
         module_class = CMERMetric(**config)
+    elif module_name == 'RecMLTMetric':
+        from .rec_metric_mlt import RecMLTMetric
+        module_class = RecMLTMetric(**config)
 
     return module_class

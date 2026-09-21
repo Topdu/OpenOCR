@@ -151,8 +151,14 @@ class Trainer(object):
                                 self.lr_scheduler)
 
         if self.cfg['Global']['distributed']:
+            # MoE-style models (e.g. ScriptMoE) only activate part of the
+            # experts in a forward pass, so unused parameters have to be
+            # allowed for DDP. Enable it through the config to keep the
+            # default behaviour unchanged for the other models.
             self.model = torch.nn.parallel.DistributedDataParallel(
-                self.model, [self.local_rank], find_unused_parameters=False)
+                self.model, [self.local_rank],
+                find_unused_parameters=self.cfg['Global'].get(
+                    'find_unused_parameters', False))
 
         # amp
         self.scaler = (torch.amp.GradScaler() if self.cfg['Global'].get(

@@ -19,6 +19,7 @@ DATASET_MODULES = {
     'RatioDataSet': 'tools.data.ratio_dataset',
     'RatioDataSetTest': 'tools.data.ratio_dataset_test',
     'RatioDataSetTVResize': 'tools.data.ratio_dataset_tvresize',
+    'MLTRatioDataSetTVResize': 'tools.data.ratio_dataset_tvresize',
     'RatioDataSetTVResizeTest': 'tools.data.ratio_dataset_tvresize_test',
     'NaSizeDataSet': 'tools.data.native_size_dataset',
     'CMERWebDataSet': 'tools.data.cmer_web_dataset',
