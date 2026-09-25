@@ -122,7 +122,7 @@ class OpenOCRParallel:
         return self.results
 
 
-def main(cfg_det, cfg_rec):
+def main():
     img_path = './testA/'
     image_file_list = get_image_file_list(img_path)
     drop_score = 0.5
