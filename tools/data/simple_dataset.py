@@ -80,14 +80,16 @@ class SimpleDataSet(Dataset):
             with open(file, 'rb') as f:
                 lines = f.readlines()
                 if self.mode == 'train' or ratio_list[idx] < 1.0:
-                    random.seed(self.seed)
+                    if self.seed is not None:
+                        random.seed(self.seed)
                     lines = random.sample(lines,
                                           round(len(lines) * ratio_list[idx]))
                 data_lines.extend(lines)
         return data_lines
 
     def shuffle_data_random(self):
-        random.seed(self.seed)
+        if self.seed is not None:
+            random.seed(self.seed)
         random.shuffle(self.data_lines)
         return
 
