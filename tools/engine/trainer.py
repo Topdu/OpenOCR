@@ -211,6 +211,7 @@ class Trainer(object):
         from opendet.modeling import build_model as build_det_model
         from opendet.postprocess import build_post_process as build_det_post_process
 
+        self.use_transformers = False
         # build post process
         self.post_process_class = build_det_post_process(
             self.cfg['PostProcess'], self.cfg['Global'])
