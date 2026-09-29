@@ -16,7 +16,7 @@ def read_file(filename):
 
 # Get version
 def get_version():
-    version_file = os.path.join(os.path.dirname(__file__), 'openocr', '__init__.py')
+    version_file = os.path.join(os.path.dirname(__file__), '__init__.py')
     with open(version_file, 'r', encoding='utf-8') as f:
         for line in f:
             if line.startswith('__version__'):
